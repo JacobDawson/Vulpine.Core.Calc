@@ -17,7 +17,7 @@ namespace Vulpine.Core.Calc.Geometry
     /// convert to and from polar cordinates by a simple formula.
     /// </summary>
     /// <remarks>Last Update: 2013-09-16</remarks>
-    public struct Point2D : Euclidian<Point2D, Double>, IComparable<Point2D>
+    public struct Point2D : Euclidean<Point2D, Double>, IComparable<Point2D>
     {
         #region Class Deffinitions...
 

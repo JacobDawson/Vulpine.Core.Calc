@@ -19,7 +19,7 @@ namespace Vulpine.Core.Calc.Matrices
     /// function that maps one set of vectors into another.
     /// </summary>
     /// <remarks>Last Update: 2013-11-16</remarks>
-    public class Matrix : Algebraic<Matrix>, Euclidian<Matrix, Double>, Cloneable<Matrix>
+    public class Matrix : Algebraic<Matrix>, Euclidean<Matrix, Double>, Cloneable<Matrix>
     {
         #region Class Definitions...
 

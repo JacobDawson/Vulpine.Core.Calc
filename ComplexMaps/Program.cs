@@ -37,7 +37,7 @@ namespace ComplexMaps
 
             Console.WriteLine("Drawing Recprical Map");
             bmp = new Bitmap(width, height);
-            DrawFunction(bmp, x => x.Recp());
+            DrawFunction(bmp, x => x.Inv());
             bmp.Save("recprical_map.png");
             bmp.Dispose();
 
@@ -109,7 +109,7 @@ namespace ComplexMaps
 
             Console.WriteLine("Drawing Inverse Sine Map");
             bmp = new Bitmap(width, height);
-            DrawFunction(bmp, x => Cmplx.Sin(x.Recp()));
+            DrawFunction(bmp, x => Cmplx.Sin(x.Inv()));
             bmp.Save("invsin_map.png");
             bmp.Dispose();
 

@@ -22,8 +22,8 @@ namespace Vulpine.Core.Calc.Functions
     /// aproximate more complicated functions, as they are eayser to work with.
     /// </summary>
     /// <remarks>Last Update: 2013-11-20</remarks>
-    public class Polynomial : Algebraic<Polynomial>, Cloneable<Polynomial>,
-        Function<Double>, Function<Cmplx>, Function<Matrix>
+    public class Polynomial : Algebraic<Polynomial>, Cloneable<Polynomial>
+        //Function<Double>, Function<Cmplx>, Function<Matrix>
     {
         #region Class Definitions...
 

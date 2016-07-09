@@ -1,11 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Vulpine.Core.Data;
-using Vulpine.Core.Data.Exceptions;
-using Vulpine.Core.Calc.Exceptions;
 
 namespace Vulpine.Core.Calc.Matrices
 {
@@ -17,8 +14,8 @@ namespace Vulpine.Core.Calc.Matrices
     /// In this library, vectors differ from points in that points are immutable
     /// where as vectors are not.
     /// </summary>
-    /// <remarks>Last Update: 2013-09-16</remarks>
-    public class Vector : Euclidian<Vector, Double>, Cloneable<Vector>
+    /// <remarks>Last Update: 2016-07-09</remarks>
+    public class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, ICloneable, IFormattable
     {
         #region Class Deffinitions...
 
@@ -30,12 +27,10 @@ namespace Vulpine.Core.Calc.Matrices
         /// the vector are initialy set to zero.
         /// </summary>
         /// <param name="length">The lenght of the vector</param>
-        /// <exception cref="ArgRangeExcp">If the length of 
-        /// the vector is less than one</exception>
         public Vector(int length)
         {
             //creats a vector with length atleast one
-            ArgRangeExcp.Atleast("length", length, 1);
+            if (length < 1) length = 1;
             vector = new double[length];
 
             //intiialises the vector to all zeroes
@@ -46,17 +41,17 @@ namespace Vulpine.Core.Calc.Matrices
         /// Constructs a new vector from a set of values.
         /// </summary>
         /// <param name="vals">The values of the vector</param>
-        /// <exception cref="ArgRangeExcp">If the length of
+        /// <exception cref="ArgumentException">If the length of
         /// the vector is less than one</exception>
         public Vector(params double[] vals)
         {
             //checks for valid length
-            ArgRangeExcp.Atleast("vals.Length", vals.Length, 1);
+            if (vals.Length < 1) throw new ArgumentException();
 
             //copies the values into the vector
             vector = new double[vals.Length];
             for (int i = 0; i < vals.Length; i++)
-            vector[i] = vals[i];
+                vector[i] = vals[i];
         }
 
         /// <summary>
@@ -72,7 +67,7 @@ namespace Vulpine.Core.Calc.Matrices
             //copies the values into the vector
             vector = new double[length];
             for (int i = 0; i < length; i++)
-            vector[i] = other.vector[i];
+                vector[i] = other.vector[i];
         }
 
         /// <summary>
@@ -80,7 +75,7 @@ namespace Vulpine.Core.Calc.Matrices
         /// the corisponding copy constructor.
         /// </summary>
         /// <returns>A copy of the vector</returns>
-        public Vector Clone()
+        public object Clone()
         {
             //calls upon the copy constructor
             return new Vector(this);
@@ -93,8 +88,16 @@ namespace Vulpine.Core.Calc.Matrices
         /// <returns>The vector as a string</returns>
         public override string ToString()
         {
+            //NOTE: Expand this...
+
             //reports the dimentions of the vector
             return String.Format("Vector[{0}]", vector.Length);
+        }
+
+
+        public string ToString(string format, IFormatProvider provider)
+        {
+            return null;
         }
 
         #endregion /////////////////////////////////////////////////////////////
@@ -104,7 +107,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// <summary>
         /// Represents the length, or number of elements,
         /// present in the vector. Also known as the dimention.
-        /// Read-Only.
         /// </summary>
         public int Length
         {
@@ -132,11 +134,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="index">Position of desired element</param>
         /// <returns>The desired element</returns>
-        /// <exception cref="ArgRangeExcp">If the index is
+        /// <exception cref="ArgumentOutOfRangeException">If the index is
         /// outside the bounds of the vector</exception>
         public double GetElement(int index)
         {
-            ArgRangeExcp.Check("index", index, vector.Length - 1);
+            if (index < 0 || index >= vector.Length)
+                throw new ArgumentOutOfRangeException("index");
             return vector[index];
         }
 
@@ -145,11 +148,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="index">Position of the element</param>
         /// <param name="value">Value to be set</param>
-        /// <exception cref="ArgRangeExcp">If the index is
+        /// <exception cref="ArgumentOutOfRangeException">If the index is
         /// outside the bounds of the vector</exception>
         public void SetElement(int index, double value)
         {
-            ArgRangeExcp.Check("index", index, vector.Length - 1);
+            if (index < 0 || index >= vector.Length)
+                throw new ArgumentOutOfRangeException("index");
             vector[index] = value;
         }
 
@@ -159,29 +163,23 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="index">Position of desired element</param>
         /// <returns>The desired element</returns>
-        /// <exception cref="ArgRangeExcp">If the index is
+        /// <exception cref="ArgumentOutOfRangeException">If the index is
         /// less than zero</exception>
         public double GetExtended(int index)
         {
-            ArgRangeExcp.Atleast("index", index, 0);
+            if (index < 0) throw new ArgumentOutOfRangeException("index");
             if (index >= vector.Length) return 0.0;
             else return vector[index];
         }
 
         /// <summary>
-        /// Copies the vector into an array of floating points.
+        /// Generates an enumeration of all the values in the vector.
         /// </summary>
-        /// <returns>The vector as an array</returns>
-        public double[] ToArray()
+        /// <returns>An enumeration of the vector</returns>
+        public IEnumerator<Double> GetEnumerator()
         {
-            //makes a deep copy inorder to protect the vector
-            double[] copy = new double[vector.Length];
-
             for (int i = 0; i < vector.Length; i++)
-            copy[i] = vector[i];
-
-            //returnes the newly copied array
-            return copy;
+                yield return vector[i];
         }
 
         #endregion /////////////////////////////////////////////////////////////
@@ -190,46 +188,48 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Generates a new vector that is the sum of the current vector 
-        /// and a second vector. It overloads the (+) opperator.
+        /// and a second vector.
         /// </summary>
         /// <param name="v">The second vector</param>
         /// <returns>The sum of the two vectors</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are of
+        /// <remarks>It overloads the (+) opperator</remarks>
+        /// <exception cref="ArgumentSizeException">If the vectors are of
         /// differing length</exception>
         public Vector Add(Vector v)
         {
             //checks that the vectors are the same length
-            VectorLengthExcp.Check(v.Length, this.Length);
+            if (v.Length != this.Length) throw new ArgumentSizeException("v");
 
             //creates a new vector to store the result
             Vector output = new Vector(vector.Length);
 
             //builds the resultant vector
             for (int i = 0; i < vector.Length; i++)
-            output.vector[i] = this.vector[i] + v.vector[i];
+                output.vector[i] = this.vector[i] + v.vector[i];
 
             return output;
         }
 
         /// <summary>
         /// Generates a new vector that is the diffrence of the current
-        /// vector and a second vector. It overloads the (-) opperator.
+        /// vector and a second vector.
         /// </summary>
         /// <param name="v">The second vector</param>
         /// <returns>The diffrence of the two vectors</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are of
+        /// <remarks>It overloads the (-) opperator</remarks>
+        /// <exception cref="ArgumentSizeException">If the vectors are of
         /// differing length</exception>
         public Vector Sub(Vector v)
         {
             //checks that the vectors are the same length
-            VectorLengthExcp.Check(v.Length, this.Length);
+            if (v.Length != this.Length) throw new ArgumentSizeException("v");
 
             //creates a new vector to store the result
             Vector output = new Vector(vector.Length);
 
             //builds the resultant vector
             for (int i = 0; i < vector.Length; i++)
-            output.vector[i] = this.vector[i] - v.vector[i];
+                output.vector[i] = this.vector[i] - v.vector[i];
 
             return output;
         }
@@ -237,23 +237,24 @@ namespace Vulpine.Core.Calc.Matrices
         /// <summary>
         /// Computes the dot product, or inner product, of the curent
         /// vector and a second given vector. The result is a floating
-        /// point scalar. It overloads the (*) opperator.
+        /// point scalar.
         /// </summary>
         /// <param name="v">The second vector</param>
         /// <returns>The dot procuct of the two vectors</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are of
+        /// <remarks>It overloads the (*) opperator</remarks>
+        /// <exception cref="ArgumentSizeException">If the vectors are of
         /// differing length</exception>
         public double Mult(Vector v)
         {
             //checks that the vectors are the same length
-            VectorLengthExcp.Check(v.Length, this.Length);
+            if (v.Length != this.Length) throw new ArgumentSizeException("v");
 
             //used to store the result
             double output = 0.0;
 
             //calcualtes the sum of the product
             for (int i = 0; i < vector.Length; i++)
-            output += this.vector[i] * v.vector[i];
+                output += this.vector[i] * v.vector[i];
 
             return output;
         }
@@ -261,11 +262,11 @@ namespace Vulpine.Core.Calc.Matrices
         /// <summary>
         /// Computes the product of a vector and a floating point scalar.
         /// This has the effect of multiplying the vector's magnitude
-        /// by the same amount. It overloads the (*) and (/) opperators,
-        /// respectivly.
+        /// by the same amount.
         /// </summary>
         /// <param name="s">Value by which to scale the vector</param>
         /// <returns>The product of this vector and a scalar</returns>
+        /// <remarks>It overloads the (*) and (/) opperators, respectivly</remarks>
         public Vector Mult(double s)
         {
             //creates a new vector to store the result
@@ -273,14 +274,14 @@ namespace Vulpine.Core.Calc.Matrices
 
             //multiplies each element componentwise
             for (int i = 0; i < vector.Length; i++)
-            output.vector[i] = this.vector[i] * s;
+                output.vector[i] = this.vector[i] * s;
 
             return output;
         }
 
         #endregion /////////////////////////////////////////////////////////////
 
-        #region Metric Implementation...
+        #region Special Methods...
 
         /// <summary>
         /// Calculates the magnitude of the current vector. The magnitude
@@ -294,7 +295,7 @@ namespace Vulpine.Core.Calc.Matrices
 
             //computes the sum of the squares
             for (int i = 0; i < vector.Length; i++)
-            output += this.vector[i] * this.vector[i];
+                output += this.vector[i] * this.vector[i];
 
             //returns the square root of the sum
             return Math.Sqrt(output);
@@ -306,12 +307,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="other">The other vector</param>
         /// <returns>The distance from the other vector</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are 
+        /// <exception cref="ArgumentSizeException">If the vectors are 
         /// of differing length</exception>
         public double Dist(Vector other)
         {
             //checks that the vectors are the same length
-            VectorLengthExcp.Check(other.Length, this.Length);
+            if (other.Length != this.Length) throw new ArgumentSizeException("other");
 
             double temp = 0.0;
             double output = 0.0;
@@ -327,66 +328,31 @@ namespace Vulpine.Core.Calc.Matrices
             return Math.Sqrt(output);
         }
 
-        #endregion /////////////////////////////////////////////////////////////
-
-        #region Special Methods...
-
-        /// <summary>
-        /// Calculates the magnitude of the given vector. The magnitude
-        /// is equivlent to the distance from the origin or zero vector.
-        /// </summary>
-        /// <param name="v">The vector in question</param>
-        /// <returns>The magnitude of the vector</returns>
-        public static double Mag(Vector v)
-        {
-            //the magnitude is the sum of the squares
-            double temp = v.Mult(v);
-            return Math.Sqrt(temp);
-        }
-
         /// <summary>
         /// Produces a new normalised version of the curent vector, by
         /// seting it's magnitude to 1, preserving the vector's direction.
-        /// It overloads the (~) opperator.
         /// </summary>
-        /// <param name="v">The vector in question</param>
         /// <returns>The normalised vector</returns>
-        public static Vector Norm(Vector v)
+        /// <remarks>It overloads the (~) opperator</remarks>
+        public Vector Norm()
         {
             //uses the inverse magnitude to normalise
-            double bottom = 1.0 / v.Mag();
-            return v.Mult(bottom);     
+            double bottom = 1.0 / this.Mag();
+            return this.Mult(bottom);
         }
 
         /// <summary>
-        /// Determins the eucildian distance between two vectors.
+        /// Computes the angle that is formed between the current vector 
+        /// and another given vector. The output ranges between 0 and PI, 
+        /// inclusive.
         /// </summary>
-        /// <param name="v">The first vector</param>
-        /// <param name="w">The second vector</param>
-        /// <returns>The distance between the two vectors</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are 
-        /// of differing length</exception>
-        public static double Dist(Vector v, Vector w)
-        {
-            //computes magnitude of the diffrence
-            Vector temp = v.Sub(w);
-            return Mag(temp);
-        }
-
-        /// <summary>
-        /// Computes the angle that is formed between two vectors.
-        /// The output ranges between 0 and PI, inclusive.
-        /// </summary>
-        /// <param name="v">The first vector</param>
-        /// <param name="w">The second vector</param>
+        /// <param name="other">The second vector</param>
         /// <returns>The angle between the two vectors</returns>
-        /// <exception cref="VectorLengthExcp">If the vectors are 
-        /// of differing length</exception>
-        public static double Angle(Vector v, Vector w)
+        public double Angle(Vector other)
         {
             //computes the angle using the dot product
-            Vector nv = Norm(v);
-            Vector nw = Norm(w);
+            Vector nv = this.Norm();
+            Vector nw = other.Norm();
             return Math.Acos(nv.Mult(nw));
         }
 
@@ -428,11 +394,11 @@ namespace Vulpine.Core.Calc.Matrices
 
         //refrences the Norm(v) function
         public static Vector operator ~(Vector v)
-        { return Vector.Norm(v); }
+        { return v.Norm(); }
 
         #endregion /////////////////////////////////////////////////////////////
 
-        object ICloneable.Clone()
-        { return new Vector(this); }
+        IEnumerator IEnumerable.GetEnumerator()
+        { return GetEnumerator(); }
     }
 }

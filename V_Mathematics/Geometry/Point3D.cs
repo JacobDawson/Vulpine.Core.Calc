@@ -17,7 +17,7 @@ namespace Vulpine.Core.Calc.Geometry
     /// it provides methods to convert to and from spherical and cylindrical cordinates.
     /// </summary>
     /// <remarks>Last Update: 2013-09-16</remarks>
-    public struct Point3D : Euclidian<Point3D, Double>, IComparable<Point3D>
+    public struct Point3D : Euclidean<Point3D, Double>, IComparable<Point3D>
     {
         #region Class Deffinitions...
 

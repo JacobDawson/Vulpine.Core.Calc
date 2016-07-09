@@ -39,13 +39,13 @@
     <Compile Include="Exceptions\ArgBoundsException.cs" />
     <Compile Include="Exceptions\InvBracketExcp.cs" />
     <Compile Include="Exceptions\SquareMatrixExcp.cs" />
-    <Compile Include="Functions.cs" />
     <Compile Include="Exceptions\MathException.cs" />
     <Compile Include="Exceptions\VectorLengthExcp.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="Functions\Polynomial.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Math.cs" />
+    <Compile Include="ArgumentSizeException.cs" />
     <Compile Include="Matrices\Matrix.cs" />
     <Compile Include="Matrices\MatrixSparse.cs" />
     <Compile Include="Geometry\Point2D.cs" />

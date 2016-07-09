@@ -17,7 +17,7 @@ namespace Vulpine.Core.Calc.Numbers
     /// real numbers into a two-dimentional feild that is algebraicly complete.
     /// </summary>
     /// <remarks>Last Update: 2013-09-18</remarks>
-    public struct Cmplx : Algebraic<Cmplx>, Euclidian<Cmplx, Double>
+    public struct Cmplx : Algebraic<Cmplx>, Euclidean<Cmplx, Double>
     {
         #region Class Definitions...
 
@@ -225,7 +225,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// Computes the multiplicitve inverse of the complex number. 
         /// </summary>
         /// <returns>The inverse of the complex number</returns>
-        public Cmplx Recp()
+        public Cmplx Inv()
         {
             //uses the conjgate to invert the number
             double temp = (real * real) + (imag * imag);
@@ -684,7 +684,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         #endregion //////////////////////////////////////////////////////////////
 
-        Cmplx Spacial<Cmplx, double>.Mult(double scalar)
+        Cmplx Euclidean<Cmplx, Double>.Mult(double scalar)
         {
             return this.Mult((Cmplx)scalar);
         }

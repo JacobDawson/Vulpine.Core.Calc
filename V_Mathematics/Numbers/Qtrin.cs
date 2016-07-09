@@ -18,7 +18,7 @@ namespace Vulpine.Core.Calc.Numbers
     /// be taken when using algbracic laws that imply comunitivity.
     /// </summary>
     /// <remarks>Last Update: 2013-09-22</remarks>
-    public struct Qtrin : Algebraic<Qtrin>, Euclidian<Qtrin, Double>
+    public struct Qtrin : Algebraic<Qtrin>, Euclidean<Qtrin, Double>
     {
         #region Class Definitions...
 
@@ -250,7 +250,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// order, yeilds the number one.
         /// </summary>
         /// <returns>The inverse of the quaternion</returns>
-        public Qtrin Recp()
+        public Qtrin Inv()
         {
             //computes the sum of the squares of the quaternion
             double norm = (real * real) + (icof * icof);
@@ -396,7 +396,7 @@ namespace Vulpine.Core.Calc.Numbers
         public Qtrin Div(Qtrin q)
         {
             //multiplies by the recprical on the right
-            return Mult(q.Recp());
+            return Mult(q.Inv());
         }
 
         #endregion //////////////////////////////////////////////////////////
@@ -498,7 +498,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         #endregion ////////////////////////////////////////////////////////////
 
-        Qtrin Spacial<Qtrin, double>.Mult(double scalar)
+        Qtrin Euclidean<Qtrin, Double>.Mult(double scalar)
         { return this.Mult((Qtrin)scalar); }
 
     }

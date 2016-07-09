@@ -88,7 +88,7 @@ namespace Vulpine.Core.Calc
     /// <typeparam name="V">Type of Vector Space</typeparam>
     /// <typeparam name="F">Feild of the Vector Space</typeparam>
     /// <remarks>Last Update: 2014-10-08</remarks>
-    public interface Spacial<V, in F> where V : Spacial<V, F>
+    public interface Euclidean<V, in F> : Metrizable<V> where V : Euclidean<V, F>
     {
         /// <summary>
         /// Adds the opperand to the curent vector and returns the result.
@@ -120,15 +120,4 @@ namespace Vulpine.Core.Calc
         /// some reason unable to preform the multiplication</exception>
         V Mult(F scalar);
     }
-
-    /// <summary>
-    /// Represents a class of objects that are both Vector Spaces and define
-    /// a Metric. It is mostly provided as a convience, as the two interfaces
-    /// are often pared together.
-    /// </summary>
-    /// <typeparam name="V">Type of Vector Space</typeparam>
-    /// <typeparam name="F">Feild of the Vector Space</typeparam>
-    public interface Euclidian<V, F> : Spacial<V, F>, Metrizable<V>
-        where V : Euclidian<V, F> { }
-
 }
