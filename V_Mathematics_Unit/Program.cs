@@ -6,7 +6,7 @@ using System.Reflection;
 
 using NUnit.Unofficial;
 
-namespace CVL_Mathematics_Test
+namespace Vulpine_Core_Calc_Tests
 {
     class Program
     {
@@ -24,8 +24,8 @@ namespace CVL_Mathematics_Test
             Console.WriteLine();
             runner.RunAllTests();
 
-            Console.WriteLine();
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine();
             Console.WriteLine("Press any key to quit.");
             Console.ReadKey(true);
         }

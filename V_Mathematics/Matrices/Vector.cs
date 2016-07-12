@@ -82,22 +82,69 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Generates a string representation of the vector, displaying
-        /// it's sise and spatial dimention.
+        /// Generates a string representation of the vector, using the default
+        /// formating for floating point values. If the vector is larger than 
+        /// 4 elements, elipisis notation is used. 
         /// </summary>
-        /// <returns>The vector as a string</returns>
+        /// <returns>The vector fomated as a string</returns>
         public override string ToString()
         {
-            //NOTE: Expand this...
-
-            //reports the dimentions of the vector
-            return String.Format("Vector[{0}]", vector.Length);
+            //calls upon the method below
+            return ToString(null, null);
         }
 
+        /// <summary>
+        /// Generates a formated string representation of the vector, suplying
+        /// the format information to each element of the vector in turn. If
+        /// the vector is larger than 4 elements, elipisis notation is used.
+        /// </summary>
+        /// <param name="format">A numeric format string</param>
+        /// <returns>The vector fomated as a string</returns>
+        public string ToString(string format)
+        {
+            //calls upon the method below
+            return ToString(format, null);
+        }
 
+        /// <summary>
+        /// Generates a formated string representation of the vector, suplying
+        /// the format information to each element of the vector in turn. If
+        /// the vector is larger than 4 elements, elipisis notation is used.
+        /// </summary>
+        /// <param name="format">A numeric format string</param>
+        /// <param name="provider">An object that suplies formating information</param>
+        /// <returns>The vector fomated as a string</returns>
         public string ToString(string format, IFormatProvider provider)
         {
-            return null;
+            StringBuilder sb = new StringBuilder();
+            sb.Append("[");
+
+            //we are garenteed to have atleast one element
+            sb.Append(vector[0].ToString(format, provider));
+
+            if (vector.Length < 5)
+            {
+                for (int i = 1; i < vector.Length; i++)
+                {
+                    sb.Append(", ");
+                    sb.Append(vector[i].ToString(format, provider));
+                }
+            }
+            else
+            {
+                for (int i = 1; i < 3; i++)
+                {
+                    sb.Append(", ");
+                    sb.Append(vector[i].ToString(format, provider));
+                }
+
+                sb.Append(" ... ");
+                double last = vector[vector.Length - 1];
+                sb.Append(last.ToString(format, provider));
+            }
+
+            sb.Append("]");
+            return sb.ToString();
         }
 
         #endregion /////////////////////////////////////////////////////////////
@@ -193,12 +240,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="v">The second vector</param>
         /// <returns>The sum of the two vectors</returns>
         /// <remarks>It overloads the (+) opperator</remarks>
-        /// <exception cref="ArgumentSizeException">If the vectors are of
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public Vector Add(Vector v)
         {
             //checks that the vectors are the same length
-            if (v.Length != this.Length) throw new ArgumentSizeException("v");
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
 
             //creates a new vector to store the result
             Vector output = new Vector(vector.Length);
@@ -217,12 +264,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="v">The second vector</param>
         /// <returns>The diffrence of the two vectors</returns>
         /// <remarks>It overloads the (-) opperator</remarks>
-        /// <exception cref="ArgumentSizeException">If the vectors are of
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public Vector Sub(Vector v)
         {
             //checks that the vectors are the same length
-            if (v.Length != this.Length) throw new ArgumentSizeException("v");
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
 
             //creates a new vector to store the result
             Vector output = new Vector(vector.Length);
@@ -242,12 +289,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="v">The second vector</param>
         /// <returns>The dot procuct of the two vectors</returns>
         /// <remarks>It overloads the (*) opperator</remarks>
-        /// <exception cref="ArgumentSizeException">If the vectors are of
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public double Mult(Vector v)
         {
             //checks that the vectors are the same length
-            if (v.Length != this.Length) throw new ArgumentSizeException("v");
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
 
             //used to store the result
             double output = 0.0;
@@ -307,12 +354,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="other">The other vector</param>
         /// <returns>The distance from the other vector</returns>
-        /// <exception cref="ArgumentSizeException">If the vectors are 
+        /// <exception cref="ArgumentShapeException">If the vectors are 
         /// of differing length</exception>
         public double Dist(Vector other)
         {
             //checks that the vectors are the same length
-            if (other.Length != this.Length) throw new ArgumentSizeException("other");
+            if (other.Length != this.Length) throw new ArgumentShapeException("other");
 
             double temp = 0.0;
             double output = 0.0;
@@ -354,6 +401,54 @@ namespace Vulpine.Core.Calc.Matrices
             Vector nv = this.Norm();
             Vector nw = other.Norm();
             return Math.Acos(nv.Mult(nw));
+        }
+
+        /// <summary>
+        /// Converts the vector to a probability distribution by dividing
+        /// each term by the sum of absolute values. This is the same as treating
+        /// the elemets as weights and then normalising the weights. It has the
+        /// advantage that it preserves vectors that are already probability 
+        /// distributions.
+        /// </summary>
+        /// <returns>The vector as a probablity distribution</returns>
+        public Vector ToProb()
+        {
+            //stores the new vector and the sum of the terms
+            Vector dist = new Vector(vector.Length);
+            double sum = 0.0;
+
+            //takes the absolute value and computes the sum
+            for (int i = 0; i < vector.Length; i++)
+            {
+                dist.vector[i] = Math.Abs(vector[i]);
+                sum += dist.vector[i];
+            }
+
+            //divides by the sum to normalise the vector
+            for (int i = 0; i < vector.Length; i++)
+                dist.vector[i] = dist.vector[i] / sum;
+
+            return dist;
+        }
+
+        public Vector Softmax()
+        {
+            //stores the new vector and the sum of the terms
+            Vector dist = new Vector(vector.Length);
+            double sum = 0.0;
+
+            //takes the absolute value and computes the sum
+            for (int i = 0; i < vector.Length; i++)
+            {
+                dist.vector[i] = Math.Exp(vector[i]);
+                sum += dist.vector[i];
+            }
+
+            //divides by the sum to normalise the vector
+            for (int i = 0; i < vector.Length; i++)
+                dist.vector[i] = dist.vector[i] / sum;
+
+            return dist;
         }
 
         #endregion /////////////////////////////////////////////////////////////

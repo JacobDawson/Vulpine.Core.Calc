@@ -229,6 +229,18 @@ namespace Vulpine.Core.Calc
             }
         }
 
+        public static double Sigmoid(double x)
+        {
+            //calculates the standard logistic funciton
+            return 1.0 / (1.0 - Math.Exp(-x));
+        }
+
+        public static Cmplx Sigmoid(Cmplx x)
+        {
+            //calculates the standard logistic funciton
+            return 1.0 / (1.0 - Cmplx.Exp(-x));
+        }
+
 
 
 
