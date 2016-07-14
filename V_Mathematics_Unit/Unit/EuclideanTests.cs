@@ -11,22 +11,8 @@ using Vulpine.Core.Calc;
 
 namespace Vulpine_Core_Calc_Tests.Unit
 {
-    public abstract class EuclideanTests
+    public abstract class EuclideanTests : MetricTests
     {
-        /// <summary>
-        /// Obtains a sample vector for use in running tests.
-        /// </summary>
-        /// <param name="i">The index of the sample to obtain</param>
-        /// <returns>A sample vector sutable for testing</returns>
-        public abstract dynamic GetSample(int i);
-
-        /// <summary>
-        /// Obtains the additive ininty, or zero vector for the set of
-        /// vectors that are being tested.
-        /// </summary>
-        /// <returns>The zero vector</returns>
-        public abstract dynamic GetZero();
-
         [TestCase(1, 2, 3)]
         [TestCase(2, 3, 4)]
         public void Add_VariousInputs_IsAssosiative(int xi, int yi, int zi)

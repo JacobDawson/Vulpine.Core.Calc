@@ -229,16 +229,34 @@ namespace Vulpine.Core.Calc
             }
         }
 
-        public static double Sigmoid(double x)
+        /// <summary>
+        /// Computes the sigmoid funciton, which takes any value on the real
+        /// number line and maps it to the interval [0, 1], this is known
+        /// as flatening the funciton.
+        /// </summary>
+        /// <param name="x">Input to the sigmoid function</param>
+        /// <returns>The result of the sigmoid funciton</returns>
+        public static double Sgmd(double x)
         {
             //calculates the standard logistic funciton
-            return 1.0 / (1.0 - Math.Exp(-x));
+            return 1.0 / (1.0 + Math.Exp(-x));
         }
 
-        public static Cmplx Sigmoid(Cmplx x)
+        /// <summary>
+        /// Computes the inverse sigmoid funciton, which undoes the action
+        /// taken by the sigmoid funciton. If the input is outside the range
+        /// of zero to one, the funciton maps the value to infinity.
+        /// </summary>
+        /// <param name="x">Input to the inverse sigmoid funciton</param>
+        /// <returns>The result of the inverse sigmoid funciton</returns>
+        public static double Asgmd(double x)
         {
-            //calculates the standard logistic funciton
-            return 1.0 / (1.0 - Cmplx.Exp(-x));
+            //takes care of the extrem cases
+            if (x <= 0.0) return Double.NegativeInfinity;
+            if (x >= 1.0) return Double.PositiveInfinity;
+
+            double temp = x / (x - 1);
+            return Math.Log(-x);
         }
 
 

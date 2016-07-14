@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Vulpine_Core_Calc_Tests
+namespace Vulpine_Core_Calc_Tests.AddOns
 {
     public static class Generators
     {

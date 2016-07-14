@@ -17,6 +17,9 @@ namespace Vulpine.Core.Calc.Matrices
     /// <remarks>Last Update: 2016-07-09</remarks>
     public class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, ICloneable, IFormattable
     {
+        //NOTE: Consider adding Contatinaiton and Subvector methods
+        //this would be helpfull for nural-nets that build vectors
+
         #region Class Deffinitions...
 
         //containes the values for the vector
@@ -398,9 +401,9 @@ namespace Vulpine.Core.Calc.Matrices
         public double Angle(Vector other)
         {
             //computes the angle using the dot product
-            Vector nv = this.Norm();
-            Vector nw = other.Norm();
-            return Math.Acos(nv.Mult(nw));
+            double a = this.Mult(other);
+            double b = this.Mag() * other.Mag();
+            return Math.Acos(a / b);
         }
 
         /// <summary>
@@ -431,6 +434,13 @@ namespace Vulpine.Core.Calc.Matrices
             return dist;
         }
 
+        /// <summary>
+        /// Converts the vector to a probablity distribution by taking the
+        /// exponential of each term and dividing by their sum. This is similar
+        /// to using the sigmoid function for a single value. It dose not
+        /// preserve vectors that are already probability distributions.
+        /// </summary>
+        /// <returns>The vector as a probablity distribution</returns>
         public Vector Softmax()
         {
             //stores the new vector and the sum of the terms
