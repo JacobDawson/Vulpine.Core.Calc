@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit_Unofficial", "..\NUni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathConsole", "MathConsole\MathConsole.csproj", "{D8915F82-D2F1-41CB-8EED-E3E28F738349}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandTests", "RandTests\RandTests.csproj", "{DC9C85AE-9C8A-457C-96AC-BF16FA769532}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,16 @@ Global
 		{D8915F82-D2F1-41CB-8EED-E3E28F738349}.Release|Mixed Platforms.Build.0 = Release|x86
 		{D8915F82-D2F1-41CB-8EED-E3E28F738349}.Release|x86.ActiveCfg = Release|x86
 		{D8915F82-D2F1-41CB-8EED-E3E28F738349}.Release|x86.Build.0 = Release|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Debug|x86.ActiveCfg = Debug|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Debug|x86.Build.0 = Debug|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Release|Any CPU.ActiveCfg = Release|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Release|x86.ActiveCfg = Release|x86
+		{DC9C85AE-9C8A-457C-96AC-BF16FA769532}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,18 +2,20 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{05D49FA0-CBF3-40D6-B92C-F2D71A0EB587}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{DC9C85AE-9C8A-457C-96AC-BF16FA769532}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Vulpine.Core.Calc</RootNamespace>
-    <AssemblyName>V_Mathematics</AssemblyName>
+    <RootNamespace>RandTests</RootNamespace>
+    <AssemblyName>RandTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,7 +24,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,45 +36,44 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Exceptions\ArgBoundsException.cs" />
-    <Compile Include="Exceptions\InvBracketExcp.cs" />
-    <Compile Include="Exceptions\SquareMatrixExcp.cs" />
-    <Compile Include="Exceptions\MathException.cs" />
-    <Compile Include="Exceptions\VectorLengthExcp.cs" />
-    <Compile Include="Delegates.cs" />
-    <Compile Include="Functions\Polynomial.cs" />
-    <Compile Include="Interfaces.cs" />
-    <Compile Include="Math.cs" />
-    <Compile Include="ArgumentSizeException.cs" />
-    <Compile Include="Matrices\Matrix.cs" />
-    <Compile Include="Matrices\MatrixSparse.cs" />
-    <Compile Include="Geometry\Point2D.cs" />
-    <Compile Include="Geometry\Point3D.cs" />
-    <Compile Include="Matrices\Vector.cs" />
-    <Compile Include="Numbers\Cmplx.cs" />
-    <Compile Include="Numbers\Qtrin.cs" />
-    <Compile Include="Geometry\Rectangle.cs" />
-    <Compile Include="Numeric\Algorithim.cs" />
-    <Compile Include="Numeric\Optimizer.cs" />
-    <Compile Include="Numeric\Result.cs" />
-    <Compile Include="Numeric\RootFinder.cs" />
-    <Compile Include="Numeric\TestExtentions.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RandGen\RandLCG.cs" />
-    <Compile Include="RandGen\RandMT.cs" />
-    <Compile Include="RandGen\RandR30.cs" />
-    <Compile Include="RandGen\RandXOR.cs" />
-    <Compile Include="RandGen\VRandom.cs" />
-    <Compile Include="StatRunner.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="RandFile.cs" />
+    <Compile Include="RandSystem.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Ideas.txt" />
+    <Content Include="RandomBytes.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\V_DataStruk\V_DataStruk\V_DataStruk.csproj">
       <Project>{C2C84BBA-4CBD-4DA1-9E1E-F9C964196206}</Project>
       <Name>V_DataStruk</Name>
     </ProjectReference>
+    <ProjectReference Include="..\V_Mathematics\V_Mathematics.csproj">
+      <Project>{05D49FA0-CBF3-40D6-B92C-F2D71A0EB587}</Project>
+      <Name>V_Mathematics</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

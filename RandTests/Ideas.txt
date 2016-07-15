@@ -1,0 +1,49 @@
+﻿
+Ideas for testing the "randomness" of an PRNG
+
+1. Generate a binary file contaning the output of the PRNG to be fed into
+   the Diehard battery of tests. The p-values generated should be normaly
+   distributed on the interval [0...1)
+
+2. Take the binary file generated and atempt to compress it using 7-zip's
+   maximum compression function. If it is turly random, it won't be able
+   to compress very mutch.
+
+3. Convert the output bits to a black and white image file. Visual inspection
+   of the file should reveal any potentialy repeating paterns.
+
+4. Generate random numbers in the range of 0 to some number N, and note the
+   occorence of each number to check that it is uniformaly distribuited.
+
+5. Generate random numbers in the range of 0 to some number N, and note the
+   number of times duplicates, or triplicates, of each number apear, these
+   should follow known probabilites you can check agenst.
+
+
+=============================================================================================
+
+
+-  I wan't to implement one of the XOR generators, however, I am not shure
+   weather I should use the 32-bit version, or the 64-bit verison.
+   
+-  I should defniatly be able to make a Rule 30 generator. I just don't know
+   how big to make the state space. If I make it 32-bit the rule's pattern should
+   be visible in my images, but then it's probably not that good as a PRNG.
+   
+   
+   
+   
+   
+   
+Truly Random 32-bit Seeds Currticy of RANDOM.org   
+   
+	1ec3dbb8  =  516152248
+	d61ffc16  =  -702546922
+	b0b028db  =  -1330632485
+	b7c5e73c  =  -1211766980
+	59408e06  =  1497402886
+	a5c0545e  =  -1514122146
+	2cf78d56  =  754421078
+	5431b611  =  1412544017
+
+
