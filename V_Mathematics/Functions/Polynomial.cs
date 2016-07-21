@@ -22,7 +22,7 @@ namespace Vulpine.Core.Calc.Functions
     /// aproximate more complicated functions, as they are eayser to work with.
     /// </summary>
     /// <remarks>Last Update: 2013-11-20</remarks>
-    public class Polynomial : Algebraic<Polynomial>, Cloneable<Polynomial>
+    public class Polynomial : Algebraic<Polynomial>
         //Function<Double>, Function<Cmplx>, Function<Matrix>
     {
         #region Class Definitions...
@@ -511,8 +511,5 @@ namespace Vulpine.Core.Calc.Functions
         { return new Polynomial(a); }
 
         #endregion ////////////////////////////////////////////////////////////
-
-        object ICloneable.Clone()
-        { return new Polynomial(this); }
     }
 }

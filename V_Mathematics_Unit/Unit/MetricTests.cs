@@ -14,18 +14,18 @@ namespace Vulpine_Core_Calc_Tests.Unit
     public abstract class MetricTests
     {
         /// <summary>
-        /// Obtains a sample vector for use in running tests.
-        /// </summary>
-        /// <param name="i">The index of the sample to obtain</param>
-        /// <returns>A sample vector sutable for testing</returns>
-        public abstract dynamic GetSample(int i);
-
-        /// <summary>
         /// Obtains the additive ininty, or zero vector for the set of
         /// vectors that are being tested.
         /// </summary>
         /// <returns>The zero vector</returns>
         public abstract dynamic GetZero();
+
+        /// <summary>
+        /// Method which generates samples to be used in tests.
+        /// </summary>
+        /// <param name="i">The index of the sample to obtain</param>
+        /// <returns>A sample vector sutable for testing</returns>
+        public abstract dynamic GetSample(int i);
 
         [TestCase(1)]
         [TestCase(2)]

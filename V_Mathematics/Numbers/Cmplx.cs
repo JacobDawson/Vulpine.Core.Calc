@@ -56,8 +56,8 @@ namespace Vulpine.Core.Calc.Numbers
         /// <param name="v">Vector to convert</param>
         public Cmplx(Vector v)
         {
-            real = v.GetExtended(0);
-            imag = v.GetExtended(1);
+            real = v.GetElement(0);
+            imag = v.GetElement(1);
         }
 
         /// <summary>

@@ -309,19 +309,6 @@ namespace Vulpine.Core.Calc.RandGen
 
                 return new Vector(x, y);
             }
-            else if (dim == 3)
-            {
-                //generates two uniform variables
-                double t = RandDouble(VMath.TAU);
-                double z = RandDouble(-1.0, 1.0);
-
-                //uses the cylindrical equal-area projection
-                double r = Math.Sqrt(1.0 - z * z);
-                double x = r * Math.Cos(t);
-                double y = r * Math.Sin(t);
-
-                return new Vector(x, y, z);
-            }
             else
             {
                 //creates a vector to store our temproary values

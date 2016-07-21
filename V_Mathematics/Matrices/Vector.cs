@@ -15,7 +15,7 @@ namespace Vulpine.Core.Calc.Matrices
     /// where as vectors are not.
     /// </summary>
     /// <remarks>Last Update: 2016-07-09</remarks>
-    public class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, ICloneable, IFormattable
+    public class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, IFormattable
     {
         //NOTE: Consider adding Contatinaiton and Subvector methods
         //this would be helpfull for nural-nets that build vectors
@@ -49,7 +49,7 @@ namespace Vulpine.Core.Calc.Matrices
         public Vector(params double[] vals)
         {
             //checks for valid length
-            if (vals.Length < 1) throw new ArgumentException();
+            if (vals.Length < 1) throw new ArgumentShapeException("vals");
 
             //copies the values into the vector
             vector = new double[vals.Length];
@@ -74,17 +74,6 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Generates a deep copy of the current vector by invoking
-        /// the corisponding copy constructor.
-        /// </summary>
-        /// <returns>A copy of the vector</returns>
-        public object Clone()
-        {
-            //calls upon the copy constructor
-            return new Vector(this);
-        }
-
-        /// <summary>
         /// Generates a string representation of the vector, using the default
         /// formating for floating point values. If the vector is larger than 
         /// 4 elements, elipisis notation is used. 
@@ -93,7 +82,7 @@ namespace Vulpine.Core.Calc.Matrices
         public override string ToString()
         {
             //calls upon the method below
-            return ToString(null, null);
+            return ToString("g5", null);
         }
 
         /// <summary>
@@ -180,17 +169,17 @@ namespace Vulpine.Core.Calc.Matrices
         #region Data Accessors...
 
         /// <summary>
-        /// Obtains the desired element in the vector.
+        /// Obtains the desired element in the vector. If the index
+        /// is greator than the length of the vector, it returns zero.
         /// </summary>
         /// <param name="index">Position of desired element</param>
         /// <returns>The desired element</returns>
         /// <exception cref="ArgumentOutOfRangeException">If the index is
-        /// outside the bounds of the vector</exception>
+        /// negative</exception>
         public double GetElement(int index)
         {
-            if (index < 0 || index >= vector.Length)
-                throw new ArgumentOutOfRangeException("index");
-            return vector[index];
+            if (index < 0) throw new ArgumentOutOfRangeException("index");
+            return (index < vector.Length) ? vector[index] : 0.0;
         }
 
         /// <summary>
@@ -202,24 +191,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// outside the bounds of the vector</exception>
         public void SetElement(int index, double value)
         {
+            //checks for a valid index
             if (index < 0 || index >= vector.Length)
                 throw new ArgumentOutOfRangeException("index");
-            vector[index] = value;
-        }
 
-        /// <summary>
-        /// Obtains the desired element in the vector. If the index
-        /// is greator than the length of the vector, it returns zero.
-        /// </summary>
-        /// <param name="index">Position of desired element</param>
-        /// <returns>The desired element</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If the index is
-        /// less than zero</exception>
-        public double GetExtended(int index)
-        {
-            if (index < 0) throw new ArgumentOutOfRangeException("index");
-            if (index >= vector.Length) return 0.0;
-            else return vector[index];
+            //simply sets the item
+            vector[index] = value;
         }
 
         /// <summary>
@@ -489,6 +466,10 @@ namespace Vulpine.Core.Calc.Matrices
         public static Vector operator /(Vector v, Double s)
         { return v.Mult(1.0 / s); }
 
+        //refrences the Norm(v) function
+        public static Vector operator ~(Vector v)
+        { return v.Norm(); }
+
         //refrences the Mult(-1) function
         public static Vector operator -(Vector v)
         { return v.Mult(-1.0); }
@@ -496,10 +477,6 @@ namespace Vulpine.Core.Calc.Matrices
         //refrences the copy constructor
         public static Vector operator +(Vector v)
         { return new Vector(v); }
-
-        //refrences the Norm(v) function
-        public static Vector operator ~(Vector v)
-        { return v.Norm(); }
 
         #endregion /////////////////////////////////////////////////////////////
 

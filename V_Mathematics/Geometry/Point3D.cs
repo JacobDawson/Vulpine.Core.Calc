@@ -45,9 +45,9 @@ namespace Vulpine.Core.Calc.Geometry
         /// <param name="point">Vector to convert</param>
         public Point3D(Vector point)
         {
-            x = point.GetExtended(0);
-            y = point.GetExtended(1);
-            z = point.GetExtended(2);
+            x = point.GetElement(0);
+            y = point.GetElement(1);
+            z = point.GetElement(2);
         }
 
         /// <summary>

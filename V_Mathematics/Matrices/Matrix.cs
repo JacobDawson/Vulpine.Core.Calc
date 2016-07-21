@@ -1,11 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Vulpine.Core.Data;
-using Vulpine.Core.Data.Exceptions;
-using Vulpine.Core.Calc.Exceptions;
 
 namespace Vulpine.Core.Calc.Matrices
 {
@@ -19,7 +16,8 @@ namespace Vulpine.Core.Calc.Matrices
     /// function that maps one set of vectors into another.
     /// </summary>
     /// <remarks>Last Update: 2013-11-16</remarks>
-    public class Matrix : Algebraic<Matrix>, Euclidean<Matrix, Double>, Cloneable<Matrix>
+    public class Matrix : Algebraic<Matrix>, Euclidean<Matrix, Double>, 
+        IEnumerable<Vector>, IFormattable
     {
         #region Class Definitions...
 
@@ -36,16 +34,11 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="rows">Number of rows in the matrix</param>
         /// <param name="cols">Number of columns in the matrix</param>
-        /// <exception cref="ArgRangeExcp">If either the number of rows or
-        /// columns is less than one</exception>
         public Matrix(int rows, int cols)
         {
             //checks that the size of the matrix is valid
-            ArgRangeExcp.Atleast("rows", rows, 1);
-            ArgRangeExcp.Atleast("cols", cols, 1);
-
-            num_rows = rows;
-            num_cols = cols;
+            num_rows = (rows < 1) ? 1 : rows;
+            num_cols = (cols < 1) ? 1 : cols;
 
             //creates matrix initialised to zero
             matrix = new double[rows * cols];
@@ -60,21 +53,16 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="rows">Number of rows in the matrix</param>
         /// <param name="cols">Number of columns in the matrix</param>
         /// <param name="vals">The values to initialise the matrix</param>
-        /// <exception cref="ArgRangeExcp">If either the number of rows or 
-        /// columns is less than one</exception>
-        /// <exception cref="VectorLengthExcp">If the data given dose not 
+        /// <exception cref="ArgumentShapeException">If the data given dose not 
         /// match the spesified number of rows and colums</exception>
         public Matrix(int rows, int cols, params double[] vals)
         {
             //checks that the size of the matrix is valid
-            ArgRangeExcp.Atleast("rows", rows, 1);
-            ArgRangeExcp.Atleast("cols", cols, 1);
+            num_rows = (rows < 1) ? 1 : rows;
+            num_cols = (cols < 1) ? 1 : cols;
 
             //checks that the values match the dimentions
-            VectorLengthExcp.Check(vals.Length, rows * cols);
-
-            num_rows = rows;
-            num_cols = cols;
+            if (vals.Length < rows * cols) throw new ArgumentShapeException("vals");
 
             //creates matrix using the given values
             matrix = new double[rows * cols];
@@ -100,26 +88,74 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Generates a deep copy of the current matrix by invoking
-        /// the corisponding copy constructor.
-        /// </summary>
-        /// <returns>A copy of the mector</returns>
-        public Matrix Clone()
-        {
-            //calls upon the copy constructor
-            return new Matrix(this);
-        }
-
-        /// <summary>
-        /// Generates a string representation of the matrix, displaying
-        /// the number of rows and columns as it's dimentions.
+        /// Generates a string representation of the matrix, using the default
+        /// formating for floating point values. It shows the complete matrix 
+        /// for matricies that are less than 4x4. For larger matricies, 
+        /// it only reports the dimentions of the matrix.
         /// </summary>
         /// <returns>The matrix as a string</returns>
         public override string ToString()
         {
-            //reports the dimentions of the matrix
-            return String.Format("Matrix[{0}, {1}]", 
-                num_rows, num_cols);
+            //calls upon the method below
+            return ToString("g5", null);
+        }
+
+        /// <summary>
+        /// Generates a formated string representation of the matrix. It shows the 
+        /// complete matrix for matricies that are less than 4x4. For larger matricies, 
+        /// it only reports the dimentions of the matrix.
+        /// </summary>
+        /// <param name="format">A numeric format string</param>
+        /// <returns>The matrix fomated as a string</returns>
+        public string ToString(string format)
+        {
+            //calls upon the method below
+            return ToString(format, null);
+        }
+
+        /// <summary>
+        /// Generates a formated string representation of the matrix. It shows the 
+        /// complete matrix for matricies that are less than 4x4. For larger matricies, 
+        /// it only reports the dimentions of the matrix.
+        /// </summary>
+        /// <param name="format">A numeric format string</param>
+        /// <param name="provider">An object that suplies formating information</param>
+        /// <returns>The matrix fomated as a string</returns>
+        public string ToString(string format, IFormatProvider provider)
+        {
+            if (num_rows < 5 && num_cols < 5)
+            {
+                double cell = 0.0;
+                StringBuilder sb = new StringBuilder();
+                sb.Append("[");
+
+                //itterates over the rows
+                for (int i = 0; i < num_rows; i++)
+                {
+                    //appends the first ellement in the row
+                    sb.Append((i == 0) ? "[" : ", [");
+                    cell = GetElement(i, 0);
+                    sb.Append(cell.ToString(format, provider));
+
+                    //appends each subsequent element in the row
+                    for (int j = 1; j < num_cols; j++)
+                    {
+                        sb.Append(", ");
+                        cell = GetElement(i, j);
+                        sb.Append(cell.ToString(format, provider));
+                    }
+
+                    sb.Append("]");
+                }
+
+                sb.Append("]");
+                return sb.ToString();
+            }
+            else
+            {
+                //only reports the dimentions of the matrix
+                return String.Format("Matrix: {0}x{1}", num_rows, num_cols);
+            }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -128,7 +164,7 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Represents the number of rows in the matrix, or the length
-        /// of a single column. Read-Only
+        /// of a single column.
         /// </summary>
         public int NumRows
         {
@@ -137,7 +173,7 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Represents the number of columns in the matrix, or the length
-        /// of a single row. Read-Only
+        /// of a single row.
         /// </summary>
         public int NumColumns
         {
@@ -146,7 +182,6 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Represents the total number of cells in the matrix.
-        /// Read-Only
         /// </summary>
         public int NumCells
         {
@@ -176,13 +211,15 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="row">The row of the desired element</param>
         /// <param name="col">The column of the desired element</param>
         /// <returns>The desired element within the matrix</returns>
-        /// <exception cref="ArgRangeExcp">If either the row or
+        /// <exception cref="ArgumentOutOfRangeException">If either the row or
         /// the column numbers lie outside the matrix</exception>
         public double GetElement(int row, int col)
         {
             //checks that the row and column are valid
-            ArgRangeExcp.Check("row", row, num_rows - 1);
-            ArgRangeExcp.Check("col", col, num_cols - 1);
+            if (row < 0 || row >= num_rows)
+                throw new ArgumentOutOfRangeException("row");
+            if (col < 0 || col >= num_cols)
+                throw new ArgumentOutOfRangeException("col");
 
             //obtains the desired cell value
             int index = col + (row * num_cols);
@@ -195,15 +232,17 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="row">The row of the desired element</param>
         /// <param name="col">The column of the desired element</param>
         /// <param name="value">The new value of the element</param>
-        /// <exception cref="ArgRangeExcp">If either the row or
+        /// <exception cref="ArgumentOutOfRangeException">If either the row or
         /// the column numbers lie outside the matrix</exception>
         public void SetElement(int row, int col, double value)
         {
             //checks that the row and column are valid
-            ArgRangeExcp.Check("row", row, num_rows - 1);
-            ArgRangeExcp.Check("col", col, num_cols - 1);
+            if (row < 0 || row >= num_rows)
+                throw new ArgumentOutOfRangeException("row");
+            if (col < 0 || col >= num_cols)
+                throw new ArgumentOutOfRangeException("col");
 
-            //sets the desired cell value
+            //obtains the desired cell value
             int index = col + (row * num_cols);
             matrix[index] = value;
         }
@@ -214,17 +253,18 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="row">The index of the desire row</param>
         /// <returns>The requested row as a vector</returns>
-        /// <exception cref="ArgRangeExcp">If the row number
+        /// <exception cref="ArgumentOutOfRangeException">If the row number
         /// lies outside of the matrix</exception>
         public Vector GetRow(int row)
         {
-            //checks for a valid row number
-            ArgRangeExcp.Check("row", row, num_rows - 1);
+            //checks that the row number is valid
+            if (row < 0 || row >= num_rows)
+                throw new ArgumentOutOfRangeException("row");
 
             //obtains the values in the given row
             double[] values = new double[num_cols];
             for (int i = 0; i < num_cols; i++)
-            values[i] = GetElement(row, i);
+                values[i] = GetElement(row, i);
 
             //returns the row vector
             return new Vector(values);
@@ -236,19 +276,20 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="col">The index of the desire column</param>
         /// <returns>The requested column as a vector</returns>
-        /// <exception cref="ArgRangeExcp">If the column number
+        /// <exception cref="ArgumentOutOfRangeException">If the column number
         /// lies outside of the matrix</exception>
         public Vector GetColumn(int col)
         {
-            //checks for a valid column number
-            ArgRangeExcp.Check("col", col, num_cols - 1);
+            //checks that the column number is valid
+            if (col < 0 || col >= num_cols)
+                throw new ArgumentOutOfRangeException("col");
 
-            //obtains the values in the given row
+            //obtains the values in the given column
             double[] values = new double[num_rows];
             for (int i = 0; i < num_rows; i++)
-            values[i] = GetElement(i, col);
+                values[i] = GetElement(i, col);
 
-            //returns the row vector
+            //returns the column vector
             return new Vector(values);
         }
 
@@ -257,20 +298,22 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="row">The index of the row</param>
         /// <param name="values">A vector to replace the indicated row</param>
-        /// <exception cref="ArgRangeExcp">If the row index lies outside
-        /// the bounds of the matrix</exception>
-        /// <exception cref="VectorLengthExcp">If the length of the vector
+        /// <exception cref="ArgumentShapeException">If the length of the vector
         /// dose not match the length of a row</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the row index lies outside
+        /// the bounds of the matrix</exception>
         public void SetRow(int row, Vector values)
         {
-            //checks for a valid row number and vector
-            ArgRangeExcp.Check("row", row, num_rows - 1);
-            VectorLengthExcp.Check(values.Length, num_cols);
+            //makes shure the input vector is the correct shape
+            if (row < 0 || row >= num_rows)
+                throw new ArgumentOutOfRangeException("row");
+            if (values.Length < num_cols)
+                throw new ArgumentShapeException("values");
 
-            //copies the values into the matrix
+            //copies the row values into the matrix
             for (int i = 0; i < num_cols; i++)
             {
-                double temp = values.GetElement(i);
+                double temp = values[i];
                 SetElement(row, i, temp);
             }
         }
@@ -280,21 +323,44 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="col">The index of the column</param>
         /// <param name="values">A vector to replace the indicated column</param>
-        /// <exception cref="ArgRangeExcp">If the column index lies outside
-        /// the bounds of the matrix</exception>
-        /// <exception cref="VectorLengthExcp">If the length of the vector
+        /// <exception cref="ArgumentShapeException">If the length of the vector
         /// dose not match the length of a column</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the column index lies outside
+        /// the bounds of the matrix</exception>
         public void SetColumn(int col, Vector values)
         {
-            //checks for a valid column number and vector
-            ArgRangeExcp.Check("col", col, num_cols - 1);
-            VectorLengthExcp.Check(values.Length, num_rows);
+            //makes shure the input vector is the correct shape
+            if (col < 0 || col >= num_cols)
+                throw new ArgumentOutOfRangeException("col");
+            if (values.Length < num_rows)
+                throw new ArgumentShapeException("values");
 
-            //copies the values into the matrix
+            //copies the column values into the matrix
             for (int i = 0; i < num_rows; i++)
             {
-                double temp = values.GetElement(i);
+                double temp = values[i];
                 SetElement(i, col, temp);
+            }
+        }
+
+        /// <summary>
+        /// Treats the matrix as a collection of row vectors by itterating over
+        /// the matrix one row at a time.
+        /// </summary>
+        /// <returns>An enumeration of the rows in the matrix</returns>
+        public IEnumerator<Vector> GetEnumerator()
+        {
+            //used to store the values to build each row
+            double[] temp = new double[num_cols];
+
+            //itterates over each row in the matrix
+            for (int i = 0; i < num_rows; i++)
+            {
+                //iterates over each element in the current row
+                for (int j = 0; j < num_cols; j++)
+                    temp[j] = GetElement(i, j);
+
+                yield return new Vector(temp);
             }
         }
 
@@ -308,18 +374,18 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="a">The second matrix</param>
         /// <returns>The sum of the two matrices</returns>
-        /// <exception cref="VectorLengthExcp">If the matrices differ in
+        /// <exception cref="ArgumentShapeException">If the matrices differ in
         /// either their number of rows or columns</exception>
         public Matrix Add(Matrix a)
         {
             //makes shure the dimentions of the matrices match
-            VectorLengthExcp.Check(a.num_rows, this.num_rows);
-            VectorLengthExcp.Check(a.num_cols, this.num_cols);
+            if (a.num_rows != num_rows || a.num_cols != num_cols)
+                throw new ArgumentShapeException("a");
 
             //summs each element with the matching element
             double[] result = new double[matrix.Length];
             for (int i = 0; i < matrix.Length; i++)
-            result[i] = matrix[i] + a.matrix[i];
+                result[i] = matrix[i] + a.matrix[i];
 
             //generates the resultant matrix
             return new Matrix(num_rows, num_cols, result);
@@ -327,18 +393,17 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Adds a scalor value to a square matrix. Scalor adition is
-        /// defined such that (A + x) is equevenent to (A + xI) where
+        /// defined such that (A + x) is equevenent to (A + Ix) where
         /// (I) is the identity and scalar multiplication is well defined.
         /// It overloads the (+) opperator.
         /// </summary>
         /// <param name="x">Scalar value to add to the matrix</param>
         /// <returns>The result of adding a scalor to the matrix</returns>
-        /// <exception cref="SquareMatrixExcp">If the number of rows
-        /// dose not match the number of columns</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public Matrix Add(double x)
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(num_cols, num_rows);
+            if (num_rows != num_cols) throw new ArgumentShapeException();
 
             //used in computing the result
             double[] result = new double[matrix.Length];
@@ -361,18 +426,18 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="a">The second matrix</param>
         /// <returns>The difrence of the two matrices</returns>
-        /// <exception cref="VectorLengthExcp">If the matrices differ in
+        /// <exception cref="ArgumentShapeException">If the matrices differ in
         /// either their number of rows or columns</exception>
         public Matrix Sub(Matrix a)
         {
             //makes shure the dimentions of the matrices match
-            VectorLengthExcp.Check(a.num_rows, this.num_rows);
-            VectorLengthExcp.Check(a.num_cols, this.num_cols);
+            if (a.num_rows != num_rows || a.num_cols != num_cols)
+                throw new ArgumentShapeException("a");
 
             //subtracts each element from the matching element
             double[] result = new double[matrix.Length];
             for (int i = 0; i < matrix.Length; i++)
-            result[i] = matrix[i] - a.matrix[i];
+                result[i] = matrix[i] - a.matrix[i];
 
             //generates the resultant matrix
             return new Matrix(num_rows, num_cols, result);
@@ -384,8 +449,7 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="x">A scalar value to subtract from the matrix</param>
         /// <returns>The result of subtracting a scalor from the matrix</returns>
-        /// <exception cref="SquareMatrixExcp">If the number of rows
-        /// dose not match the number of columns</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public Matrix Sub(double x)
         {
             //uses the additive inverse
@@ -401,12 +465,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="a">The second matrix</param>
         /// <returns>The product of the two matrices</returns>
-        /// <exception cref="VectorLengthExcp">If the number of columns in the
+        /// <exception cref="ArgumentShapeException">If the number of columns in the
         /// first matrix dose not match the number of rows in the second</exception>
         public Matrix Mult(Matrix a)
         {
             //make shure the matricies can be multiplied
-            VectorLengthExcp.Check(a.num_rows, this.num_cols);
+            if (a.num_rows != num_cols) throw new ArgumentShapeException("a");
 
             int rows = num_rows;
             int cols = a.num_cols;
@@ -436,12 +500,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// <param name="v">The vector to be transformed</param>
         /// <returns>A new vector that is the product of the curent matrix 
         /// and the previous vector</returns>
-        /// <exception cref="VectorLengthExcp">If the length of the vector 
+        /// <exception cref="ArgumentShapeException">If the length of the vector 
         /// dose not match the number of columns in the matrix</exception>
         public Vector Mult(Vector v)
         {
             //make shure the matricies can be multiplied
-            VectorLengthExcp.Check(v.Length, this.num_cols);
+            if (v.Length != num_cols) throw new ArgumentShapeException("v");
 
             double[] result = new double[num_rows];
 
@@ -472,7 +536,7 @@ namespace Vulpine.Core.Calc.Matrices
             //multiplies each element by the scalar
             double[] result = new double[matrix.Length];
             for (int i = 0; i < matrix.Length; i++)
-            result[i] = matrix[i] * x;
+                result[i] = matrix[i] * x;
 
             //generates the resultant matrix
             return new Matrix(num_rows, num_cols, result);
@@ -487,10 +551,11 @@ namespace Vulpine.Core.Calc.Matrices
         /// <returns>The solution (x) to the equation</returns>
         /// <exception cref="SquareMatrixExcp">If the number of rows
         /// dose not match the number of columns</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public Vector InvAx(Vector b)
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(num_cols, num_rows);
+            if (num_rows != num_cols) throw new ArgumentShapeException();
 
             int vpos = num_cols;
             Matrix aug = new Matrix(num_rows, vpos + 1);
@@ -520,17 +585,17 @@ namespace Vulpine.Core.Calc.Matrices
         /// will no longer be needed after adition.
         /// </summary>
         /// <param name="a">The matrix to add</param>
-        /// <exception cref="VectorLengthExcp">If the matrices differ in
+        /// <exception cref="ArgumentShapeException">If the matrices differ in
         /// either their number of rows or columns</exception>
         public void AddWith(Matrix a)
         {
             //makes shure the dimentions of the matrices match
-            VectorLengthExcp.Check(a.num_rows, this.num_rows);
-            VectorLengthExcp.Check(a.num_cols, this.num_cols);
+            if (a.num_rows != num_rows || a.num_cols != num_cols)
+                throw new ArgumentShapeException("a");
 
             //summs each element with the matching element
             for (int i = 0; i < matrix.Length; i++)
-            matrix[i] = matrix[i] + a.matrix[i];
+                matrix[i] = matrix[i] + a.matrix[i];
         }
 
         /// <summary>
@@ -540,37 +605,31 @@ namespace Vulpine.Core.Calc.Matrices
         /// for more details. 
         /// </summary>
         /// <param name="x">Scalar value to add to the matrix</param>
-        /// <exception cref="SquareMatrixExcp">If the number of rows
-        /// dose not match the number of columns</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public void AddWith(double x)
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(num_cols, num_rows);
+            if (num_rows != num_cols) throw new ArgumentShapeException();
 
             //used in computing the result
             int offset = num_rows + 1;
 
             //adds only the diagonal elements, copies all others
             for (int i = 0; i < matrix.Length; i++)
-            if (i % offset == 0) matrix[i] += x;
+                if (i % offset == 0) matrix[i] += x;
         }
 
         /// <summary>
-        /// Multiplies the curent matrix by another matrix, overwriting the original
-        /// matrix in the process. This method should only be called when the current 
-        /// matrix will no longer be needed after multiplicaiton. See the standard 
-        /// Mult method for more details. 
+        /// DEPRICATED...
         /// </summary>
-        /// <param name="a">The matrix multiplier</param>
-        /// <exception cref="VectorLengthExcp">If the number of columns in the
-        /// first matrix do not match the number of rows in the second</exception>
-        /// <exception cref="SquareMatrixExcp">If the multiplier is not
-        /// a square matrix</exception>
         public void MultBy(Matrix a)
         {
-            //make shure the matricies can be multiplied
-            VectorLengthExcp.Check(a.num_rows, this.num_cols);
-            SquareMatrixExcp.Check(a.num_cols, a.num_rows);
+            //NOTE: This dose post multiplication, we require a funciton that
+            //can do pre-multiplication, in other words A = B * A
+
+            ////make shure the matricies can be multiplied
+            //VectorLengthExcp.Check(a.num_rows, this.num_cols);
+            //SquareMatrixExcp.Check(a.num_cols, a.num_rows);
 
             //stores the current row, as it's being edited
             double[] row = new double[num_cols];
@@ -594,6 +653,40 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
+        /// Premultiplies the current matrix with the given matrix, overwriting the
+        /// current matrix in the process. In other words, it computes A = B * A,
+        /// where A is the curent matrix, and B is the given matrix.
+        /// </summary>
+        /// <param name="b">The given matrix</param>
+        public void PreMult(Matrix b)
+        {
+            //stores the current row, as it's being edited
+            double[] row = new double[num_cols];
+
+            for (int i = 0; i < num_rows; i++)
+            {
+                for (int j = 0; j < num_cols; j++)
+                    row[j] = GetElement(i, j);
+
+                for (int j = 0; j < num_cols; j++)
+                {
+                    ////copies the current element for later refrence
+                    //row[j] = GetElement(i, j);
+                    double temp = 0.0;
+
+                    //iterates over the interior product terms
+                    for (int k = 0; k < num_cols; k++)
+                        temp += row[k] * b.GetElement(k, i);
+
+                    //sets the resulting element in the curent matrix
+                    SetElement(i, j, temp);
+                }
+            }
+
+            //throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Multiplies the curent matrix by a scalar, overwriting the original
         /// matrix in the process. This method should only be called when the 
         /// current matrix will no longer be needed after scaling.
@@ -603,7 +696,7 @@ namespace Vulpine.Core.Calc.Matrices
         {
             //multiplies each element by the scalar
             for (int i = 0; i < matrix.Length; i++)
-            matrix[i] = matrix[i] * x;
+                matrix[i] = matrix[i] * x;
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -612,7 +705,7 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Computes the magnitude as the Frobenius Norm of the current matrix.
-        /// It is identical to the norm of the curisponding vector, and is
+        /// It is identical to the norm of the vectorised matrix, and is
         /// sub-multiplicitive with respect to the matrix product. 
         /// </summary>
         /// <returns>The magnitude of the matrix</returns>
@@ -623,7 +716,7 @@ namespace Vulpine.Core.Calc.Matrices
 
             //computes the sum of the squares
             for (int i = 0; i < matrix.Length; i++)
-            output += matrix[i] * matrix[i];
+                output += matrix[i] * matrix[i];
 
             //returns the square root of the sum
             return Math.Sqrt(output);
@@ -636,13 +729,13 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="a">The other matrix</param>
         /// <returns>The distance between the matrices</returns>
-        /// <exception cref="VectorLengthExcp">If the matrices differ in
+        /// <exception cref="ArgumentShapeException">If the matrices differ in
         /// either their number of rows or columns</exception>
         public double Dist(Matrix a)
         {
             //makes shure the dimentions of the matrices match
-            VectorLengthExcp.Check(a.num_rows, this.num_rows);
-            VectorLengthExcp.Check(a.num_cols, this.num_cols);
+            if (a.num_rows != num_rows || a.num_cols != num_cols)
+                throw new ArgumentShapeException("a");
 
             double temp = 0.0;
             double output = 0.0;
@@ -656,16 +749,6 @@ namespace Vulpine.Core.Calc.Matrices
 
             //returns the acutal euclidian distance
             return Math.Sqrt(output);
-        }
-
-        /// <summary>
-        /// DEPERICATED
-        /// </summary>
-        /// <returns>The matrix as a single vector</returns>
-        public Vector ToVector()
-        {
-            //copys the elements directly into the vector
-            return new Vector(matrix);
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -701,12 +784,11 @@ namespace Vulpine.Core.Calc.Matrices
         /// information about the linear transformation it represents.
         /// </summary>
         /// <returns>The determinate of the matrix</returns>
-        /// <exception cref="SquareMatrixExcp">If the current matrix 
-        /// is not square</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public double Det()
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(num_cols, num_rows);
+            if (num_rows != num_cols) throw new ArgumentShapeException();
 
             //makes a copy of the matrix in row-echelon form
             Matrix temp = new Matrix(this);
@@ -715,7 +797,7 @@ namespace Vulpine.Core.Calc.Matrices
 
             //computes the product of the diagonal elements
             for (int i = 0; i < num_rows; i++)
-            det = det * temp.GetElement(i, i);
+                det = det * temp.GetElement(i, i);
 
             //returns the corrected determinate
             return s * det;
@@ -726,17 +808,16 @@ namespace Vulpine.Core.Calc.Matrices
         /// the eigenvalues, and corisponds with the dirivitive of the determinate.
         /// </summary>
         /// <returns>The trace of the matrix</returns>
-        /// <exception cref="SquareMatrixExcp">If the current matrix 
-        /// is not square</exception>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public double Trace()
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(num_cols, num_rows);
+            if (num_rows != num_cols) throw new ArgumentShapeException();
 
             //computes the sum of the diagonal entries
             double trace = 0.0;
             for (int i = 0; i < num_rows; i++)
-            trace = trace + GetElement(i, i);
+                trace = trace + GetElement(i, i);
 
             return trace;
         }
@@ -754,12 +835,12 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="a">The matrix to invert</param>
         /// <returns>The inverse of the given matrix</returns>
-        /// <exception cref="SquareMatrixExcp">If the matrix given
+        /// <exception cref="ArgumentShapeException">If the matrix given
         /// is not a square matrix</exception>
         public static Matrix Invert(Matrix a)
         {
             //checks for non-square matricies
-            SquareMatrixExcp.Check(a.num_cols, a.num_rows);
+            if (a.num_rows != a.num_cols) throw new ArgumentShapeException("a");
 
             int vpos = a.num_cols;
             Matrix aug = new Matrix(a.num_rows, vpos * 2);
@@ -768,7 +849,7 @@ namespace Vulpine.Core.Calc.Matrices
             for (int i = 0; i < a.num_rows; i++)
             {
                 for (int j = 0; j < vpos; j++)
-                aug[i, j] = a.GetElement(i, j);
+                    aug[i, j] = a.GetElement(i, j);
 
                 for (int j = vpos; j < vpos * 2; j++)
                 {
@@ -785,7 +866,7 @@ namespace Vulpine.Core.Calc.Matrices
             for (int i = 0; i < a.num_rows; i++)
             {
                 for (int j = 0; j < a.num_cols; j++)
-                result[i, j] = aug[i, vpos + j];
+                    result[i, j] = aug[i, vpos + j];
             }
 
             //returns the resultent vector
@@ -799,11 +880,10 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="size">The size of the (n x n) matrix</param>
         /// <returns>The idinity matrix for the requested size</returns>
-        /// <exception cref="ArgRangeExcp">If the size is less than one</exception>
         public static Matrix Ident(int size)
         {
             //checks for a size of atleast one
-            ArgRangeExcp.Atleast("size", size, 1);
+            if (size < 1) size = 1;
 
             double[] vals = new double[size * size];
             int test = size + 1;
@@ -909,6 +989,34 @@ namespace Vulpine.Core.Calc.Matrices
 
         #endregion //////////////////////////////////////////////////////////////
 
+        #region Class Conversions...
+
+        /// <summary>
+        /// Converts the curent matrix to a vector by leanerising the matrix.
+        /// This process destroys informaiton about the shape of the matrix,
+        /// which is why the conversion is explicit. To reverse the process
+        /// you would need to call the constructor with the width and height
+        /// of the original matrix.
+        /// </summary>
+        public static explicit operator Vector(Matrix m)
+        {
+            //vectorises the matrix
+            return new Vector(m.matrix);
+        }
+
+        /// <summary>
+        /// Treates the matrix as a funciton of vectors by multiplying column
+        /// vectors on the right of the matrix. Note that the size of the input
+        /// need not match the size of the output, unless the matrix is square.
+        /// </summary>
+        public static implicit operator VFunc<Vector>(Matrix m)
+        {
+            //treates the matrix as a function of vectors
+            return (v => m.Mult(v));
+        }
+
+        #endregion //////////////////////////////////////////////////////////////
+
         #region Operator Overloads...
 
         //refferences the Add(m) function
@@ -932,8 +1040,8 @@ namespace Vulpine.Core.Calc.Matrices
         { return a.Mult(b); }
 
         //references the Mult(v) function
-        public static Vector operator *(Matrix a, Vector x)
-        { return a.Mult(x); }
+        public static Vector operator *(Matrix a, Vector v)
+        { return a.Mult(v); }
 
         //references the Mult(s) function
         public static Matrix operator *(Matrix a, Double x)
@@ -953,7 +1061,7 @@ namespace Vulpine.Core.Calc.Matrices
 
         #endregion //////////////////////////////////////////////////////////////
 
-        object ICloneable.Clone()
-        { return new Matrix(this); }
+        IEnumerator IEnumerable.GetEnumerator()
+        { return GetEnumerator(); }
     }
 }

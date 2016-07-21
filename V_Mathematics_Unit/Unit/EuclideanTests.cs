@@ -15,7 +15,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
     {
         [TestCase(1, 2, 3)]
         [TestCase(2, 3, 4)]
-        public void Add_VariousInputs_IsAssosiative(int xi, int yi, int zi)
+        public void Add_WithOther_IsAssosiative(int xi, int yi, int zi)
         {
             dynamic x = GetSample(xi);
             dynamic y = GetSample(yi);
@@ -30,7 +30,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 2)]
         [TestCase(2, 3)]
         [TestCase(3, 4)]
-        public void Add_VariousInputs_IsComunitive(int xi, int yi)
+        public void Add_WithOther_IsComunitive(int xi, int yi)
         {
             dynamic x = GetSample(xi);
             dynamic y = GetSample(yi);
@@ -82,13 +82,26 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 2, 0.5)]
         [TestCase(2, 3, 2.0)]
         [TestCase(3, 4, -1.0)]
-        public void Mult_VariousInputs_IsDistributive(int xi, int yi, double a)
+        public void Mult_WithScalor_IsDistributive(int xi, int yi, double a)
         {
             dynamic x = GetSample(xi);
             dynamic y = GetSample(yi);
 
-            dynamic p1 = x.Add(y).Mult(a);
-            dynamic p2 = x.Mult(a).Add(y.Mult(a));
+            dynamic p1 = x.Add(y).Mult(a);           //(x + y) * a
+            dynamic p2 = x.Mult(a).Add(y.Mult(a));   //(x * a) + (y * a)
+
+            Assert.That(p1, Ist.WithinTolOf(p2, VMath.TOL));
+        }
+
+        [TestCase(1, 0.5, 1.5)]
+        [TestCase(2, 2.0, -1.0)]
+        [TestCase(3, 3.0, 0.5)]
+        public void Mult_WithScalor_IsCompatable(int xi, double a, double b)
+        {
+            dynamic x = GetSample(xi);
+
+            dynamic p1 = x.Mult(a).Mult(b);
+            dynamic p2 = x.Mult(a * b);
 
             Assert.That(p1, Ist.WithinTolOf(p2, VMath.TOL));
         }

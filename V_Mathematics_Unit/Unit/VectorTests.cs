@@ -28,7 +28,17 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public VectorTests(double tol) { this.tol = tol; }
 
         /// <summary>
-        /// Obtains a sample vector for use in running tests.
+        /// Obtains the additive ininty, or zero vector for the set of
+        /// vectors that are being tested.
+        /// </summary>
+        /// <returns>The zero vector</returns>
+        public override dynamic GetZero()
+        {
+            return new Vector(5);
+        }
+
+        /// <summary>
+        /// Method which generates samples to be used in tests.
         /// </summary>
         /// <param name="i">The index of the sample to obtain</param>
         /// <returns>A sample vector sutable for testing</returns>
@@ -101,16 +111,6 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
             throw new InvalidOperationException();
-        }
-
-        /// <summary>
-        /// Obtains the additive ininty, or zero vector for the set of
-        /// vectors that are being tested.
-        /// </summary>
-        /// <returns>The zero vector</returns>
-        public override dynamic GetZero()
-        {
-            return new Vector(5);
         }
 
         [Test]

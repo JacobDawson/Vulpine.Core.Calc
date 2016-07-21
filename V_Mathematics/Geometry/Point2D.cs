@@ -42,8 +42,8 @@ namespace Vulpine.Core.Calc.Geometry
         /// <param name="point">Vector to convert</param>
         public Point2D(Vector point)
         {
-            x = point.GetExtended(0);
-            y = point.GetExtended(1);
+            x = point.GetElement(0);
+            y = point.GetElement(1);
         }
 
         /// <summary>

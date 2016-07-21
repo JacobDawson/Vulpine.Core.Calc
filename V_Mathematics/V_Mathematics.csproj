@@ -45,7 +45,7 @@
     <Compile Include="Functions\Polynomial.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Math.cs" />
-    <Compile Include="ArgumentSizeException.cs" />
+    <Compile Include="ArgumentShapeException.cs" />
     <Compile Include="Matrices\Matrix.cs" />
     <Compile Include="Matrices\MatrixSparse.cs" />
     <Compile Include="Geometry\Point2D.cs" />
@@ -64,7 +64,7 @@
     <Compile Include="RandGen\RandMT.cs" />
     <Compile Include="RandGen\RandR30.cs" />
     <Compile Include="RandGen\RandXOR.cs" />
-    <Compile Include="RandGen\VRandom.cs" />
+    <Compile Include="RandGen\Random.cs" />
     <Compile Include="StatRunner.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +72,9 @@
       <Project>{C2C84BBA-4CBD-4DA1-9E1E-F9C964196206}</Project>
       <Name>V_DataStruk</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Matrices\IndexNotation.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

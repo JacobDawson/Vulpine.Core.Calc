@@ -1,0 +1,56 @@
+﻿Taken From Wikipedia: https://en.wikipedia.org/wiki/Index_notation
+                      https://en.wikipedia.org/wiki/Row_and_column_vectors
+					  https://en.wikipedia.org/wiki/Transformation_matrix
+
+
+- The first index indicates the row number, listed from top to bottom
+- The second index indicates the column number, listed from right to left
+- Thus we move from the top right, to the bottom left similar to images
+- Unlike images, we itterate column first, rather than row first.
+
+
+- From my understanding most sources use colomum vectors, and column major ordering
+    - this means that transformations are computed as A*x where A is an
+	  m*m matrix and x is a m*1 column vector.
+	- Two apply apply second transformation after a first transformation you would
+	  caluculate A'= B * A using pre-multiplication.
+	- This copies the convention of funcitonal composition, seeing a matrix as a funciton
+	  of vectors (f.g)(x) = f(g(x)). In this case, g is applied first, then f.
+	  Inother words A(B(x)) implies B * A when A and B are matricies.
+
+
+- Vectors should probably be considered column vectors by default, except in
+  special cases, where we should indicate we are using the vector transpose.
+
+
+- The following are synomonous:
+      Height = Number of Rows = Column Length
+	  Width = Number of Columns = Row Length
+
+- In wolfram alpha the input {{a,b},{c,d}} results in the following matrix
+    | a b |
+	| c d | 
+
+
+
+  M[i, j] //i = row, j = col
+
+  //loops over the rows
+  for (int i = 0; i < num_rows; i++) //height
+  {
+	  //loops over each value in the rows
+      for (int j = 0; j < num_cols; j++) //width
+	  {
+	      M[i, j] //do something
+	  }
+  }
+
+  //loops over the rows
+  foreach (Vector row in M)
+  {
+      //loops over each value in the rows
+	  foreach (double cell in row)
+	  {
+	      //do something
+	  }
+  }

@@ -242,6 +242,11 @@ namespace Vulpine.Core.Calc
             return 1.0 / (1.0 + Math.Exp(-x));
         }
 
+        public static Cmplx Sgmd(Cmplx z)
+        {
+            return 1.0 / (1.0 + Cmplx.Exp(-z));
+        }
+
         /// <summary>
         /// Computes the inverse sigmoid funciton, which undoes the action
         /// taken by the sigmoid funciton. If the input is outside the range

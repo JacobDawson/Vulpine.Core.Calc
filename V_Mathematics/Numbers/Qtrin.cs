@@ -63,10 +63,10 @@ namespace Vulpine.Core.Calc.Numbers
         public Qtrin(Vector v)
         {
             //initialises values
-            real = v.GetExtended(0);
-            icof = v.GetExtended(1);
-            jcof = v.GetExtended(2);
-            kcof = v.GetExtended(3);
+            real = v.GetElement(0);
+            icof = v.GetElement(1);
+            jcof = v.GetElement(2);
+            kcof = v.GetElement(3);
         }
 
         /// <summary>

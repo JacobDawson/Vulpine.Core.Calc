@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Vulpine.Core.Calc.Matrices;
+
 namespace Vulpine.Core.Calc
 {
     /// <summary>
@@ -12,6 +14,15 @@ namespace Vulpine.Core.Calc
     /// <param name="x">The input variable</param>
     /// <returns>Result of evaluating the function</returns>
     public delegate double VFunc(double x);
+
+    /// <summary>
+    /// Represents a mult-dimention function defined on the real numbers. That
+    /// is, any funciton which maps an n-dimentional vector of numbers to a single
+    /// real number. 
+    /// </summary>
+    /// <param name="x">The input variables</param>
+    /// <returns>The result of evaluating the function</returns>
+    public delegate double MFunc(Vector x);
 
     /// <summary>
     /// Represents a mathmatical function defined on an arbitrary ring or 

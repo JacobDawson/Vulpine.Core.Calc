@@ -89,8 +89,10 @@ namespace QuickTests
             b = lower * upper;
 
             //computes the diffrence between the matrices
-            Vector v1 = m.ToVector();
-            Vector v2 = b.ToVector();
+            //Vector v1 = m.ToVector();
+            //Vector v2 = b.ToVector();
+            Vector v1 = (Vector)m;
+            Vector v2 = (Vector)b;
             return v1.Dist(v2);
         }
 
