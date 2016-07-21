@@ -206,34 +206,34 @@ namespace Vulpine.Core.Calc.Functions
             return value;
         }
 
-        /// <summary>
-        /// Treats the domain of the polynomial as the set of all square
-        /// matrices. Using an aproximating tailor series, this gives rise
-        /// to the deffinition of the matrix exponential and trigometric
-        /// functions.
-        /// </summary>
-        /// <param name="x">The input to the polynomial</param>
-        /// <returns>The evaluation of the polynomial</returns>
-        /// <exception cref="SquareMatrixExcp">If the input matrix is 
-        /// not a square matrix</exception>
-        public Matrix Evaluate(Matrix x)
-        {
-            //makes shure that the input matrix is square
-            SquareMatrixExcp.Check(x.NumColumns, x.NumRows);
+        ///// <summary>
+        ///// Treats the domain of the polynomial as the set of all square
+        ///// matrices. Using an aproximating tailor series, this gives rise
+        ///// to the deffinition of the matrix exponential and trigometric
+        ///// functions.
+        ///// </summary>
+        ///// <param name="x">The input to the polynomial</param>
+        ///// <returns>The evaluation of the polynomial</returns>
+        ///// <exception cref="SquareMatrixExcp">If the input matrix is 
+        ///// not a square matrix</exception>
+        //public Matrix Evaluate(Matrix x)
+        //{
+        //    //makes shure that the input matrix is square
+        //    SquareMatrixExcp.Check(x.NumColumns, x.NumRows);
 
-            //stores the value as it is computed
-            Matrix value = Matrix.Ident(x.NumRows);
-            value.MultBy(coeff[coeff.Length - 1]);
+        //    //stores the value as it is computed
+        //    Matrix value = Matrix.Ident(x.NumRows);
+        //    value.MultBy(coeff[coeff.Length - 1]);
 
-            //uses horners method to compute the polynomial
-            for (int i = coeff.Length - 2; i >= 0; i--)
-            {
-                value.MultBy(x);
-                value.AddWith(coeff[i]);
-            }
+        //    //uses horners method to compute the polynomial
+        //    for (int i = coeff.Length - 2; i >= 0; i--)
+        //    {
+        //        value.MultBy(x);
+        //        value.AddWith(coeff[i]);
+        //    }
 
-            return value;
-        }
+        //    return value;
+        //}
 
         #endregion ////////////////////////////////////////////////////////////
 

@@ -15,6 +15,8 @@ namespace Vulpine_Core_Calc_Tests.Unit
     [TestFixture]
     public class MatrixTests : AlgebraicTests
     {
+        //IDEA: Should add tests for non-square matricies
+
         /// <summary>
         /// the tollarance used in desk calculations, the reason this is set 
         /// so high is due to the number of significant digits used.
@@ -388,6 +390,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(output, Ist.WithinTolOf(r, tol));
         }
 
+        //[Ignore]
         [TestCase(1, 12, 7)]
         [TestCase(2, 13, 8)]
         [TestCase(3, 14, 9)]
@@ -402,61 +405,6 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic output = a.InvAx(v);
 
             Assert.That(output, Ist.WithinTolOf(r, tol));
-        }
-
-        [TestCase(1, 2, 6)]
-        [TestCase(2, 3, 7)]
-        [TestCase(3, 4, 8)]
-        public void AddWith_RandomMatrix_ExpectedResults(int ai, int bi, int ri)
-        {
-            dynamic a = GetSample(ai);
-            dynamic b = GetSample(bi);
-            dynamic r = GetSample(ri);
-
-            a.AddWith(b);
-
-            Assert.That(a, Ist.WithinTolOf(r, tol));
-        }
-
-        [TestCase(1, 3.0, 9)]
-        [TestCase(2, -2.0, 10)]
-        [TestCase(3, 5.0, 11)]
-        public void AddWith_RandomScalar_ExpectedResults(int ai, double s, int ri)
-        {
-            dynamic a = GetSample(ai);
-            dynamic r = GetSample(ri);
-
-            a.AddWith(s);
-
-            Assert.That(a, Ist.WithinTolOf(r, tol));
-        }
-
-        [Ignore]
-        [TestCase(1, 2, 15)]
-        [TestCase(2, 3, 16)]
-        [TestCase(3, 4, 17)]
-        public void PreMult_RandomMatrix_ExpectedResults(int ai, int bi, int ri)
-        {
-            dynamic a = GetSample(ai);
-            dynamic b = GetSample(bi);
-            dynamic r = GetSample(ri);
-
-            b.PreMult(a);
-
-            Assert.That(a, Ist.WithinTolOf(r, tol));
-        }
-
-        [TestCase(1, 3.0, 18)]
-        [TestCase(2, -2.0, 19)]
-        [TestCase(3, 1.5, 20)]
-        public void MultBy_RandomScalar_ExpectedResults(int ai, double s, int ri)
-        {
-            dynamic a = GetSample(ai);
-            dynamic r = GetSample(ri);
-
-            a.MultBy(s);
-
-            Assert.That(a, Ist.WithinTolOf(r, tol));
         }
 
         [TestCase(1, 4.70498)]
@@ -497,7 +445,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(trans, Ist.WithinTolOf(r, tol));
         }
 
-        [Ignore]
+        //[Ignore]
         [TestCase(1, 6.484769902480346)]
         [TestCase(2, 9.62855780193796)]
         [TestCase(3, 3.7600877152468)]
@@ -524,7 +472,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(tr, Ist.WithinTolOf(exp, tol));
         }
 
-        [Ignore]
+        //[Ignore]
         [TestCase(1, 24)]
         [TestCase(2, 25)]
         [TestCase(3, 26)]

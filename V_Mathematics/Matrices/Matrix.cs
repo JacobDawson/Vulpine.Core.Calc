@@ -15,10 +15,13 @@ namespace Vulpine.Core.Calc.Matrices
     /// multiplication. In this way it's possable to view a matrix as a liniar
     /// function that maps one set of vectors into another.
     /// </summary>
-    /// <remarks>Last Update: 2013-11-16</remarks>
+    /// <remarks>Last Update: 2016-07-21</remarks>
     public class Matrix : Algebraic<Matrix>, Euclidean<Matrix, Double>, 
         IEnumerable<Vector>, IFormattable
     {
+        //IDEA: We could add methods to generate the characteristic polynomial,
+        //from wich we can compute the eigenvalues and eigenvectors.
+
         #region Class Definitions...
 
         //contains the values for the matrix
@@ -557,146 +560,33 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (num_rows != num_cols) throw new ArgumentShapeException();
 
-            int vpos = num_cols;
-            Matrix aug = new Matrix(num_rows, vpos + 1);
+            //obtains the LU decomposition
+            Matrix upper, lower;
+            Decomp(out upper, out lower);
 
-            //bulids the augmentation matrix with the vector
-            for (int i = 0; i < num_rows; i++)
+            double[] x = new double[b.Length];
+            double[] y = new double[b.Length];
+
+            //Use Forward Propagation to sovle Ly = b
+            for (int i = 0; i < b.Length; i++)
             {
-                for (int j = 0; j < vpos; j++)
-                    aug[i, j] = this[i, j];
-                aug[i, vpos] = b[i];
+                y[i] = b.GetElement(i);
+                for (int j = 0; j < i; j++)
+                    y[i] = y[i] - lower.GetElement(i, j) * y[j];
+                y[i] = y[i] / lower.GetElement(i, i);
+
             }
 
-            //generates the reduced echelon form
-            aug.ToRowEchelon();
-
-            //returns the resultent vector
-            return aug.GetColumn(vpos);
-        }
-
-        #endregion //////////////////////////////////////////////////////////////
-
-        #region Inline Opperators...
-
-        /// <summary>
-        /// Adds a matrix to the current matrix, overwriting the existing
-        /// matrix. This method should only be called when the current matrix 
-        /// will no longer be needed after adition.
-        /// </summary>
-        /// <param name="a">The matrix to add</param>
-        /// <exception cref="ArgumentShapeException">If the matrices differ in
-        /// either their number of rows or columns</exception>
-        public void AddWith(Matrix a)
-        {
-            //makes shure the dimentions of the matrices match
-            if (a.num_rows != num_rows || a.num_cols != num_cols)
-                throw new ArgumentShapeException("a");
-
-            //summs each element with the matching element
-            for (int i = 0; i < matrix.Length; i++)
-                matrix[i] = matrix[i] + a.matrix[i];
-        }
-
-        /// <summary>
-        /// Adds a scalor value to the current matrix, overwriting the original
-        /// matrix. This method should only be called when the current matrix 
-        /// will no longer be needed after adition. See the standard Add method 
-        /// for more details. 
-        /// </summary>
-        /// <param name="x">Scalar value to add to the matrix</param>
-        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
-        public void AddWith(double x)
-        {
-            //checks for non-square matricies
-            if (num_rows != num_cols) throw new ArgumentShapeException();
-
-            //used in computing the result
-            int offset = num_rows + 1;
-
-            //adds only the diagonal elements, copies all others
-            for (int i = 0; i < matrix.Length; i++)
-                if (i % offset == 0) matrix[i] += x;
-        }
-
-        /// <summary>
-        /// DEPRICATED...
-        /// </summary>
-        public void MultBy(Matrix a)
-        {
-            //NOTE: This dose post multiplication, we require a funciton that
-            //can do pre-multiplication, in other words A = B * A
-
-            ////make shure the matricies can be multiplied
-            //VectorLengthExcp.Check(a.num_rows, this.num_cols);
-            //SquareMatrixExcp.Check(a.num_cols, a.num_rows);
-
-            //stores the current row, as it's being edited
-            double[] row = new double[num_cols];
-
-            for (int i = 0; i < num_rows; i++)
+            //Use Backward Propagation to solve Ux = y
+            for (int i = b.Length - 1; i >= 0; i--)
             {
-                for (int j = 0; j < num_cols; j++)
-                {
-                    //copies the current element for later refrence
-                    row[j] = GetElement(i, j);
-                    double temp = 0.0;
-
-                    //iterates over the interior product terms
-                    for (int k = 0; k < num_cols; k++)
-                    temp += row[k] * a.GetElement(k, i);
-
-                    //sets the resulting element in the curent matrix
-                    SetElement(i, j, temp);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Premultiplies the current matrix with the given matrix, overwriting the
-        /// current matrix in the process. In other words, it computes A = B * A,
-        /// where A is the curent matrix, and B is the given matrix.
-        /// </summary>
-        /// <param name="b">The given matrix</param>
-        public void PreMult(Matrix b)
-        {
-            //stores the current row, as it's being edited
-            double[] row = new double[num_cols];
-
-            for (int i = 0; i < num_rows; i++)
-            {
-                for (int j = 0; j < num_cols; j++)
-                    row[j] = GetElement(i, j);
-
-                for (int j = 0; j < num_cols; j++)
-                {
-                    ////copies the current element for later refrence
-                    //row[j] = GetElement(i, j);
-                    double temp = 0.0;
-
-                    //iterates over the interior product terms
-                    for (int k = 0; k < num_cols; k++)
-                        temp += row[k] * b.GetElement(k, i);
-
-                    //sets the resulting element in the curent matrix
-                    SetElement(i, j, temp);
-                }
+                x[i] = y[i];
+                for (int j = i + 1; j < b.Length; j++)
+                    x[i] = x[i] - upper.GetElement(i, j) * x[j];
+                x[i] = x[i] / upper.GetElement(i, i);
             }
 
-            //throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Multiplies the curent matrix by a scalar, overwriting the original
-        /// matrix in the process. This method should only be called when the 
-        /// current matrix will no longer be needed after scaling.
-        /// </summary>
-        /// <param name="x">The scalar multiplier</param>
-        public void MultBy(double x)
-        {
-            //multiplies each element by the scalar
-            for (int i = 0; i < matrix.Length; i++)
-                matrix[i] = matrix[i] * x;
+            return new Vector(x);
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -790,17 +680,22 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (num_rows != num_cols) throw new ArgumentShapeException();
 
-            //makes a copy of the matrix in row-echelon form
-            Matrix temp = new Matrix(this);
-            double s = temp.ToRowEchelon();
-            double det = 1.0;
+            //obtains the LU decomposition
+            Matrix upper, lower;
+            Decomp(out upper, out lower);
 
-            //computes the product of the diagonal elements
+            //computes the product of the upper diagonal
+            double udet = 1.0;
             for (int i = 0; i < num_rows; i++)
-                det = det * temp.GetElement(i, i);
+                udet = udet * upper.GetElement(i, i);
 
-            //returns the corrected determinate
-            return s * det;
+            //computes the product of the lower diagonal
+            double ldet = 1.0;
+            for (int i = 0; i < num_rows; i++)
+                ldet = ldet * lower.GetElement(i, i);
+
+            //returnst the product of determinats
+            return ldet * udet;
         }
 
         /// <summary>
@@ -842,35 +737,25 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (a.num_rows != a.num_cols) throw new ArgumentShapeException("a");
 
-            int vpos = a.num_cols;
-            Matrix aug = new Matrix(a.num_rows, vpos * 2);
+            //feteches the determinant
+            double det = a.Det();
 
-            //bulids the augmentation matrix with the identity
-            for (int i = 0; i < a.num_rows; i++)
-            {
-                for (int j = 0; j < vpos; j++)
-                    aug[i, j] = a.GetElement(i, j);
+            //sets up the intermediate C matrix
+            Matrix c = new Matrix(a.num_rows, a.num_cols);
 
-                for (int j = vpos; j < vpos * 2; j++)
-                {
-                    if (j == i) aug[i, j] = 1.0;
-                    else aug[i, j] = 0.0;
-                }
-            }
-
-            //generates the reduced echelon form
-            aug.ToRowEchelon();
-
-            //extracts the resulting inverse matrix
-            Matrix result = new Matrix(a.num_rows, a.num_cols);
             for (int i = 0; i < a.num_rows; i++)
             {
                 for (int j = 0; j < a.num_cols; j++)
-                    result[i, j] = aug[i, vpos + j];
+                {
+                    double temp = a.Shrink(i, j);
+                    if ((i + j) % 2 == 1) temp = -temp;
+                    c.SetElement(i, j, temp);
+                }
             }
 
-            //returns the resultent vector
-            return result;
+            //computes the final matrix and returns    
+            Matrix inverse = c.Mult(1 / det);
+            return inverse.Trans();
         }
 
         /// <summary>
@@ -904,87 +789,104 @@ namespace Vulpine.Core.Calc.Matrices
         #region Helper Methods...
 
         /// <summary>
-        /// Swaps two rows in the current matrix, without having to
-        /// store either of the rows being swaped as vectors.
+        /// Every invertable matrix can be decomposed into an upper
+        /// and lower triangular matrix, whose product is the original
+        /// matrix. Doing this first can greatly improve the running times
+        /// of certain caluclations, like the determinate, which would
+        /// otherwise be exponential.
         /// </summary>
-        /// <param name="row1">First row to swap</param>
-        /// <param name="row2">Second row to swap</param>
-        private void SwapRows(int row1, int row2)
+        /// <param name="up">Is set to the upper triangular matrix</param>
+        /// <param name="low">Is set to the lower triangular matrix</param>
+        private void Decomp(out Matrix up, out Matrix low)
         {
-            for (int i = 0; i < num_cols; i++)
+            //copys the matrix so we don't mutate the original
+            Matrix a = new Matrix(this);
+            double val = 0.0;
+
+            //initialises the two output matrices to zero
+            up = new Matrix(num_rows, num_cols);
+            low = new Matrix(num_rows, num_cols);
+
+            //forms the L and U decomposition, updating A as it goes
+            for (int k = 0; k < num_rows; k++)
             {
-                double temp = this[row1, i];
-                this[row1, i] = this[row2, i];
-                this[row2, i] = temp;
+                //sets the U elements
+                for (int j = k; j < num_rows; j++)
+                {
+                    val = a.GetElement(k, j);
+                    up.SetElement(k, j, val);
+                }
+
+                //sets the L elements
+                low.SetElement(k, k, 1);
+                for (int i = k + 1; i < num_rows; i++)
+                {
+                    val = a.GetElement(i, k);
+                    val = val / up.GetElement(k, k);
+                    low.SetElement(i, k, val);
+                }
+
+                //updates the A elements
+                for (int i = k + 1; i < num_rows; i++)
+                {
+                    for (int j = k + 1; j < num_rows; j++)
+                    {
+                        val = low.GetElement(i, k);
+                        val = up.GetElement(k, j) * val;
+                        val = a.GetElement(i, j) - val;
+                        a.SetElement(i, j, val);
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Reduces the current matrix to reduced row-echelon form. It dose
-        /// this in-place, so the matrix must be copyed if the original matrix
-        /// is to be preserved. The value returned is the modification to the
-        /// determinate induced by the reduction.
+        /// Helper method, shrinks the matrix by removing the indicated
+        /// row and column, and then returns the determinate of the reduced
+        /// matrix.
         /// </summary>
-        /// <returns>The coffecent to the determinate</returns>
-        private double ToRowEchelon()
+        /// <param name="row">Row to be removed</param>
+        /// <param name="col">Column to be removed</param>
+        /// <returns>the determinate of the reduced matrix</returns>
+        private double Shrink(int row, int col)
         {
-            double v, maxv;
-            int maxi;
-
-            double s = 1.0;
-            int i = 0;
-            int j = 0;
-
-            while (i < num_rows && j < num_cols)
+            if (num_rows <= 2)
             {
-                maxi = i;
-                v = maxv = 0.0;
-
-                //findes the piviot index and max value
-                for (int k = i; k < num_rows; k++)
-                {
-                    v = GetElement(k, j);
-                    v = Math.Abs(v);
-                    if (v > maxv) maxi = k;
-                    if (v > maxv) maxv = v;
-                }
-
-                //if the row is escentialy zero, we skip it
-                if (maxv == 0.0) { j++; continue; }
-
-                //swaps the current row with the piviot
-                if (maxi != i)
-                {
-                    SwapRows(maxi, i);
-                    s = s * -1.0;
-                }
-
-                //re-obtains the maximum element
-                maxv = GetElement(i, j);
-                s = s / maxv;
-
-                //normalises the pivot row
-                for (int u = j; u < num_cols; u++)
-                this[i, u] = this[i, u] / maxv;
-
-                //eliminates the current column
-                for (int k = 0; k < num_rows; k++)
-                {
-                    if (k == i) continue;
-                    double temp = this[k, j];
-
-                    for (int u = 0; u < num_cols; u++)
-                    {
-                        double x = this[i, u] * temp;
-                        this[k, u] = this[k, u] - x;
-                    }
-                }
-
-                //increments counters
-                i++; j++;
+                //special case for size two
+                int r = (row + 1) % 2;
+                int c = (col + 1) % 2;
+                return GetElement(r, c);
             }
 
-            return s;
+            //sets up resluting matrix
+            int rows = num_rows - 1;
+            int cols = num_cols - 1;
+            Matrix result = new Matrix(rows, cols);
+
+            //used in itterations
+            int x = 0;
+            int y = 0;
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < rows; j++)
+                {
+                    //takes care of deleting the row
+                    if (i < row) x = i;
+                    else x = i + 1;
+
+                    //takes care of deleting the col
+                    if (j < col) y = j;
+                    else y = j + 1;
+
+                    //copies the desired values
+                    double temp = GetElement(x, y);
+                    result.SetElement(i, j, temp);
+                }
+            }
+
+            //returns the determinat
+            return result.Det();
         }
 
         #endregion //////////////////////////////////////////////////////////////
