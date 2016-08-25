@@ -214,6 +214,128 @@ namespace Vulpine.Core.Calc
         }
 
         #endregion //////////////////////////////////////////////////////////////
+    }
+
+
+    public class StatRunner3
+    {
+        private int dim;
+
+        private double total;
+
+        private Vector m1;
+        private Vector m3;
+
+        private double m2;
+
+        private double m4;
+
+
+        public int Dim
+        {
+            get { return dim; }
+        }
+
+        public double Weight
+        {
+            get { return total; }
+        }
+
+        public Vector Sum
+        {
+            get { return m1 * total; } 
+        }
+
+        public Vector Mean
+        {
+            get { return m1; }
+        }
+
+        public double Var
+        {
+            get { return m2 / total; }
+        }
+
+        public double SD
+        {
+            get { return Math.Sqrt(Var); }
+        }
+
+        public Vector Skew
+        {
+            get
+            {
+                //Vector top = m3 * Math.Sqrt(total);
+                //double bottom = Math.Sqrt(m2 * m2 * m2);
+
+                //return top / bottom;
+
+
+                double temp = total / (m2 * m2 * m2);
+                return m3 * Math.Sqrt(temp);
+            }
+        }
+
+        public double Kurt
+        {
+            get
+            {
+                return (total * m4) / (m2 * m2) - 3.0;
+            }
+        }
+
+        public void Add(Vector x, double weight)
+        {
+            //the dimentions of the input vector must match
+            if (x.Length != dim) throw new ArgumentException();
+
+            //used in computing the mean and varance
+            double temp = weight + total;
+            Vector delta = x - m1;
+            Vector dn = delta * (weight / temp);
+            double t1 = (delta * dn) * total;
+
+            //updates the intermediates
+            m2 += t1;
+            m1 += dn;
+
+            total = temp;
+        }
+
+
+        public void Add2(Vector x, double weight)
+        {
+            //the dimentions of the input vector must match
+            if (x.Length != dim) throw new ArgumentException(); 
+
+            //used in computing the mean and varance
+            double temp = weight + total;
+            Vector delta = x - m1;
+            Vector dn = delta * (weight / temp);
+            double t1 = total * (delta * dn);
+
+            double dn2 = dn * dn;
+
+            m4 += t1 * dn2 * (temp * temp - 3.0 * temp + 3.0);
+            m4 += 6.0 * dn2 * m2 - 4.0 * (dn * m3);
+
+            m3 += dn * t1 * (temp - 2.0);
+            m3 += dn * m2 * (-3.0);
+
+            m2 += t1;
+            m1 += dn;
+
+            total = temp;
+        }
+
+
+        public void Reset()
+        {
+            total = 0.0;
+            m2 = 0.0;
+            m1 = new Vector(dim);
+        }
+ 
 
     }
 }
