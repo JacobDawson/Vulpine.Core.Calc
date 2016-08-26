@@ -7,133 +7,52 @@ using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine.Core.Calc
 {
+
     /// <summary>
-    /// this is the basic stat runner, it computes stats on single values with equal weights
+    /// This class represents a set of running statistics for a given data set. Data
+    /// points can be added, and the corisponding stats will be updated on the fly. It
+    /// is able to handle both single and multi-dimentional data, as well as weighted
+    /// statistics, if a weight is given for each data point. It can track the mean,
+    /// variance, and skew, as well as other noteworthy stats. If all one needs is the
+    /// average from a fixed set of datapoints, this class might be overkill, but for
+    /// it's more advanced feautres it can be quite usefull.
     /// </summary>
+    /// <remarks>Last Update: 2016-08-26</remarks>
     public class StatRunner
-    {
-        #region Class Definitions...
-
-        //counts the number of entries
-        private long n;
-
-        //used in computing the mean and variance
-        private double k, ex, ex2;
-
-        private double max, min;
-
-
-        public StatRunner()
-        {
-            Reset();
-        }
-
-        #endregion //////////////////////////////////////////////////////////////
-
-        #region Class Properties...
-
-
-
-
-        public double Total
-        {
-            get { return ex + n * k; }
-        }
-
-        public double Mean
-        {
-            get { return (ex / n) + k; }
-        }
-
-        public double Variance
-        {
-            get { return (ex2 - (ex * ex) / n) / n; }
-        }
-
-        public double SD
-        {
-            get { return Math.Sqrt(Variance); }
-        }
-
-        public double Max
-        {
-            get { return max; }
-        }
-
-        public double Min
-        {
-            get { return min; }
-        }
-
-        public double MidRange
-        {
-            get { return (max + min) / 2.0; }
-        }
-
-        #endregion //////////////////////////////////////////////////////////////
-
-        #region Class Methods...
-
-
-        public void AddValue(double x)
-        {
-            //use the first value as our control
-            if (n <= 0) max = min = k = x;
-
-            //computes the diffrence with our control
-            double diff = x - k;
-
-            //updates our internal values
-            n = n + 1;
-            ex += diff;
-            ex2 += diff * diff;
-
-            //updates the max and min as nessary
-            if (x > max) max = x;
-            if (x < min) min = x;
-        }
-
-        public void Reset()
-        {
-            n = 0;
-            k = ex = ex2 = 0.0;
-            max = min = 0.0;
-
-        }
-
-        #endregion //////////////////////////////////////////////////////////////
-
-    }
-
-
-
-
-    /// <summary>
-    /// This is the vector-based stat runner
-    /// </summary>
-    public class StatRunner2
     {
         #region Class Definitions...
 
         //rembers the number of dimentions
         private int dim;
 
-        //counts the number of entries
-        private long n;
+        //stores the sum of the weights
+        private double t_weight;
 
-        //stores the offset and the sum
-        private Vector k, ex;
+        //used in computing the mean and sum
+        private Vector m1;
 
-        //stores the sum of the squares
-        private double ex2;
+        //used in computing the variance
+        private double m2;
 
-        public StatRunner2()
+        //used in computing the skew
+        private Vector m3;
+
+        /// <summary>
+        /// Creates a single-valued StatRunner for acumuliating single-vaued 
+        /// statistics. All input data points are real numbers.
+        /// </summary>
+        public StatRunner()
         {
             this.dim = 1;
             Reset();
         }
 
-        public StatRunner2(int dim)
+        /// <summary>
+        /// Creates a multi-valued StatRunner with the given dimentinality.
+        /// All input data points are vectors.
+        /// </summary>
+        /// <param name="dim">Dimentionality of the input data</param>
+        public StatRunner(int dim)
         {
             if (dim < 1) dim = 1;
             this.dim = dim;
@@ -144,198 +63,177 @@ namespace Vulpine.Core.Calc
 
         #region Class Properties...
 
-        public int Dimentions
+        /// <summary>
+        /// The dimentionality of the input data
+        /// </summary>
+        public int Dim
         {
             get { return dim; }
         }
 
-        public int Count
+        /// <summary>
+        /// The total sum of all the weights. In unweighted statistics,
+        /// this is simply the count of the data points.
+        /// </summary>
+        public double Weight
         {
-            get { return (int)n; }
+            get { return t_weight; }
         }
 
-        public Vector Total
+        /// <summary>
+        /// The weighted sum of the data points.
+        /// </summary>
+        public Vector Sum
         {
-            get { return ex + n * k; }
+            get { return m1 * t_weight; } 
         }
 
+        /// <summary>
+        /// The arithemetic mean, or centralised value, of the data points.
+        /// </summary>
         public Vector Mean
         {
-            get { return (ex / n) + k; }
+            get { return m1; }
         }
 
-        public double Variance
+        /// <summary>
+        /// The variance of the data points. It is equivlent to the square of
+        /// the standard diviation.
+        /// </summary>
+        public double Var
         {
-            get { return (ex2 - (ex * ex) / n) / n; }
+            get { return m2 / t_weight; }
         }
 
+        /// <summary>
+        /// The standard diviation, or how mutch (on average) the data points
+        /// tend to deviate from the mean.
+        /// </summary>
         public double SD
         {
-            get { return Math.Sqrt(Variance); }
+            get { return Math.Sqrt(Var); }
+        }
+
+
+        /// <summary>
+        /// Represents the amount of skewness in the data set, in both magnitude and
+        /// direction. Skewness can be thought of, abstractly, as the distance between
+        /// the mean and the median, though this is not always the case.
+        /// </summary>
+        public Vector Skew
+        {
+            get
+            {
+                //double temp = t_weight / (m2 * m2 * m2);
+                //return m3 * Math.Sqrt(temp);
+
+                double temp = t_weight / m2;
+                return m3 * Math.Pow(temp, 1.5);
+            }
         }
 
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Methods...
 
-        public void AddValue(double x)
+        /// <summary>
+        /// Adds a single data point to the running statistics. The default
+        /// weight for un-weighted data is 1.0.
+        /// </summary>
+        /// <param name="x">Data point to add</param>
+        public void Add(double x)
         {
-            //calls the method below
-            AddValue(new Vector(x));
+            //calls the mehtod below
+            Add(new Vector(x));
         }
 
+        /// <summary>
+        /// Adds a single data point to the running statistics with the given
+        /// weight. The weight controls how mutch this data point influnces the
+        /// rest of the stats. The default weight is 1.0.
+        /// </summary>
+        /// <param name="x">Data point to add</param>
+        /// <param name="weight">Weight of the given data point</param>
+        public void Add(double x, double weight)
+        {
+            //calls the mehtod below
+            Add(new Vector(x), weight);
+        }
 
-        public void AddValue(Vector x)
+        /// <summary>
+        /// Adds a single data point to the running statistics. The default
+        /// weight for un-weighted data is 1.0.
+        /// </summary>
+        /// <param name="x">Data point to add</param>
+        /// <exception cref="ArgumentShapeException">If the input vector dose
+        /// not have the same dimention as the rest of the data points</exception>
+        public void Add(Vector x)
         {
             //the dimentions of the input vector must match
-            if (x.Length != dim) throw new ArgumentException(); 
-
-            //use the first value as our control
-            if (n <= 0)
-            {
-                k = x;
-                ex = new Vector(dim);
-            }
-
-            //computes the diffrence with our control
-            Vector diff = x - k;
-
-            //updates our internal values
-            n = n + 1;
-            ex += diff;
-            ex2 += diff * diff;
-        }
-
-        public void Reset()
-        {
-            n = 0;
-            k = ex = null;
-            ex2 = 0.0;
-        }
-
-        #endregion //////////////////////////////////////////////////////////////
-    }
-
-
-    public class StatRunner3
-    {
-        private int dim;
-
-        private double total;
-
-        private Vector m1;
-        private Vector m3;
-
-        private double m2;
-
-        private double m4;
-
-
-        public int Dim
-        {
-            get { return dim; }
-        }
-
-        public double Weight
-        {
-            get { return total; }
-        }
-
-        public Vector Sum
-        {
-            get { return m1 * total; } 
-        }
-
-        public Vector Mean
-        {
-            get { return m1; }
-        }
-
-        public double Var
-        {
-            get { return m2 / total; }
-        }
-
-        public double SD
-        {
-            get { return Math.Sqrt(Var); }
-        }
-
-        public Vector Skew
-        {
-            get
-            {
-                //Vector top = m3 * Math.Sqrt(total);
-                //double bottom = Math.Sqrt(m2 * m2 * m2);
-
-                //return top / bottom;
-
-
-                double temp = total / (m2 * m2 * m2);
-                return m3 * Math.Sqrt(temp);
-            }
-        }
-
-        public double Kurt
-        {
-            get
-            {
-                return (total * m4) / (m2 * m2) - 3.0;
-            }
-        }
-
-        public void Add(Vector x, double weight)
-        {
-            //the dimentions of the input vector must match
-            if (x.Length != dim) throw new ArgumentException();
+            if (x.Length != dim) throw new ArgumentShapeException("x");
 
             //used in computing the mean and varance
-            double temp = weight + total;
+            double temp = 1.0 + t_weight;
             Vector delta = x - m1;
-            Vector dn = delta * (weight / temp);
-            double t1 = (delta * dn) * total;
+            Vector dn = delta * (1.0 / temp);
+            double t1 = (delta * dn) * t_weight;
+
+            //updates the third central moment
+            m3 += dn * (t1 * (temp - 2.0));
+            m3 += dn * (m2 * (-3.0));
 
             //updates the intermediates
             m2 += t1;
             m1 += dn;
 
-            total = temp;
+            t_weight = temp;
         }
 
-
-        public void Add2(Vector x, double weight)
+        /// <summary>
+        /// Adds a single data point to the running statistics with the given
+        /// weight. The weight controls how mutch this data point influnces the
+        /// rest of the stats. The default weight is 1.0.
+        /// </summary>
+        /// <param name="x">Data point to add</param>
+        /// <param name="weight">Weight of the given data point</param>
+        /// <exception cref="ArgumentShapeException">If the input vector dose
+        /// not have the same dimention as the rest of the data points</exception>
+        public void Add(Vector x, double weight)
         {
             //the dimentions of the input vector must match
-            if (x.Length != dim) throw new ArgumentException(); 
+            if (x.Length != dim) throw new ArgumentShapeException("x");
+
+            //only allows positive weight values
+            if (weight < 0.0) weight = -weight;
 
             //used in computing the mean and varance
-            double temp = weight + total;
+            double temp = weight + t_weight;
             Vector delta = x - m1;
             Vector dn = delta * (weight / temp);
-            double t1 = total * (delta * dn);
+            double t1 = (delta * dn) * t_weight;
 
-            double dn2 = dn * dn;
+            //updates the third central moment
+            m3 += dn * (t1 * (temp - 2.0));
+            m3 += dn * (m2 * (-3.0));
 
-            m4 += t1 * dn2 * (temp * temp - 3.0 * temp + 3.0);
-            m4 += 6.0 * dn2 * m2 - 4.0 * (dn * m3);
-
-            m3 += dn * t1 * (temp - 2.0);
-            m3 += dn * m2 * (-3.0);
-
+            //updates the intermediates
             m2 += t1;
             m1 += dn;
 
-            total = temp;
+            t_weight = temp;
         }
 
-
+        /// <summary>
+        /// Resets the StatRunner, clearing all previously acumuliated statistics.
+        /// </summary>
         public void Reset()
         {
-            total = 0.0;
+            t_weight = 0.0;
             m2 = 0.0;
             m1 = new Vector(dim);
+            m3 = new Vector(dim);
         }
- 
 
+        #endregion //////////////////////////////////////////////////////////////
     }
 }
