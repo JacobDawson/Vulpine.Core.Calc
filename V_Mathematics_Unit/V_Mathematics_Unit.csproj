@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddOns\DataSets.cs" />
     <Compile Include="AddOns\ErrorConstrant.cs" />
     <Compile Include="AddOns\Ist.cs" />
     <Compile Include="AddOns\ZeroConstraint.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Unit\EuclideanTests.cs" />
     <Compile Include="Unit\MatrixTests.cs" />
     <Compile Include="Unit\MetricTests.cs" />
+    <Compile Include="Unit\StatRunnerTests.cs" />
     <Compile Include="Unit\VectorTests.cs" />
   </ItemGroup>
   <ItemGroup>

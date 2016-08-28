@@ -124,11 +124,8 @@ namespace Vulpine.Core.Calc
         {
             get
             {
-                //double temp = t_weight / (m2 * m2 * m2);
-                //return m3 * Math.Sqrt(temp);
-
-                double temp = t_weight / m2;
-                return m3 * Math.Pow(temp, 1.5);
+                double temp = t_weight / (m2 * m2 * m2);
+                return m3 * Math.Sqrt(temp);
             }
         }
 

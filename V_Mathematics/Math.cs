@@ -34,15 +34,10 @@ namespace Vulpine.Core.Calc
         public const double PHI = 1.6180339887498948482;
 
         /// <summary>
-        /// The square root of 2, aproximatly (1.4142136).
-        /// </summary>
-        public const double ROOT2 = 1.4142135623730950488;
-
-        /// <summary>
         /// A very small number, sutable for spesifing the maximum expected
         /// error when comparing two floating point values for equality. 
         /// </summary>
-        public const double TOL = 1e-12;
+        public const double ESP = 1e-12;
 
         #endregion //////////////////////////////////////////////////////////////////
 
@@ -182,7 +177,7 @@ namespace Vulpine.Core.Calc
             Cmplx temp = Gamma(new Cmplx(x));
 
             //returns the result if it lies on the real axis
-            bool test = Math.Abs(temp.CofI) < VMath.TOL;
+            bool test = Math.Abs(temp.CofI) < VMath.ESP;
             return (test) ? temp.CofR : Double.NaN; 
         }
 

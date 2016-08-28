@@ -642,7 +642,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// </summary>
         public static explicit operator Double(Cmplx n)
         {
-            bool is_real = Math.Abs(n.imag) < VMath.TOL;
+            bool is_real = Math.Abs(n.imag) < VMath.ESP;
             return (is_real) ? n.real : Double.NaN;
         }
 
