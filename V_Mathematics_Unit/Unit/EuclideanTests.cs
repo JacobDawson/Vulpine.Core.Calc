@@ -96,6 +96,19 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 0.5, 1.5)]
         [TestCase(2, 2.0, -1.0)]
         [TestCase(3, 3.0, 0.5)]
+        public void Mult_WithScalor_IsAltDist(int xi, double a, double b)
+        {
+            dynamic x = GetSample(xi);
+
+            dynamic p1 = x.Mult(a + b);              //x * (a + b)
+            dynamic p2 = x.Mult(a).Add(x.Mult(b));   //(x * a) + (x * b)
+
+            Assert.That(p1, Ist.WithinTolOf(p2, VMath.ESP));
+        }
+
+        [TestCase(1, 0.5, 1.5)]
+        [TestCase(2, 2.0, -1.0)]
+        [TestCase(3, 3.0, 0.5)]
         public void Mult_WithScalor_IsCompatable(int xi, double a, double b)
         {
             dynamic x = GetSample(xi);

@@ -72,7 +72,31 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(skew, Ist.WithinTolOf(ex, tol));
         }
 
-        //
+        [Test]
+        public void Add_NormalDistribution_ExpectedMin()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Normal) sr.Add(x);
+
+            double skew = sr.Min[0];
+            double ex = 1.9471531576;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        [Test]
+        public void Add_NormalDistribution_ExpectedMax()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Normal) sr.Add(x);
+
+            double skew = sr.Max[0];
+            double ex = 8.3323329604;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
 
         [Test]
         public void Add_UniformDistribution_ExpectedSum()
@@ -122,7 +146,31 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(skew, Ist.WithinTolOf(ex, tol));
         }
 
-        //
+        [Test]
+        public void Add_UniformDistribution_ExpectedMin()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Uniform) sr.Add(x);
+
+            double skew = sr.Min[0];
+            double ex = 0.0041451644;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        [Test]
+        public void Add_UniformDistribution_ExpectedMax()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Uniform) sr.Add(x);
+
+            double skew = sr.Max[0];
+            double ex = 0.9990476144;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
 
         [Test]
         public void Add_LogNormalDistribution_ExpectedSum()
@@ -172,7 +220,31 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(skew, Ist.WithinTolOf(ex, tol));
         }
 
-        //
+        [Test]
+        public void Add_LogNormalDistribution_ExpectedMin()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.LogNorm) sr.Add(x);
+
+            double skew = sr.Min[0];
+            double ex = 0.3257033841;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        [Test]
+        public void Add_LogNormalDistribution_ExpectedMax()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.LogNorm) sr.Add(x);
+
+            double skew = sr.Max[0];
+            double ex = 3.5548327624;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
 
         [Test]
         public void Add_LaplaceDistribution_ExpectedSum()
@@ -222,7 +294,31 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(skew, Ist.WithinTolOf(ex, tol));
         }
 
-        //
+        [Test]
+        public void Add_LaplaceDistribution_ExpectedMin()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Laplace) sr.Add(x);
+
+            double skew = sr.Min[0];
+            double ex = 0.7547431959;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        [Test]
+        public void Add_LaplaceDistribution_ExpectedMax()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Laplace) sr.Add(x);
+
+            double skew = sr.Max[0];
+            double ex = 5.2710437217;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
 
         [Test]
         public void Add_ExponentialDistribution_ExpectedSum()
@@ -272,7 +368,31 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(skew, Ist.WithinTolOf(ex, tol));
         }
 
-        //
+        [Test]
+        public void Add_ExponentialDistribution_ExpectedMin()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Exponential) sr.Add(x);
+
+            double skew = sr.Min[0];
+            double ex = 0.0008863178;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        [Test]
+        public void Add_ExponentialDistribution_ExpectedMax()
+        {
+            dynamic sr = new StatRunner(1);
+            foreach (double x in DataSets.Exponential) sr.Add(x);
+
+            double skew = sr.Max[0];
+            double ex = 1.2888835818;
+
+            Assert.That(skew, Ist.WithinTolOf(ex, tol));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
 
         [Test]
         public void Add_WeightedData_ExpectedWeight()

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Matrices;
+using Vulpine.Core.Calc.Extentions;
 
 namespace Vulpine.Core.Calc
 {
@@ -17,8 +18,8 @@ namespace Vulpine.Core.Calc
     /// average from a fixed set of datapoints, this class might be overkill, but for
     /// it's more advanced feautres it can be quite usefull.
     /// </summary>
-    /// <remarks>Last Update: 2016-08-26</remarks>
-    public class StatRunner
+    /// <remarks>Last Update: 2016-10-26</remarks>
+    public class StatRunner : IFormattable
     {
         #region Class Definitions...
 
@@ -28,14 +29,17 @@ namespace Vulpine.Core.Calc
         //stores the sum of the weights
         private double t_weight;
 
-        //used in computing the mean and sum
+        //stores the first and second central moments
         private Vector m1;
-
-        //used in computing the variance
-        private double m2;
-
-        //used in computing the skew
         private Vector m3;
+
+        //stores the second and fourth central moments
+        private double m2;
+        private double m4;
+
+        //stores the minimum and maximum bounds
+        private Vector min;
+        private Vector max;
 
         /// <summary>
         /// Creates a single-valued StatRunner for acumuliating single-vaued 
@@ -59,9 +63,66 @@ namespace Vulpine.Core.Calc
             Reset();
         }
 
+        /// <summary>
+        /// Generates a string representation of the stat-runner, using the default
+        /// formating for floating point values.
+        /// </summary>
+        /// <returns>The stat-runner fomated as a string</returns>
+        public override string ToString()
+        {
+            //calls upon the method below
+            return ToString("g5", null);
+        }
+
+        /// <summary>
+        /// Generates a formated string representation of the stat-runner, displaying
+        /// the most comonly used statistics, passing the formating information on
+        /// to each one. 
+        /// </summary>
+        /// <param name="format">A numeric format string</param>
+        /// <param name="provider">An object that suplies formating information</param>
+        /// <returns>The stat-runner fomated as a string</returns>
+        public string ToString(string format, IFormatProvider provider)
+        {
+            //takes care of an empty stat runner
+            if (this.Empty) return "Empty Data-Set";
+
+            StringBuilder sb = new StringBuilder();
+
+            if (Dim == 1)
+            {
+                //if our data is univarant, we can report the stats as scalor values
+                sb.AppendFormat("Min: {0}, ", Min[0].ToString(format, provider));
+                sb.AppendFormat("Max: {0}, ", Max[0].ToString(format, provider));
+                sb.AppendFormat("Avg: {0}, ", Mean[0].ToString(format, provider));
+            }
+            else
+            {
+                //we must report the stats as vectors for multidimentional data
+                sb.AppendFormat("Min: {0}, ", Min.ToString(format, provider));
+                sb.AppendFormat("Max: {0}, ", Max.ToString(format, provider));
+                sb.AppendFormat("Avg: {0}, ", Mean.ToString(format, provider));
+            }
+
+            //the standard diviation and weight are always scalar values
+            sb.AppendFormat("SD: {0}, ", SD.ToString(format, provider));
+            sb.AppendFormat("WT: {0}", Weight.ToString(format, provider));
+
+            return sb.ToString();
+        }
+
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Properties...
+
+        /// <summary>
+        /// Determins if the dataset is currently empty, or if the stat-runner
+        /// has been reset back to zero.
+        /// </summary>
+        public bool Empty
+        {
+            get { return (max == null) || (min == null); }
+        }
 
         /// <summary>
         /// The dimentionality of the input data
@@ -114,11 +175,13 @@ namespace Vulpine.Core.Calc
             get { return Math.Sqrt(Var); }
         }
 
-
         /// <summary>
-        /// Represents the amount of skewness in the data set, in both magnitude and
-        /// direction. Skewness can be thought of, abstractly, as the distance between
-        /// the mean and the median, though this is not always the case.
+        /// Represents the amount of skewness in the data set. Skewness can be thought of, 
+        /// abstractly, as the distribution of the data about the mean. In single-valued 
+        /// statistics, the distribution tends to lean to the left when the skew is negative, 
+        /// or to the right when it is positive. In higher dimentions, this forms a vector 
+        /// indicating the direction of the skew. It dose not relate the mean to the median,
+        /// which are two diffrent types of central tendency.
         /// </summary>
         public Vector Skew
         {
@@ -127,6 +190,39 @@ namespace Vulpine.Core.Calc
                 double temp = t_weight / (m2 * m2 * m2);
                 return m3 * Math.Sqrt(temp);
             }
+        }
+
+        /// <summary>
+        /// Represets the amount of kurtosis in the data set. Kurtosis, along with Skewness,
+        /// help determin the shape of the distribution. Data sets with large kurtosis values,
+        /// tend to have a lot of outliers. A normaly distributed random variable will have a
+        /// kurtosis that tends tward zero.
+        /// </summary>
+        public double Kurt
+        {
+            get { return (t_weight * m4) / (m2 * m2) - 3.0; }
+        }
+
+        /// <summary>
+        /// The minimum binding value in the data set. For univariate data, this is simply
+        /// the smallest item in the dataset. In higher dimentions, it forms one corner of
+        /// the bounding hyper-volume that contains the dataset. This hyper-volume can be
+        /// uniquly defined by the minimum and maximum values.
+        /// </summary>
+        public Vector Min
+        {
+            get { return min; }
+        }
+
+        /// <summary>
+        /// The maximum binding value in the data set. For univariate data, this is simply
+        /// the largest item in the dataset. In higher dimentions, it forms one corner of
+        /// the bounding hyper-volume that contains the dataset. This hyper-volume can be
+        /// uniquly defined by the minimum and maximum values.
+        /// </summary>
+        public Vector Max
+        {
+            get { return max; }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -169,11 +265,20 @@ namespace Vulpine.Core.Calc
             //the dimentions of the input vector must match
             if (x.Length != dim) throw new ArgumentShapeException("x");
 
+            //updates the minimum and maximum bounds
+            min = (min == null) ? x : min.Min(x);
+            max = (max == null) ? x : max.Max(x);
+
             //used in computing the mean and varance
             double temp = 1.0 + t_weight;
             Vector delta = x - m1;
-            Vector dn = delta * (1.0 / temp);
+            Vector dn = delta / temp;
             double t1 = (delta * dn) * t_weight;
+            double dn2 = dn * dn;
+
+            //updates the fouth central moment
+            m4 += t1 * dn2 * (temp * temp - 3.0 * temp + 3.0);
+            m4 += 6.0 * dn2 * m2 - 4.0 * (dn * m3);
 
             //updates the third central moment
             m3 += dn * (t1 * (temp - 2.0));
@@ -203,11 +308,20 @@ namespace Vulpine.Core.Calc
             //only allows positive weight values
             if (weight < 0.0) weight = -weight;
 
+            //updates the minimum and maximum bounds
+            min = (min == null) ? x : min.Min(x);
+            max = (max == null) ? x : max.Max(x);
+
             //used in computing the mean and varance
             double temp = weight + t_weight;
             Vector delta = x - m1;
             Vector dn = delta * (weight / temp);
             double t1 = (delta * dn) * t_weight;
+            double dn2 = dn * dn;
+
+            //updates the fouth central moment
+            m4 += t1 * dn2 * (temp * temp - 3.0 * temp + 3.0);
+            m4 += 6.0 * dn2 * m2 - 4.0 * (dn * m3);
 
             //updates the third central moment
             m3 += dn * (t1 * (temp - 2.0));
@@ -225,10 +339,16 @@ namespace Vulpine.Core.Calc
         /// </summary>
         public void Reset()
         {
+            //sets the initial weight to zero
             t_weight = 0.0;
-            m2 = 0.0;
+
+            //sets the central moments to zero
+            m2 = m4 = 0.0;
             m1 = new Vector(dim);
             m3 = new Vector(dim);
+
+            //sets the maximum and minimum bounds to null
+            max = min = null;
         }
 
         #endregion //////////////////////////////////////////////////////////////

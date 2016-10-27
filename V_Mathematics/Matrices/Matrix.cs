@@ -109,19 +109,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// it only reports the dimentions of the matrix.
         /// </summary>
         /// <param name="format">A numeric format string</param>
-        /// <returns>The matrix fomated as a string</returns>
-        public string ToString(string format)
-        {
-            //calls upon the method below
-            return ToString(format, null);
-        }
-
-        /// <summary>
-        /// Generates a formated string representation of the matrix. It shows the 
-        /// complete matrix for matricies that are less than 4x4. For larger matricies, 
-        /// it only reports the dimentions of the matrix.
-        /// </summary>
-        /// <param name="format">A numeric format string</param>
         /// <param name="provider">An object that suplies formating information</param>
         /// <returns>The matrix fomated as a string</returns>
         public string ToString(string format, IFormatProvider provider)
@@ -914,7 +901,7 @@ namespace Vulpine.Core.Calc.Matrices
         public static implicit operator VFunc<Vector>(Matrix m)
         {
             //treates the matrix as a function of vectors
-            return (v => m.Mult(v));
+            return v => m.Mult(v);
         }
 
         #endregion //////////////////////////////////////////////////////////////

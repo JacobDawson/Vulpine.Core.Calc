@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Numbers;
+using Vulpine.Core.Data.Extentions;
 
 namespace Vulpine.Core.Calc
 {
@@ -41,25 +42,7 @@ namespace Vulpine.Core.Calc
 
         #endregion //////////////////////////////////////////////////////////////////
 
-        /// <summary>
-        /// Converts from radians to degrees.
-        /// </summary>
-        /// <param name="rad">Input in radians</param>
-        /// <returns>The ewuivlent value in degrees</returns>
-        public static double ToDegrees(double rad)
-        {
-            return (rad * (180.0 / Math.PI));
-        }
-
-        /// <summary>
-        /// Converts from degrees to radians.
-        /// </summary>
-        /// <param name="deg">Input in degrees</param>
-        /// <returns>The equivlent value in radians</returns>
-        public static double ToRadians(double deg)
-        {
-            return (deg * (Math.PI / 180.0));
-        }
+        #region Statistics...
 
         /// <summary>
         /// Computes the maximum from a set of values, as opposed to the
@@ -70,8 +53,8 @@ namespace Vulpine.Core.Calc
         public static double Max(params double[] vals)
         {
             //takes care of the obvious cases
-            if (vals.Length == 1) return vals[0];
             if (vals.Length == 0) return Double.NaN;
+            if (vals.Length == 1) return vals[0];
 
             //assumes the first is maximum
             double max = vals[0];
@@ -92,8 +75,8 @@ namespace Vulpine.Core.Calc
         public static double Min(params double[] vals)
         {
             //takes care of the obvious cases
-            if (vals.Length == 1) return vals[0];
             if (vals.Length == 0) return Double.NaN;
+            if (vals.Length == 1) return vals[0];
 
             //assumes the first is minimunm
             double min = vals[0];
@@ -104,6 +87,44 @@ namespace Vulpine.Core.Calc
 
             return min;
         }
+
+        public static double NextUp(double x)
+        {
+            //we do not update NaNs or Infinities
+            if (Double.IsNaN(x)) return x;
+            if (Double.IsInfinity(x)) return x;
+
+            //must treat zero as a special case
+            if (x == 0.0) return Double.Epsilon;
+
+            //manipulates the bit-pattern and returns
+            long bits = BitConverter.DoubleToInt64Bits(x);
+            bits = (x > 0.0) ? bits + 1 : bits - 1;
+            return BitConverter.Int64BitsToDouble(bits);
+        }
+
+        public static double NextDown(double x)
+        {
+            //we do not update NaNs or Infinities
+            if (Double.IsNaN(x)) return x;
+            if (Double.IsInfinity(x)) return x;
+
+            //must treat zero as a special case
+            if (x == 0.0) return -Double.Epsilon;
+
+            //manipulates the bit-pattern and returns
+            long bits = BitConverter.DoubleToInt64Bits(x);
+            bits = (x > 0.0) ? bits - 1 : bits + 1;
+            return BitConverter.Int64BitsToDouble(bits);
+        }
+
+        public static bool IsZero(double x)
+        {
+            double test = 1.0 / x;
+            return Double.IsInfinity(test);
+        }
+
+        #endregion //////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Computes the standard sinc function, which is defined as sin(x) / x,
@@ -260,6 +281,29 @@ namespace Vulpine.Core.Calc
         }
 
 
+        public static double Error(double x)
+        {
+            double t = 1.0 / (1.0 + 0.5 * Math.Abs(x));
+            double p = 0.17087277;
+
+            //computes the polynomial portion
+            p = (p * t) - 0.82215223;
+            p = (p * t) + 1.48851587;
+            p = (p * t) - 1.13520398;
+            p = (p * t) + 0.27886807;
+            p = (p * t) - 0.18628806;
+            p = (p * t) + 0.09678418;
+            p = (p * t) + 0.37409196;
+            p = (p * t) + 1.00002368;
+            p = (p * t) - ((x * x) + 1.26551223);
+
+            double tau = t * Math.Exp(p);
+            tau = (x >= 0.0) ? 1.0 - tau : tau - 1.0;
+
+            return tau;
+        }
+
+
 
 
 
@@ -282,6 +326,27 @@ namespace Vulpine.Core.Calc
             if (val > max) return max;
 
             return val;
+        }
+
+
+        /// <summary>
+        /// Converts from radians to degrees.
+        /// </summary>
+        /// <param name="rad">Input in radians</param>
+        /// <returns>The ewuivlent value in degrees</returns>
+        public static double ToDegrees(double rad)
+        {
+            return (rad * (180.0 / Math.PI));
+        }
+
+        /// <summary>
+        /// Converts from degrees to radians.
+        /// </summary>
+        /// <param name="deg">Input in degrees</param>
+        /// <returns>The equivlent value in radians</returns>
+        public static double ToRadians(double deg)
+        {
+            return (deg * (Math.PI / 180.0));
         }
 
 
@@ -309,5 +374,6 @@ namespace Vulpine.Core.Calc
         {        
             return val.ToString("0.00e+00");
         }
+
     }
 }

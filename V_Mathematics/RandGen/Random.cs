@@ -285,7 +285,7 @@ namespace Vulpine.Core.Calc.RandGen
         /// <returns>A random unit vector</returns>
         /// <exception cref="ArgumentOutOfRangeException">If the dimention is less 
         /// than one</exception>
-        public Vector RandomUnit(int dim)
+        public Vector RandUnit(int dim)
         {
             if (dim < 1)
             {
@@ -331,7 +331,7 @@ namespace Vulpine.Core.Calc.RandGen
         /// <param name="source">Source of the original items</param>
         /// <returns>A random item</returns>
         /// <exception cref="ArgumentNullException">If the source is null</exception>
-        public T RandomElement<T>(IEnumerable<T> source)
+        public T RandElement<T>(IEnumerable<T> source)
         {
             if (source == null) throw new ArgumentNullException("source");
             ICollection<T> colleciton = source as ICollection<T>;

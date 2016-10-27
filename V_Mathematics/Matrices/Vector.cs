@@ -91,19 +91,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// the vector is larger than 4 elements, elipisis notation is used.
         /// </summary>
         /// <param name="format">A numeric format string</param>
-        /// <returns>The vector fomated as a string</returns>
-        public string ToString(string format)
-        {
-            //calls upon the method below
-            return ToString(format, null);
-        }
-
-        /// <summary>
-        /// Generates a formated string representation of the vector, suplying
-        /// the format information to each element of the vector in turn. If
-        /// the vector is larger than 4 elements, elipisis notation is used.
-        /// </summary>
-        /// <param name="format">A numeric format string</param>
         /// <param name="provider">An object that suplies formating information</param>
         /// <returns>The vector fomated as a string</returns>
         public string ToString(string format, IFormatProvider provider)
@@ -436,6 +423,54 @@ namespace Vulpine.Core.Calc.Matrices
                 dist.vector[i] = dist.vector[i] / sum;
 
             return dist;
+        }
+
+        /// <summary>
+        /// Computes the compoenent-wise minimum of the current vector and a
+        /// given vector. That is, each element in the output vector is the
+        /// minimum of the corsponding elements in the imput vectors.
+        /// </summary>
+        /// <param name="v">The second vector</param>
+        /// <returns>The component-wise minimum of the two vectors</returns>
+        /// <exception cref="ArgumentShapeException">If the vectors are 
+        /// of differing length</exception>
+        public Vector Min(Vector v)
+        {
+            //checks that the vectors are the same length
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
+
+            //creates a new vector to store the result
+            Vector output = new Vector(vector.Length);
+
+            //computes the compoenetwise minimum
+            for (int i = 0; i < vector.Length; i++)
+                output.vector[i] = Math.Min(vector[i], v.vector[i]);
+
+            return output;
+        }
+
+        /// <summary>
+        /// Computes the compoenent-wise maximum of the current vector and a
+        /// given vector. That is, each element in the output vector is the
+        /// maximum of the corsponding elements in the imput vectors.
+        /// </summary>
+        /// <param name="v">The second vector</param>
+        /// <returns>The component-wise maximum of the two vectors</returns>
+        /// <exception cref="ArgumentShapeException">If the vectors are 
+        /// of differing length</exception>
+        public Vector Max(Vector v)
+        {
+            //checks that the vectors are the same length
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
+
+            //creates a new vector to store the result
+            Vector output = new Vector(vector.Length);
+
+            //computes the compoenetwise maximum
+            for (int i = 0; i < vector.Length; i++)
+                output.vector[i] = Math.Max(vector[i], v.vector[i]);
+
+            return output;
         }
 
         #endregion /////////////////////////////////////////////////////////////
