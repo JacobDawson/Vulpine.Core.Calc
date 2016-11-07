@@ -35,10 +35,120 @@ namespace Vulpine.Core.Calc
         public const double PHI = 1.6180339887498948482;
 
         /// <summary>
-        /// A very small number, sutable for spesifing the maximum expected
-        /// error when comparing two floating point values for equality. 
+        /// The default error tollarence used within the mathamatics library.
+        /// It is desined to be greater that the precision of a single floating
+        /// point value, but less than the presision of a double. Note this value
+        /// is only sutable for comparing releative error, for absolute error
+        /// a diffrent metric should be used.
         /// </summary>
-        public const double ESP = 1e-12;
+        public const double ERR = 1e-12;
+
+        #endregion //////////////////////////////////////////////////////////////////
+
+        #region Floating Point Manipulation...
+
+        /// <summary>
+        /// Determins if the floating point number indicates an actual numeric value,
+        /// rather than an infinate value, or a special NaN value.
+        /// </summary>
+        /// <param name="x">Floating point vlaue to test</param>
+        /// <returns>True if it is an actual numeric value, otherwise false</returns>
+        public static bool IsANumber(double x)
+        {
+            //checks for special cases
+            if (Double.IsNaN(x)) return false;
+            if (Double.IsInfinity(x)) return false;
+
+            //must be a numeric value 
+            return true;
+        }
+
+        /// <summary>
+        /// Determins if the given value should be treated as zero, for all intents and
+        /// purpouses. One should tipicaly avoid directly comparing two floating point
+        /// numbers, due to possable round-off error. However, in many instances in code,
+        /// it is usefull to compare a floating point value to zero. This method helps
+        /// to alieviate this problem.
+        /// </summary>
+        /// <param name="x">Floating point vlaue to test</param>
+        /// <returns>True if the value should be considered zero, false if otherwise</returns>
+        public static bool IsZero(double x)
+        {
+            //determins if the number is invertable
+            double test = 1.0 / x;
+            return Double.IsInfinity(test);
+        }
+
+        /// <summary>
+        /// Increments a double-presesion floating-point value by the smallest amount
+        /// possable. It basicly produces the next largest double value that can be
+        /// represented in the system. 
+        /// </summary>
+        /// <param name="x">Double value to increment</param>
+        /// <returns>The next largest double value</returns>
+        public static double NextUp(double x)
+        {
+            //we do not update NaNs or Infinities
+            if (Double.IsNaN(x)) return x;
+            if (Double.IsInfinity(x)) return x;
+
+            //must treat zero as a special case
+            if (x == 0.0) return Double.Epsilon;
+
+            //manipulates the bit-pattern and returns
+            long bits = BitConverter.DoubleToInt64Bits(x);
+            bits = (x > 0.0) ? bits + 1 : bits - 1;
+            return BitConverter.Int64BitsToDouble(bits);
+        }
+
+        /// <summary>
+        /// Decrements a double-presesion floating-point value by the smallest amount
+        /// possable. It basicly produces the next smallest double value that can be
+        /// represented in the system. 
+        /// </summary>
+        /// <param name="x">Double value to decrement</param>
+        /// <returns>The next dmalest double value</returns>
+        public static double NextDown(double x)
+        {
+            //we do not update NaNs or Infinities
+            if (Double.IsNaN(x)) return x;
+            if (Double.IsInfinity(x)) return x;
+
+            //must treat zero as a special case
+            if (x == 0.0) return -Double.Epsilon;
+
+            //manipulates the bit-pattern and returns
+            long bits = BitConverter.DoubleToInt64Bits(x);
+            bits = (x > 0.0) ? bits - 1 : bits + 1;
+            return BitConverter.Int64BitsToDouble(bits);
+        }
+
+        /// <summary>
+        /// Clamps the floating point value to be between zero and one.
+        /// </summary>
+        /// <param name="val">Value to be clamped</param>
+        /// <returns>The clamped value</returns>
+        public static double Clamp(double val)
+        {
+            if (val < 0.0) return 0.0;
+            if (val > 1.0) return 1.0;
+            return val;
+        }
+
+        /// <summary>
+        /// Clamps the floating point value to be between the given minimum and
+        /// maximum values, respectivly. 
+        /// </summary>
+        /// <param name="val">Value to be clamped</param>
+        /// <param name="min">Minimum possable output</param>
+        /// <param name="max">Maximum possable output</param>
+        /// <returns>The clamped value</returns>
+        public static double Clamp(double val, double min, double max)
+        {
+            if (val < min) return min;
+            if (val > max) return max;
+            return val;
+        }
 
         #endregion //////////////////////////////////////////////////////////////////
 
@@ -61,7 +171,7 @@ namespace Vulpine.Core.Calc
 
             //preformes the itterative calculation
             for (int i = 1; i < vals.Length; i++)
-            if (vals[i] > max) max = vals[i];
+                if (vals[i] > max) max = vals[i];
 
             return max;
         }
@@ -83,48 +193,14 @@ namespace Vulpine.Core.Calc
 
             //preformes the itterative calculation
             for (int i = 1; i < vals.Length; i++)
-            if (vals[i] < min) min = vals[i];
+                if (vals[i] < min) min = vals[i];
 
             return min;
         }
 
-        public static double NextUp(double x)
-        {
-            //we do not update NaNs or Infinities
-            if (Double.IsNaN(x)) return x;
-            if (Double.IsInfinity(x)) return x;
-
-            //must treat zero as a special case
-            if (x == 0.0) return Double.Epsilon;
-
-            //manipulates the bit-pattern and returns
-            long bits = BitConverter.DoubleToInt64Bits(x);
-            bits = (x > 0.0) ? bits + 1 : bits - 1;
-            return BitConverter.Int64BitsToDouble(bits);
-        }
-
-        public static double NextDown(double x)
-        {
-            //we do not update NaNs or Infinities
-            if (Double.IsNaN(x)) return x;
-            if (Double.IsInfinity(x)) return x;
-
-            //must treat zero as a special case
-            if (x == 0.0) return -Double.Epsilon;
-
-            //manipulates the bit-pattern and returns
-            long bits = BitConverter.DoubleToInt64Bits(x);
-            bits = (x > 0.0) ? bits - 1 : bits + 1;
-            return BitConverter.Int64BitsToDouble(bits);
-        }
-
-        public static bool IsZero(double x)
-        {
-            double test = 1.0 / x;
-            return Double.IsInfinity(test);
-        }
-
         #endregion //////////////////////////////////////////////////////////////////
+
+        #region Special Functions...
 
         /// <summary>
         /// Computes the standard sinc function, which is defined as sin(x) / x,
@@ -170,12 +246,25 @@ namespace Vulpine.Core.Calc
             }
         }
 
-
+        /// <summary>
+        /// Computes the logarythim base 2 of the given value, that is, it finds
+        /// the exponent of 2 which produces the given value. This is a usefull
+        /// mesurment for base-2 binary systems.
+        /// </summary>
+        /// <param name="x">Number to evaluate</param>
+        /// <returns>Base-2 Logarythim of the imput</returns>
         public static double Log2(double x)
         {
             return Math.Log(x) / VMath.LN2;
         }
 
+        /// <summary>
+        /// Computes the logarythim base 2 of the given value, that is, it finds
+        /// the exponent of 2 which produces the given value. This is a usefull
+        /// mesurment for base-2 binary systems.
+        /// </summary>
+        /// <param name="z">Number to evaluate</param>
+        /// <returns>Base-2 Logarythim of the imput</returns>
         public static Cmplx Log2(Cmplx z)
         {
             //seperates the funciton into real and imaginary
@@ -195,11 +284,7 @@ namespace Vulpine.Core.Calc
         public static double Gamma(double x)
         {
             //calls upon the complex method
-            Cmplx temp = Gamma(new Cmplx(x));
-
-            //returns the result if it lies on the real axis
-            bool test = Math.Abs(temp.CofI) < VMath.ESP;
-            return (test) ? temp.CofR : Double.NaN; 
+            return (double)Gamma(new Cmplx(x));
         }
 
         /// <summary>
@@ -237,7 +322,7 @@ namespace Vulpine.Core.Calc
                 t = z + 7.5;
 
                 //finalises the result
-                x *= 2.506628274631;  //SQRT(2*PI); 
+                x *= 2.506628274631;  //SQRT(2*PI);
                 x *= Cmplx.Pow(t, z + 0.5);
                 x *= Cmplx.Exp(-t);
 
@@ -258,11 +343,6 @@ namespace Vulpine.Core.Calc
             return 1.0 / (1.0 + Math.Exp(-x));
         }
 
-        public static Cmplx Sgmd(Cmplx z)
-        {
-            return 1.0 / (1.0 + Cmplx.Exp(-z));
-        }
-
         /// <summary>
         /// Computes the inverse sigmoid funciton, which undoes the action
         /// taken by the sigmoid funciton. If the input is outside the range
@@ -280,60 +360,110 @@ namespace Vulpine.Core.Calc
             return Math.Log(-x);
         }
 
-
-        public static double Error(double x)
+        /// <summary>
+        /// Evalueates the error function at the given value. Note this is not the same
+        /// as computing the amount of error in an estimated value. The error funciton
+        /// arrises from stastics and has a similar shape to the sigmoid funciton. The
+        /// error function, however, cannot be defined in terms of elementry operattors,
+        /// thus a numerical aproximation is used.
+        /// </summary>
+        /// <param name="x">Input to the error fuction</param>
+        /// <returns>The result of the error funciton</returns>
+        public static double Erf(double x)
         {
-            double t = 1.0 / (1.0 + 0.5 * Math.Abs(x));
-            double p = 0.17087277;
+            if (Math.Abs(x) <= 0.5)
+            {
+                double x2 = x * x;
+                double p = -3.5609843701815385e-2;
+                double q = 1.0;
 
-            //computes the polynomial portion
-            p = (p * t) - 0.82215223;
-            p = (p * t) + 1.48851587;
-            p = (p * t) - 1.13520398;
-            p = (p * t) + 0.27886807;
-            p = (p * t) - 0.18628806;
-            p = (p * t) + 0.09678418;
-            p = (p * t) + 0.37409196;
-            p = (p * t) + 1.00002368;
-            p = (p * t) - ((x * x) + 1.26551223);
+                //computes the polynomial
+                p = (p * x2) + 6.9963834886191355e+0;
+                p = (p * x2) + 2.1979261618294152e+1;
+                p = (p * x2) + 2.4266795523053175e+2;
 
-            double tau = t * Math.Exp(p);
-            tau = (x >= 0.0) ? 1.0 - tau : tau - 1.0;
+                //computest the quotient
+                q = (q * x2) + 1.5082797630407787e+1;
+                q = (q * x2) + 9.1164905404514901e+1;
+                q = (q * x2) + 2.1505887586986120e+2;
 
-            return tau;
+                return x * (p / q);
+            }
+            else
+            {
+                double a = Math.Abs(x);
+                double p = -6.0858151959688e-6;
+                double q = 1.0;
+
+                //computes the polynomial
+                p = (p * a) + 5.6437160686381e-1;
+                p = (p * a) + 4.2677201070898e+0;
+                p = (p * a) + 1.4571898596926e+1;
+                p = (p * a) + 2.6094746956075e+1;
+                p = (p * a) + 2.2898992851659e+1;
+
+                //computest the quotient
+                q = (q * a) + 7.5688482293618e+0;
+                q = (q * a) + 2.6288795758761e+1;
+                q = (q * a) + 5.0273202863803e+1;
+                q = (q * a) + 5.1933570687552e+1;
+                q = (q * a) + 2.2898985749891e+1;
+
+                double t = (p / q) * Math.Exp(-x * x);
+                return (x >= 0.0) ? 1.0 - t : t - 1.0;
+            }
         }
 
-
-
-
-
-
-
-
-
-
-        public static double Clamp(this double val, double min, double max)
+        /// <summary>
+        /// Evalueates the error function at the given value. Note this is not the same
+        /// as computing the amount of error in an estimated value. The error funciton
+        /// arrises from stastics and has a similar shape to the sigmoid funciton. The
+        /// error function, however, cannot be defined in terms of elementry operattors,
+        /// thus a numerical aproximation is used.
+        /// </summary>
+        /// <param name="z">Input to the complex error fuction</param>
+        /// <returns>The result of the complex error funciton</returns>
+        public static Cmplx Erf(Cmplx z)
         {
-            if (val < min) return min;
-            if (val > max) return max;
+            //Uses the talor series for the complex error function
+            double error = Double.PositiveInfinity;
+            int n = 0;
 
-            return val;
+            Cmplx sum1 = 0.0;
+            Cmplx sum2 = 0.0;
+            Cmplx prod = 1.0;
+
+            while (error > VMath.ERR && n < 64)
+            {
+                //computes the inner product
+                for (int k = 1; k <= n; k++)
+                    prod *= -(z * z) / (double)k;
+
+                sum1 = sum2;
+
+                //updates the sum and calculates the relitive error
+                sum2 += (z / (2.0 * n + 1.0)) * prod;
+                error = (sum1 - sum2).Abs / sum1.Abs;
+
+                prod = 1.0;
+                n++;
+            }
+
+            //sum * 2/sqrt(pi)
+            return sum2 * 1.1283791670955125739;
         }
 
-        public static float Clamp(this float val, float min, float max)
-        {
-            if (val < min) return min;
-            if (val > max) return max;
+        #endregion //////////////////////////////////////////////////////////////////
 
-            return val;
-        }
+
+
 
 
         /// <summary>
         /// Converts from radians to degrees.
         /// </summary>
         /// <param name="rad">Input in radians</param>
-        /// <returns>The ewuivlent value in degrees</returns>
+        /// <returns>The equivlent value in degrees</returns>
         public static double ToDegrees(double rad)
         {
             return (rad * (180.0 / Math.PI));
@@ -347,32 +477,6 @@ namespace Vulpine.Core.Calc
         public static double ToRadians(double deg)
         {
             return (deg * (Math.PI / 180.0));
-        }
-
-
-        public static string FormatShort(double val)
-        {
-            //takes care of NaN and infinity cases
-            if (Double.IsNaN(val)) return "NaN";
-            if (Double.IsInfinity(val)) return "Inf";
-
-            //uses the absolute value to determin the correct format
-            double abs = Math.Abs(val);
-
-            //retruns five significant digits regardless of size
-            if (abs < 10) return val.ToString("0.0000");
-            if (abs < 100) return val.ToString("00.000");
-            if (abs < 1000) return val.ToString("000.00");
-            if (abs < 10000) return val.ToString("0000.0");
-            if (abs < 100000) return val.ToString("00000");
-
-            //returns five significant digits in sinentific notation
-            return val.ToString("0.0000e+00");
-        }
-
-        public static string FormatFixed(double val)
-        {        
-            return val.ToString("0.00e+00");
         }
 
     }

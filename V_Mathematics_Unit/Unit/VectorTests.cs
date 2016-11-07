@@ -118,7 +118,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             dynamic v = GetSample(1);
             
-            string s1 = v.ToString("0.0000");
+            string s1 = v.ToString("0.0000", null);
             string s2 = v[0].ToString("0.0000");
 
             Assert.That(s1, Contains.Substring(s2));
@@ -129,7 +129,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             dynamic v = GetSample(2);
 
-            string s1 = v.ToString("0.0000");
+            string s1 = v.ToString("0.0000", null);
             string s2 = v[4].ToString("0.0000");
 
             Assert.That(s1, Contains.Substring(s2));
@@ -140,7 +140,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             dynamic v = GetSample(6);
 
-            string s1 = v.ToString("0.0000");
+            string s1 = v.ToString("0.0000", null);
             string s2 = v[0].ToString("0.0000");
 
             Assert.That(s1, Contains.Substring(s2));
@@ -151,7 +151,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             dynamic v = GetSample(7);
 
-            string s1 = v.ToString("0.0000");
+            string s1 = v.ToString("0.0000", null);
             string s2 = v[2].ToString("0.0000");
 
             Assert.That(s1, Contains.Substring(s2));

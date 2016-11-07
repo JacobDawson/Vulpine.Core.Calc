@@ -6,50 +6,6 @@ using System.Text;
 namespace Vulpine.Core.Calc
 {
     /// <summary>
-    /// This interface describes an algebraic sturctor with the common opperators of 
-    /// adition, subtraction, and multiplication, but not division. In abstract terms 
-    /// it forms a Ring. Adition must be asociative, comunitive, and invertable; while
-    /// multiplication need only be asociative. It is also required that multiplication
-    /// distributs over adition. There also exist two implicit elements in every Ring,
-    /// the aditive identity and the multiplicitive identity.
-    /// </summary>
-    /// <typeparam name="T">Type of Ring</typeparam>
-    /// <remarks>Last Update: 2014-10-08</remarks>
-    public interface Algebraic<T> where T : Algebraic<T>
-    {
-        /// <summary>
-        /// Adds the opperand to the curent object and returns the result.
-        /// Adition must be both asociative and comunitive.
-        /// </summary>
-        /// <param name="opp">The opperand to add</param>
-        /// <returns>The sum of the two objects</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the addition</exception>
-        T Add(T opp);
-
-        /// <summary>
-        /// Subtracts the opperand from the curent object and returns the result.
-        /// It is defined as being the inverse of adition.
-        /// </summary>
-        /// <param name="opp">The opperand to subtract</param>
-        /// <returns>The diffrence of the two objects</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the subtraction</exception>
-        T Sub(T opp);
-
-        /// <summary>
-        /// Multiplys the current object by the opperand and returns the result.
-        /// Multiplication must be asociative, but not nessarly comunitive. It
-        /// must also distribute over adition.
-        /// </summary>
-        /// <param name="opp">The opperand used to mutiply</param>
-        /// <returns>The product of the two objects</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the multiplication</exception>
-        T Mult(T opp);
-    }
-
-    /// <summary>
     /// This interface treats a class of objects as a Metric Space. It exposes
     /// a notion of 'distance' which can be measured between any two object of
     /// the same class. It also provides a notion of magnitude, which can be
@@ -96,8 +52,6 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="opp">The opperand to add</param>
         /// <returns>The sum of the two vectors</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the addition</exception>
         V Add(V other);
 
         /// <summary>
@@ -106,8 +60,6 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="opp">The opperand to subtract</param>
         /// <returns>The diffrence of the two vectors</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the subtraction</exception>
         V Sub(V other);
 
         /// <summary>
@@ -116,8 +68,29 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="scalar">The scalar multiple</param>
         /// <returns>The scaled vector</returns>
-        /// <exception cref="MathematicsExcp">If the underlying class is for
-        /// some reason unable to preform the multiplication</exception>
         V Mult(F scalar);
+    }
+
+    /// <summary>
+    /// This interface abstracts the notion of an algbera over a feild. Algebras include
+    /// the common mathmatic operations of addition, subtraction, and multiplication,
+    /// as well as scalar multiplication by some feild. An Algebra can be thought of as
+    /// a Vector Space with an aditional multiplication operator. Alternativly, they can
+    /// aslo be thought of as a Ring with the adition of scalar multiplicaiton. In this
+    /// library, it is the former definition that is implied.
+    /// </summary>
+    /// <typeparam name="A">Type of Algebra</typeparam>
+    /// <typeparam name="F">Feild of the given Algebra</typeparam>
+    /// <remarks>Last Update: 2016-10-26</remarks>
+    public interface Algebraic<A, in F> : Euclidean<A, F> where A : Algebraic<A, F>
+    {
+        /// <summary>
+        /// Multiplys the current object by the opperand and returns the result.
+        /// Multiplication must be asociative, but not nessarly comunitive. It
+        /// must also distribute over adition.
+        /// </summary>
+        /// <param name="opp">The opperand used to mutiply</param>
+        /// <returns>The product of the two objects</returns>
+        A Mult(A opp);
     }
 }

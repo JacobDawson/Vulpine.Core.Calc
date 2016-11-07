@@ -18,7 +18,7 @@ namespace Vulpine.Core.Calc.Numbers
     /// be taken when using algbracic laws that imply comunitivity.
     /// </summary>
     /// <remarks>Last Update: 2013-09-22</remarks>
-    public struct Qtrin : Algebraic<Qtrin>, Euclidean<Qtrin, Double>
+    public struct Qtrin : Algebraic<Qtrin, Double>
     {
         #region Class Definitions...
 

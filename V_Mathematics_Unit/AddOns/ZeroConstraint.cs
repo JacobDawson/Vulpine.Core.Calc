@@ -10,15 +10,12 @@ namespace Vulpine_Core_Calc_Tests.AddOns
 {
     public class ZeroConstraint : Constraint
     {
-        private double tollerence;
-
         /// <summary>
         /// Constructs a new zero constraint with the given tollerence.
         /// </summary>
         /// <param name="tollerence">The error tollerence</param>
-        public ZeroConstraint(double tollerence)
+        public ZeroConstraint()
         {
-            this.tollerence = tollerence;
             this.actual = null;
         }
 
@@ -49,7 +46,11 @@ namespace Vulpine_Core_Calc_Tests.AddOns
                 error = Math.Abs(dist);
             }
 
-            return error < tollerence;
+            //return error < tollerence;
+
+            //determins if the number is invertable
+            double test = 1.0 / error;
+            return Double.IsInfinity(test);
         }
 
         /// <summary>
@@ -58,7 +59,7 @@ namespace Vulpine_Core_Calc_Tests.AddOns
         /// <param name="writer">Used to discribe the constraint</param>
         public override void WriteDescriptionTo(MessageWriter writer)
         {
-            writer.Write("within {0} error tolerance of zero", tollerence);
+            writer.Write("practaly zero");
         }
     }
 }

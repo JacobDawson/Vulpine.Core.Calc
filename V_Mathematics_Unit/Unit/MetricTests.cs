@@ -36,7 +36,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             double dist = x.Dist(x);
 
-            Assert.That(dist, Ist.WithinTolOfZero(VMath.ESP));
+            Assert.That(dist, Ist.Zero());
         }
 
         [TestCase(1, 2)]
@@ -50,7 +50,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double d1 = x.Dist(y);
             double d2 = y.Dist(x);
 
-            Assert.That(d1, Ist.WithinTolOf(d2, VMath.ESP));
+            Assert.That(d1, Ist.WithinTolOf(d2, VMath.ERR));
         }
 
         [TestCase(1, 2, 3)]
@@ -78,7 +78,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double d1 = x.Dist(y);
             double d2 = x.Mag();
 
-            Assert.That(d1, Ist.WithinTolOf(d2, VMath.ESP));
+            Assert.That(d1, Ist.WithinTolOf(d2, VMath.ERR));
         }       
     }
 }

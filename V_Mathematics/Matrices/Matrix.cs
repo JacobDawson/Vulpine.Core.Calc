@@ -16,8 +16,7 @@ namespace Vulpine.Core.Calc.Matrices
     /// function that maps one set of vectors into another.
     /// </summary>
     /// <remarks>Last Update: 2016-07-21</remarks>
-    public class Matrix : Algebraic<Matrix>, Euclidean<Matrix, Double>, 
-        IEnumerable<Vector>, IFormattable
+    public class Matrix : Algebraic<Matrix, Double>, IEnumerable<Vector>, IFormattable
     {
         //IDEA: We could add methods to generate the characteristic polynomial,
         //from wich we can compute the eigenvalues and eigenvectors.

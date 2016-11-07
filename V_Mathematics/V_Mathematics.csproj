@@ -42,6 +42,7 @@
     <Compile Include="Exceptions\MathException.cs" />
     <Compile Include="Exceptions\VectorLengthExcp.cs" />
     <Compile Include="Delegates.cs" />
+    <Compile Include="Extentions\DoubleExtentions.cs" />
     <Compile Include="Extentions\FormatExtentions.cs" />
     <Compile Include="Functions\Polynomial.cs" />
     <Compile Include="Interfaces.cs" />

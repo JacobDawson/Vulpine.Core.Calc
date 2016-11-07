@@ -277,7 +277,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             double x = matrix.GetElement(i, j);
 
-            Assert.That(x, Ist.WithinTolOf(expected, VMath.ESP));
+            Assert.That(x, Ist.WithinTolOf(expected, VMath.ERR));
         }
 
         [TestCase(1, 0, 1)]
@@ -290,7 +290,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             dynamic output = matrix.GetRow(x);
 
-            Assert.That(output, Ist.WithinTolOf(expected, VMath.ESP));
+            Assert.That(output, Ist.WithinTolOf(expected, VMath.ERR));
         }
 
         [TestCase(1, 0, 4)]
@@ -303,7 +303,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             dynamic output = matrix.GetColumn(x);
 
-            Assert.That(output, Ist.WithinTolOf(expected, VMath.ESP));
+            Assert.That(output, Ist.WithinTolOf(expected, VMath.ERR));
         }
 
         [TestCase(1, 2, 6)]

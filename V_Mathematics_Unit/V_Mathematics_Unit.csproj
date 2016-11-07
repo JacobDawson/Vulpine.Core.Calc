@@ -72,6 +72,7 @@
     <Compile Include="AddOns\Generators.cs" />
     <Compile Include="Unit\AlgebraicTests.cs" />
     <Compile Include="Unit\EuclideanTests.cs" />
+    <Compile Include="Unit\MathTests.cs" />
     <Compile Include="Unit\MatrixTests.cs" />
     <Compile Include="Unit\MetricTests.cs" />
     <Compile Include="Unit\StatRunnerTests.cs" />

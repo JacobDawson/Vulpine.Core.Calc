@@ -22,15 +22,15 @@ namespace Vulpine_Core_Calc_Tests.AddOns
             return exp.Matches(new ErrorConstraint(expected, tollerence));
         }
 
-        public static ZeroConstraint WithinTolOfZero(double tollerence)
+        public static ZeroConstraint Zero()
         {
-            return new ZeroConstraint(tollerence);
+            return new ZeroConstraint();
         }
 
-        public static Constraint WithinTolOfZero
-            (this ConstraintExpression exp, double tollerence)
+        public static Constraint Zero
+            (this ConstraintExpression exp)
         {
-            return exp.Matches(new ZeroConstraint(tollerence));
+            return exp.Matches(new ZeroConstraint());
         }
     }
 

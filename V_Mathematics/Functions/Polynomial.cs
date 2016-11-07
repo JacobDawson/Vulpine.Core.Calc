@@ -22,7 +22,7 @@ namespace Vulpine.Core.Calc.Functions
     /// aproximate more complicated functions, as they are eayser to work with.
     /// </summary>
     /// <remarks>Last Update: 2013-11-20</remarks>
-    public class Polynomial : Algebraic<Polynomial>
+    public class Polynomial : Algebraic<Polynomial, Double>
         //Function<Double>, Function<Cmplx>, Function<Matrix>
     {
         #region Class Definitions...
@@ -204,6 +204,25 @@ namespace Vulpine.Core.Calc.Functions
             value = coeff[i] + (x * value);
 
             return value;
+        }
+
+        //NOTE: This mehtod Almost works, except it requires knoladge
+        //about the zero and one elements of the algebra (which every algebra
+        //should have). Note also, that the multiply is not ambiguious, because
+        //we start with the identity and multiply the same value over and over.
+
+        public A Evaluate<A>(A x) where A : Algebraic<A, Double>
+        {
+            A power = default(A); //should be set to ONE
+            A sum = default(A);   //should be set to ZERO
+
+            for (int i = 0; i < coeff.Length; i++)
+            {
+                sum = sum.Add(power.Mult(coeff[i]));
+                power = power.Mult(x);
+            }
+
+            return sum;
         }
 
         ///// <summary>
@@ -476,6 +495,60 @@ namespace Vulpine.Core.Calc.Functions
 
             //returns the generated quotient
             return new Polynomial(quo);
+        }
+
+        #endregion ////////////////////////////////////////////////////////////
+
+        #region Eucildian Implementation...
+
+        /// <summary>
+        /// Computes the magnitude of the curent polynomial. This is defined as
+        /// the square root, of the sum of the square coffecents, and is equivlent
+        /// to the magnitude of the corsponding n-dimentional vector.
+        /// </summary>
+        /// <returns>The magnitude of the polynomial</returns>
+        public double Mag()
+        {
+            //used to store the result
+            double output = 0.0;
+
+            //computes the sum of the squares
+            for (int i = 0; i < coeff.Length; i++)
+                output += this.coeff[i] * this.coeff[i];
+
+            //returns the square root of the sum
+            return Math.Sqrt(output);
+        }
+
+        /// <summary>
+        /// Computes the euclidian distance metric between any two polynomials,
+        /// regardless of degree. It is defined using the magnitude of the diffrence
+        /// between the two polynomials.
+        /// </summary>
+        /// <param name="other">The other polynomial</param>
+        /// <returns>The distance between the polynomials</returns>
+        public double Dist(Polynomial other)
+        {
+            //uses the norm to define the metric
+            return this.Sub(other).Mag();
+        }
+
+        /// <summary>
+        /// Multiplies the current polynomial by a single constant value. This has
+        /// the effect of scaling each coeffecent by the given value.
+        /// </summary>
+        /// <param name="s">The constant scalar value</param>
+        /// <returns>The scaled polynomial</returns>
+        public Polynomial Mult(double s)
+        {
+            //creates a new vector to store the result
+            double[] output = new double[coeff.Length];
+
+            //multiplies each element componentwise
+            for (int i = 0; i < coeff.Length; i++)
+                output[i] = coeff[i] * s;
+
+            return new Polynomial(output);
         }
 
         #endregion ////////////////////////////////////////////////////////////
