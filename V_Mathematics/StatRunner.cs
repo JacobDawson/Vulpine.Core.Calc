@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Matrices;
-using Vulpine.Core.Calc.Extentions;
 
 namespace Vulpine.Core.Calc
 {

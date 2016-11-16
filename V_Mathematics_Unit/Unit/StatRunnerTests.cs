@@ -33,7 +33,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double sum = sr.Sum[0];
             double ex = 1345.7341935713;
 
-            Assert.That(sum, Ist.WithinTolOf(ex, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(ex, VMath.TOL));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double sum = sr.Sum[0];
             double ex = 129.975554063;
 
-            Assert.That(sum, Ist.WithinTolOf(ex, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(ex, VMath.TOL));
         }
 
         [Test]
@@ -181,7 +181,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double sum = sr.Sum[0];
             double ex = 285.8757746353;
 
-            Assert.That(sum, Ist.WithinTolOf(ex, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(ex, VMath.TOL));
         }
 
         [Test]
@@ -255,7 +255,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double sum = sr.Sum[0];
             double ex = 735.128286724;
 
-            Assert.That(sum, Ist.WithinTolOf(ex, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(ex, VMath.TOL));
         }
 
         [Test]
@@ -329,7 +329,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             double sum = sr.Sum[0];
             double ex = 50.7779850895;
 
-            Assert.That(sum, Ist.WithinTolOf(ex, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(ex, VMath.TOL));
         }
 
         [Test]

@@ -67,7 +67,7 @@ namespace Vulpine.Core.Calc.Numbers
         public override string ToString()
         {
             //uses the default format
-            return ToString("0.000");
+            return ToString("g10");
         }
 
         /// <summary>
@@ -643,7 +643,7 @@ namespace Vulpine.Core.Calc.Numbers
         public static explicit operator Double(Cmplx n)
         {
             //bool is_real = VMath.IsZero(n.imag);
-            bool is_real = Math.Abs(n.imag) < VMath.ERR;
+            bool is_real = Math.Abs(n.imag) < VMath.TOL;
             return (is_real) ? n.real : Double.NaN;
         }
 

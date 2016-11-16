@@ -8,6 +8,15 @@ using Vulpine.Core.Data.Extentions;
 
 namespace Vulpine.Core.Calc
 {
+    /// <summary>
+    /// This class contains a variaty of diffrent constants and functions which crop
+    /// up in statistics and mathmatical analisis, which have been excluded from the 
+    /// default math library. Many of these funcitons cannot be expressed as elementry
+    /// functions, and therefore must employ numerical methods inorder to be solved.
+    /// It also includs several methods for the managment of floating point numbers,
+    /// which have been omitted from the corisponding structors.
+    /// </summary>
+    /// <remarks>Last Update: 2016-11-14</remarks>
     public static class VMath
     {
         #region Mathmatical Constants...
@@ -35,25 +44,57 @@ namespace Vulpine.Core.Calc
         public const double PHI = 1.6180339887498948482;
 
         /// <summary>
+        /// The Euler–Mascheroni constant, not to be confused with Euler's constant
+        /// which is the base of the natural logarythim. It is defined as the limiting 
+        /// difference between the harmonic series and the natural logarithm, and is
+        /// usualy denoted by the lower greek letter gamma.
+        /// It is aproximatly (0.5772157).
+        /// </summary>
+        public const double EM = 0.57721566490153286061;
+
+        /// <summary>
         /// The default error tollarence used within the mathamatics library.
         /// It is desined to be greater that the precision of a single floating
         /// point value, but less than the presision of a double. Note this value
         /// is only sutable for comparing releative error, for absolute error
         /// a diffrent metric should be used.
         /// </summary>
-        public const double ERR = 1e-12;
+        public const double TOL = 1e-12;
 
         #endregion //////////////////////////////////////////////////////////////////
 
         #region Floating Point Manipulation...
 
         /// <summary>
+        /// Determins if the given floating point value is one of the NaN (Not
+        /// a number values). NaN values are often used to comunicate some sort
+        /// of error in floating point arithmatic.
+        /// </summary>
+        /// <param name="x">Value to test</param>
+        /// <returns>True if it is a NaN value</returns>
+        public static bool IsNaN(this double x)
+        {
+            return Double.IsNaN(x);
+        }
+
+        /// <summary>
+        /// Determins if the given floating point value is one of the infinity
+        /// values, either postive or negative infinity.
+        /// </summary>
+        /// <param name="x">Value to test</param>
+        /// <returns>True if it is infinite</returns>
+        public static bool IsInfinity(this double x)
+        {
+            return Double.IsInfinity(x);
+        }
+
+        /// <summary>
         /// Determins if the floating point number indicates an actual numeric value,
         /// rather than an infinate value, or a special NaN value.
         /// </summary>
-        /// <param name="x">Floating point vlaue to test</param>
-        /// <returns>True if it is an actual numeric value, otherwise false</returns>
-        public static bool IsANumber(double x)
+        /// <param name="x">Vlaue to test</param>
+        /// <returns>True if it is an actual numeric value</returns>
+        public static bool IsANumber(this double x)
         {
             //checks for special cases
             if (Double.IsNaN(x)) return false;
@@ -70,9 +111,9 @@ namespace Vulpine.Core.Calc
         /// it is usefull to compare a floating point value to zero. This method helps
         /// to alieviate this problem.
         /// </summary>
-        /// <param name="x">Floating point vlaue to test</param>
-        /// <returns>True if the value should be considered zero, false if otherwise</returns>
-        public static bool IsZero(double x)
+        /// <param name="x">Vlaue to test</param>
+        /// <returns>True if the value should be considered zero</returns>
+        public static bool IsZero(this double x)
         {
             //determins if the number is invertable
             double test = 1.0 / x;
@@ -84,9 +125,9 @@ namespace Vulpine.Core.Calc
         /// possable. It basicly produces the next largest double value that can be
         /// represented in the system. 
         /// </summary>
-        /// <param name="x">Double value to increment</param>
+        /// <param name="x">Value to increment</param>
         /// <returns>The next largest double value</returns>
-        public static double NextUp(double x)
+        public static double NextUp(this double x)
         {
             //we do not update NaNs or Infinities
             if (Double.IsNaN(x)) return x;
@@ -106,9 +147,9 @@ namespace Vulpine.Core.Calc
         /// possable. It basicly produces the next smallest double value that can be
         /// represented in the system. 
         /// </summary>
-        /// <param name="x">Double value to decrement</param>
-        /// <returns>The next dmalest double value</returns>
-        public static double NextDown(double x)
+        /// <param name="x">Value to decrement</param>
+        /// <returns>The next smalest double value</returns>
+        public static double NextDown(this double x)
         {
             //we do not update NaNs or Infinities
             if (Double.IsNaN(x)) return x;
@@ -128,7 +169,7 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="val">Value to be clamped</param>
         /// <returns>The clamped value</returns>
-        public static double Clamp(double val)
+        public static double Clamp(this double val)
         {
             if (val < 0.0) return 0.0;
             if (val > 1.0) return 1.0;
@@ -143,11 +184,35 @@ namespace Vulpine.Core.Calc
         /// <param name="min">Minimum possable output</param>
         /// <param name="max">Maximum possable output</param>
         /// <returns>The clamped value</returns>
-        public static double Clamp(double val, double min, double max)
+        public static double Clamp(this double val, double min, double max)
         {
             if (val < min) return min;
             if (val > max) return max;
             return val;
+        }
+
+        /// <summary>
+        /// Converts the given floating point value to the next smallest interger
+        /// value. Note that even though the result is an interger, it is returned 
+        /// as a  floating point, because the value may exceed the range of an int.
+        /// </summary>
+        /// <param name="val">Value to convert</param>
+        /// <returns>The next smallest interger</returns>
+        public static double Floor(this double val)
+        {
+            return Math.Floor(val);
+        }
+
+        /// <summary>
+        /// Rounds off the given floating point value to the closest interger value.
+        /// Note that even though the result is an interger, it is returned as a 
+        /// floating point, because the value may exceed the range of an int.
+        /// </summary>
+        /// <param name="val">Value to convert</param>
+        /// <returns>The closest interger value</returns>
+        public static double Round(this double val)
+        {
+            return Math.Floor(val + 0.5);
         }
 
         #endregion //////////////////////////////////////////////////////////////////
@@ -331,6 +396,91 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="x">Lower limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static double Gamma(double a, double x)
+        {
+            //calls upon the complex method
+            return (double)Gamma(new Cmplx(a), new Cmplx(x));
+        }
+
+        /// <summary>
+        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="z">Lower limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static Cmplx Gamma(Cmplx a, Cmplx z)
+        {
+            //values used in the itteration below
+            Cmplx pow = Cmplx.Pow(z, a) * Cmplx.Exp(-z);
+            double error = Double.PositiveInfinity;
+            int k = 0;
+
+            Cmplx p = 1.0;
+            Cmplx q = 1.0;
+            Cmplx sum1 = 0.0;
+            Cmplx sum2 = 0.0;
+
+            //uses the power series expansion
+            while (error > VMath.TOL && k < 128)
+            {
+                sum1 = sum2;
+
+                q = q * (a + k);
+                sum2 += (pow * p) / q;
+                p = p * z;
+
+                error = (sum1 - sum2).Abs / sum1.Abs;
+                k++;
+            }
+
+            return sum2;
+        }
+
+        /// <summary>
+        /// Computes the binomial coffecent. When n and k are postive intergers, 
+        /// this is equal to the number of ways to choose k items from n total 
+        /// items. This can be expanded to the real and complex numbers by use 
+        /// of the gamma funciton.
+        /// </summary>
+        /// <param name="n">Total number of items</param>
+        /// <param name="k">Size of the subset</param>
+        /// <returns>Number of possable combinations</returns>
+        public static double Binomial(double n, double k)
+        {
+            //calls upon the complex method
+            return (double)Binomial(new Cmplx(n), new Cmplx(k));
+        }
+
+        /// <summary>
+        /// Computes the binomial coffecent. When n and k are postive intergers, 
+        /// this is equal to the number of ways to choose k items from n total 
+        /// items. This can be expanded to the real and complex numbers by use 
+        /// of the gamma funciton.
+        /// </summary>
+        /// <param name="n">Total number of items</param>
+        /// <param name="k">Size of the subset</param>
+        /// <returns>Number of possable combinations</returns>
+        public static Cmplx Binomial(Cmplx n, Cmplx k)
+        {
+            Cmplx a = Cmplx.Log(VMath.Gamma(n + 1.0));
+            Cmplx b = Cmplx.Log(VMath.Gamma(k + 1.0));
+            Cmplx c = Cmplx.Log(VMath.Gamma(n - k + 1.0));
+
+            return Cmplx.Exp(a - b - c);
+        }
+
+        /// <summary>
         /// Computes the sigmoid funciton, which takes any value on the real
         /// number line and maps it to the interval [0, 1], this is known
         /// as flatening the funciton.
@@ -433,19 +583,16 @@ namespace Vulpine.Core.Calc
             Cmplx sum2 = 0.0;
             Cmplx prod = 1.0;
 
-            while (error > VMath.ERR && n < 64)
+            while (error > VMath.TOL && n < 128)
             {
-                //computes the inner product
-                for (int k = 1; k <= n; k++)
-                    prod *= -(z * z) / (double)k;
-
-                sum1 = sum2;
-
                 //updates the sum and calculates the relitive error
                 sum2 += (z / (2.0 * n + 1.0)) * prod;
-                error = (sum1 - sum2).Abs / sum1.Abs;
+                error = (sum1 - sum2).Abs / sum2.Abs;
 
-                prod = 1.0;
+                //updates the inner product
+                prod *= -(z * z) / (double)(n + 1);
+
+                sum1 = sum2;
                 n++;
             }
 
@@ -455,9 +602,7 @@ namespace Vulpine.Core.Calc
 
         #endregion //////////////////////////////////////////////////////////////////
 
-
-
-
+        #region Conversion Methods...
 
         /// <summary>
         /// Converts from radians to degrees.
@@ -478,6 +623,8 @@ namespace Vulpine.Core.Calc
         {
             return (deg * (Math.PI / 180.0));
         }
+
+        #endregion //////////////////////////////////////////////////////////////////
 
     }
 }

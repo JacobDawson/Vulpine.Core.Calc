@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Vulpine.Core.Calc.Extentions
+namespace Vulpine.Core.Calc
 {
+    /// <summary>
+    /// Contains extention methods for the IFormattable interface.
+    /// </summary>
+    /// <remarks>Last Update: 2016-11-14</remarks>
     public static class FormatExtentions
     {
         /// <summary>

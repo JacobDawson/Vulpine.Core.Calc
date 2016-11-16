@@ -11,7 +11,8 @@ namespace QuickTests
         {
             //DivByZero.Run();
             //LU_Decomp.Run();
-            RandomMatrix.Run();
+            //RandomMatrix.Run();
+            Binomial.Run();
         }
     }
 }

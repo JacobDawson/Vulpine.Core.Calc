@@ -31,7 +31,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic prod1 = x.Mult(y.Mult(z));
             dynamic prod2 = x.Mult(y).Mult(z);
 
-            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.ERR));
+            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.TOL));
         }
 
         [TestCase(1, 2, 3)]
@@ -45,7 +45,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic prod1 = x.Mult(y.Add(z));            //x * (y + z)
             dynamic prod2 = x.Mult(y).Add(x.Mult(z));    //(x * y) + (x * z)
 
-            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.ERR));
+            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.TOL));
         }
 
         [TestCase(1, 2, 3)]
@@ -59,7 +59,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic prod1 = x.Add(y).Mult(z);           //(x + y) * z
             dynamic prod2 = x.Mult(z).Add(y.Mult(z));   //(x * z) + (y * z)
 
-            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.ERR));
+            Assert.That(prod1, Ist.WithinTolOf(prod2, VMath.TOL));
         }
 
         [TestCase(1)]
@@ -72,7 +72,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             dynamic prod = x.Mult(y);
 
-            Assert.That(prod, Ist.WithinTolOf(x, VMath.ERR));
+            Assert.That(prod, Ist.WithinTolOf(x, VMath.TOL));
         }
 
     }

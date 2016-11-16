@@ -24,7 +24,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic sum1 = x.Add(y.Add(z));
             dynamic sum2 = x.Add(y).Add(z);
 
-            Assert.That(sum1, Ist.WithinTolOf(sum2, VMath.ERR));
+            Assert.That(sum1, Ist.WithinTolOf(sum2, VMath.TOL));
         }
 
         [TestCase(1, 2)]
@@ -38,7 +38,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic sum1 = x.Add(y);
             dynamic sum2 = y.Add(x);
 
-            Assert.That(sum1, Ist.WithinTolOf(sum2, VMath.ERR));
+            Assert.That(sum1, Ist.WithinTolOf(sum2, VMath.TOL));
         }
 
         [TestCase(1)]
@@ -51,7 +51,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             dynamic sum = x.Add(y);
 
-            Assert.That(sum, Ist.WithinTolOf(x, VMath.ERR));
+            Assert.That(sum, Ist.WithinTolOf(x, VMath.TOL));
         }
 
         [TestCase(1)]
@@ -76,7 +76,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             dynamic p = x.Mult(1.0);
 
-            Assert.That(p, Ist.WithinTolOf(x, VMath.ERR));
+            Assert.That(p, Ist.WithinTolOf(x, VMath.TOL));
         }
 
         [TestCase(1, 2, 0.5)]
@@ -90,7 +90,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic p1 = x.Add(y).Mult(a);           //(x + y) * a
             dynamic p2 = x.Mult(a).Add(y.Mult(a));   //(x * a) + (y * a)
 
-            Assert.That(p1, Ist.WithinTolOf(p2, VMath.ERR));
+            Assert.That(p1, Ist.WithinTolOf(p2, VMath.TOL));
         }
 
         [TestCase(1, 0.5, 1.5)]
@@ -103,7 +103,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic p1 = x.Mult(a + b);              //x * (a + b)
             dynamic p2 = x.Mult(a).Add(x.Mult(b));   //(x * a) + (x * b)
 
-            Assert.That(p1, Ist.WithinTolOf(p2, VMath.ERR));
+            Assert.That(p1, Ist.WithinTolOf(p2, VMath.TOL));
         }
 
         [TestCase(1, 0.5, 1.5)]
@@ -116,7 +116,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic p1 = x.Mult(a).Mult(b);
             dynamic p2 = x.Mult(a * b);
 
-            Assert.That(p1, Ist.WithinTolOf(p2, VMath.ERR));
+            Assert.That(p1, Ist.WithinTolOf(p2, VMath.TOL));
         }
     }
 }
