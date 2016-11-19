@@ -149,23 +149,44 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(y, Ist.WithinTolOf(exp, VMath.TOL)); 
         }
 
-        [TestCase(0, 10)]
-        [TestCase(1, 11)]
-        [TestCase(2, 12)]
-        [TestCase(3, 13)]
-        [TestCase(4, 14)]
-        [TestCase(5, 15)]
-        [TestCase(6, 16)]
-        [TestCase(7, 17)]
-        [TestCase(8, 18)]
-        [TestCase(9, 19)]
-        public void Gamma_CmplxInput_ExpectedOutput(int zn, int en)
+        [TestCase(-3.78300, -5.42700, -4.69960112311076e-08, -2.39454043917665e-07)]
+        [TestCase(2.24690, -1.42030, 0.399611628902505e+00, -0.542994381785484e+00)]
+        [TestCase(1.58370, 11.3360, 3.43908535432232e-07, -5.44835804958548e-07)]
+        [TestCase(3.29270, 10.2600, 6.15897705351052e-05, -1.61593664070636e-04)]
+        [TestCase(-2.88220, 6.16450, 1.17608654272594e-07, -2.60100431878566e-07)]
+        [TestCase(10.3710, -0.23657, 7.19984005852702e+05, -4.33318285943509e+05)]
+        [TestCase(0.51327, -2.62410, 4.10969809389325e-02, 2.29149314660941e-03)]
+        [TestCase(0.65053, -0.29841, 1.12768998627444e+00, 0.446423794126510e+00)]
+        public void Gamma_CmplxInput_ExpectedOutput(double z1, double z2, double e1, double e2)
         {
-            Cmplx z = GetCmplx(zn);
-            Cmplx exp = GetCmplx(en);
+            Cmplx z = new Cmplx(z1, z2);
+            Cmplx exp = new Cmplx(e1, e2);
 
             Cmplx y = VMath.Gamma(z);
-            Assert.That(y, Ist.WithinTolOf(exp, VMath.TOL));
+            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-12));
+        }
+
+        [TestCase(0.5, 1.3738007307, 0.172637787023159)]
+        [TestCase(0.5, 3.3659000732, 0.0167867281951844)]
+        [TestCase(0.5, 0.6784674614, 0.432601736096022)]
+        [TestCase(0.5, 0.8638064724, 0.334490460917159)]
+        [TestCase(1.0, 2.6666677558, 0.0694833755460999)]
+        [TestCase(1.0, 4.6270786063, 0.00978329826089111)]
+        [TestCase(1.0, 3.8299245024, 0.0217112547155983)]
+        [TestCase(1.0, 1.0383773820, 0.354028669443186)]
+        [TestCase(2.5, 1.0789390067, 1.09922682168843)]
+        [TestCase(2.5, 3.5118755422, 0.290965884060299)]
+        [TestCase(2.5, 6.5899012671, 0.0289142711761357)]
+        [TestCase(2.5, 0.9679350635, 1.14050172234326)]
+        [TestCase(5.0, 5.9410732885, 7.03251483283762)]
+        [TestCase(5.0, 9.5778986027, 0.919868784774757)]
+        [TestCase(5.0, 2.3251782046, 21.9186856974341)]
+        [TestCase(5.0, 1.2444018117, 23.7849090225189)]
+        public void Gamma_MultiInput_ExpectedOutput(double a, double x, double exp)
+        {
+            //uses the upper incomplete gamma funciton
+            double y = VMath.Gamma(a) - VMath.Gamma(a, x);
+            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
         }
 
 
@@ -196,29 +217,6 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Cmplx exp = GetCmplx(en);
 
             Cmplx y = VMath.Erf(z);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
-        }
-
-        [TestCase(0.5, 1.3738007307, 0.172637787023159)]
-        [TestCase(0.5, 3.3659000732, 0.0167867281951844)]
-        [TestCase(0.5, 0.6784674614, 0.432601736096022)]
-        [TestCase(0.5, 0.8638064724, 0.334490460917159)]
-        [TestCase(1.0, 2.6666677558, 0.0694833755460999)]
-        [TestCase(1.0, 4.6270786063, 0.00978329826089111)]
-        [TestCase(1.0, 3.8299245024, 0.0217112547155983)]
-        [TestCase(1.0, 1.0383773820, 0.354028669443186)]
-        [TestCase(2.5, 1.0789390067, 1.09922682168843)]
-        [TestCase(2.5, 3.5118755422, 0.290965884060299)]
-        [TestCase(2.5, 6.5899012671, 0.0289142711761357)]
-        [TestCase(2.5, 0.9679350635, 1.14050172234326)]
-        [TestCase(5.0, 5.9410732885, 7.03251483283762)]
-        [TestCase(5.0, 9.5778986027, 0.919868784774757)]
-        [TestCase(5.0, 2.3251782046, 21.9186856974341)]
-        [TestCase(5.0, 1.2444018117, 23.7849090225189)]
-        public void Gamma_MultiInput_ExpectedOutput(double a, double x, double exp)
-        {
-            //uses the upper incomplete gamma funciton
-            double y = VMath.Gamma(a) - VMath.Gamma(a, x);
             Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
         }
 

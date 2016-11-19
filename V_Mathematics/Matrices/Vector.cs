@@ -157,16 +157,32 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Obtains the desired element in the vector. If the index
-        /// is greator than the length of the vector, it returns zero.
+        /// is outside the range of the vector, it throws an exception.
         /// </summary>
         /// <param name="index">Position of desired element</param>
         /// <returns>The desired element</returns>
         /// <exception cref="ArgumentOutOfRangeException">If the index is
-        /// negative</exception>
+        /// outside the bounds of the vector</exception>
         public double GetElement(int index)
         {
-            if (index < 0) throw new ArgumentOutOfRangeException("index");
-            return (index < vector.Length) ? vector[index] : 0.0;
+            //checks for a valid index
+            if (index < 0 || index >= vector.Length)
+                throw new ArgumentOutOfRangeException("index");
+
+            //simply sets the item
+            return vector[index];
+        }
+
+        /// <summary>
+        /// Obtains the desired element in the vector. If the index
+        /// is outside the range of the vector, it returns zero.
+        /// </summary>
+        /// <param name="index">Position of desired element</param>
+        /// <returns>The desired element or zero</returns>
+        public double GetExtended(int index)
+        {
+            if (index < 0 || index >= vector.Length) return 0.0;
+            else return vector[index];
         }
 
         /// <summary>

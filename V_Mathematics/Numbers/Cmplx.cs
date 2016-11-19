@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Vulpine.Core.Data.Exceptions;
-using Vulpine.Core.Calc.Exceptions;
 using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine.Core.Calc.Numbers
@@ -16,8 +14,8 @@ namespace Vulpine.Core.Calc.Numbers
     /// orthognal to the real number line. In this way, complex numbers extend the
     /// real numbers into a two-dimentional feild that is algebraicly complete.
     /// </summary>
-    /// <remarks>Last Update: 2013-09-18</remarks>
-    public struct Cmplx : Algebraic<Cmplx, Double>
+    /// <remarks>Last Update: 2016-11-18</remarks>
+    public struct Cmplx : Algebraic<Cmplx, Double>, IFormattable
     {
         #region Class Definitions...
 
@@ -37,7 +35,7 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Constructs a complex number of the form (a + b * I) given
+        /// Constructs a complex number of the form (a + bi) given
         /// it's real and imaginary components.
         /// </summary>
         /// <param name="r">The real compoent</param>
@@ -50,47 +48,41 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Constructs a complex number of the form (a + b * I) given
-        /// a vector containing the corisponding coffecents.
-        /// </summary>
-        /// <param name="v">Vector to convert</param>
-        public Cmplx(Vector v)
-        {
-            real = v.GetElement(0);
-            imag = v.GetElement(1);
-        }
-
-        /// <summary>
         /// Generates a string representation of the complex number.
         /// </summary>
         /// <returns>The number as a string</returns>
         public override string ToString()
         {
             //uses the default format
-            return ToString("g10");
+            return ToString("g10", null);
         }
 
         /// <summary>
-        /// Generates a string representation of the current complex 
-        /// number, using a custom format. A seperate format can be 
-        /// provided for both the real and imaginary coffecents, by 
-        /// seperating them by a virtical pipe.
+        /// Generates a formated string representation of the current complex
+        /// number, by passing the format infromation to both the real and
+        /// imaginary components. It handels the sign information independtly
+        /// from the format string.
         /// </summary>
-        /// <param name="format">A custom format string</param>
-        /// <returns>The number as a string</returns>
-        public string ToString(string format)
+        /// <param name="format">A numeric format string</param>
+        /// <param name="provider">An object that suplies formating information</param>
+        /// <returns>The number formated as a string</returns>
+        public string ToString(string format, IFormatProvider provider)
         {
-            //splits the format string around the comma
-            string[] f = format.Split('|');
-            string xs = (f.Length < 2) ? format : f[0];
-            string ys = (f.Length < 2) ? format : f[1];
+            if (IsInfinity()) return "Inf";
+            if (IsNaN()) return "NaN";
 
-            //formats the diffrent parts seperatly
-            xs = real.ToString(xs);
-            ys = imag.ToString(ys);
+            StringBuilder sb = new StringBuilder();
+            double r = Math.Abs(real);
+            double i = Math.Abs(imag);
 
-            //builds and returns the output
-            return String.Format("({0}, {1})", xs, ys);
+            sb.Append(real < 0 ? "-" : "");
+            sb.Append(r.ToString(format, provider));
+
+            sb.Append(imag < 0 ? " - " : " + ");
+            sb.Append(i.ToString(format, provider));
+
+            sb.Append("i");
+            return sb.ToString();
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -99,7 +91,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// The imaginary constant, and the basis of the imaginary numbers. It
-        /// is defined as the square root of negative one. Read-Only
+        /// is defined as the square root of negative one.
         /// </summary>
         public static Cmplx I
         {
@@ -109,12 +101,34 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// Represnents the value 2 * PI * I, which apeares frequently in many
         /// formulas invlovling complex numbers, usualy represented by the
-        /// greek letter omega. Read-Only
+        /// lowercase greek letter omega.
         /// </summary>
         public static Cmplx W
         {
             get { return new Cmplx(0.0, VMath.TAU); }
         }
+
+        /// <summary>
+        /// Returns the complex equevlent of a NaN (Not a Number) value, borrowed
+        /// from the conventions used by real floating-point numbers.
+        /// </summary>
+        public static Cmplx NaN
+        {
+            get { return new Cmplx(Double.NaN, Double.NaN); }
+        }
+
+        /// <summary>
+        /// Returns the singluar point at infinity as described by the Riemann 
+        /// Sphere, which can be thought of as an extention to the complex plane.
+        /// </summary>
+        public static Cmplx Inf
+        {
+            get
+            {
+                double inf = Double.PositiveInfinity;
+                return new Cmplx(inf, inf);
+            }
+        } 
 
         #endregion //////////////////////////////////////////////////////////////
 
@@ -122,7 +136,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// The coffecent of the real compoent (1) making up the
-        /// complex number. Read-Only
+        /// complex number.
         /// </summary>
         public double CofR
         {
@@ -135,7 +149,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// The coffecent of the imaginary component (I) makeing up
-        /// the complex number. Read-Only
+        /// the complex number.
         /// </summary>
         public double CofI
         {
@@ -148,7 +162,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// The absolute value of the complex number. This is equivlent
-        /// to the magnitude or radius in polar cordinats. Read-Only
+        /// to the magnitude or radius in polar cordinats.
         /// </summary>
         public double Abs
         {
@@ -163,7 +177,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// The priniciple argument of the complex number, ranging from
         /// just above negative PI to PI. It is equivlent to the
-        /// anglular mesure in polar cordinats. Read-Only.
+        /// anglular mesure in polar cordinats.
         /// </summary>
         public double Arg
         {
@@ -199,10 +213,10 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Computes the negative of the current complex number. It
-        /// overloads the uinary (-) operatoer.
+        /// Computes the negative of the current complex number.
         /// </summary>
         /// <returns>The negative complex number</returns>
+        /// <remarks>It overloads the uinary (-) operatoer</remarks>
         public Cmplx Neg()
         {
             //negates the complex number
@@ -211,10 +225,10 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// Computes the conjgate of the curent complex number, defined
-        /// by the negation of the imaginary coefecent. It overloads
-        /// the (~) opperator.
+        /// by the negation of the imaginary coefecent.
         /// </summary>
         /// <returns>The complex conjigate</returns>
+        /// <remarks>It overloads the (~) opperator</remarks>
         public Cmplx Conj()
         {
             //produces the complex conjagate
@@ -252,11 +266,11 @@ namespace Vulpine.Core.Calc.Numbers
         #region Binary Operations...
 
         /// <summary>
-        /// Adds the opperand to the curent complex number and returns 
-        /// the result. It overloads the (+) opperator.
+        /// Adds the opperand to the curent complex number. 
         /// </summary>
         /// <param name="z">The number to add</param>
         /// <returns>The sum of the complex numbers</returns>
+        /// <remarks>It overloads the (+) opperator</remarks>
         public Cmplx Add(Cmplx z)
         {
             //dose peicewise addition of coffecents
@@ -267,11 +281,11 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Subtracts the opperand from the curent complex number and returns 
-        /// the result. It overloads the (-) opperator.
+        /// Subtracts the opperand from the curent complex number.
         /// </summary>
         /// <param name="z">The number to subtract</param>
         /// <returns>The diffrence of the complex numbers</returns>
+        /// <remarks>It overloads the (-) opperator</remarks>
         public Cmplx Sub(Cmplx z)
         {
             //dose peicewise addition of coffecents
@@ -282,11 +296,11 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Multiplys the current complex number by the opperand and returns 
-        /// the result. It overloads the (*) opperator.
+        /// Multiplys the current complex number by the opperand.
         /// </summary>
         /// <param name="z">The number used to mutiply</param>
         /// <returns>The product of the complex numbers</returns>
+        /// <remarks>It overloads the (*) opperator</remarks>
         public Cmplx Mult(Cmplx z)
         {
             //calculates the real and imaginary parts seperatly
@@ -297,11 +311,11 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Divides the current complex number by the opperand and returns 
-        /// the result. It overloads the (/) opperator.
+        /// Divides the current complex number by the opperand.
         /// </summary>
         /// <param name="z">The number used to devide</param>
         /// <returns>The quotient of the two complex numbers</returns>
+        /// <remarks>It overloads the (/) opperator</remarks>
         public Cmplx Div(Cmplx z)
         {
             //calculates the real and imaginary parts seperatly
@@ -322,8 +336,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// value of the number's diffrence.
         /// </summary>
         /// <param name="z">The other number</param>
-        /// <returns>The distance between the numbers in the 
-        /// complex feild</returns>
+        /// <returns>The distance between the numbers in the complex feild</returns>
         public double Dist(Cmplx z)
         {
             //subtracts the two parts seperatly
@@ -351,18 +364,17 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// Raises a complex number to an arbitrary, real power. In general, this
-        /// function may have more that one solution. A branch index can be
-        /// spesified to select from the diffrent possable solutions.
+        /// function may have more that one solution. The value returned by this
+        /// method is the principle value.
         /// </summary>
         /// <param name="z">Base of the exponintial</param>
         /// <param name="exp">Power of the exponential</param>
-        /// <param name="n">Branch selector index</param>
         /// <returns>A complex number raised to a given power</returns>
-        public static Cmplx Pow(Cmplx z, double exp, int n = 0)
+        public static Cmplx Pow(Cmplx z, double exp)
         {
             //calculates the result storing temporary values
             double rad = Math.Pow(z.Abs, exp);
-            double arg = (z.Arg + (VMath.TAU * n)) * exp;
+            double arg = z.Arg * exp;
             double outR = rad * Math.Cos(arg);
             double outI = rad * Math.Sin(arg);
 
@@ -373,21 +385,20 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// This is the most general form of the expnential, as it raises any
         /// complex number to any complex power, and is in general multi-valued.
-        /// Diffrent, potential values can be selected by changing the branch
-        /// factor. Consider using one of the other functions if either the
-        /// base or the exponent are known to be real.
+        /// Consider using one of the other functions if either the base or 
+        /// the exponent are known to be real.
         /// </summary>
         /// <param name="z">Base of the exponential</param>
         /// <param name="exp">Power of the exponential</param>
         /// <param name="n">Branch selector index</param>
         /// <returns>A complex number raised to a complex power</returns>
-        public static Cmplx Pow(Cmplx z, Cmplx exp, int n = 0)
+        public static Cmplx Pow(Cmplx z, Cmplx exp)
         {
             //allows for computation of zero, avoiding ln(0)
-            if (z.Abs == 0) return new Cmplx(0.0, 0.0);
+            if (z.Abs == 0.0) return new Cmplx(0.0, 0.0);
 
             //uses the definition of the general exponential
-            return Exp(exp * Log(z, n));
+            return Cmplx.Exp(exp * Cmplx.Log(z));
         }
 
         /// <summary>
@@ -420,11 +431,9 @@ namespace Vulpine.Core.Calc.Numbers
         /// is strictly less than zero</exception>
         public static Cmplx Exp(Cmplx z, double bass)
         {
-            //checks that the base is a positive real number
-            ArgBoundsException.Atleast("bass", bass, 0.0);
-
-            //allows for the computation when the bass is zero
+            //takes care of the special casses
             if (bass == 0.0) return new Cmplx(0.0, 0.0);
+            if (bass < 0.0) return Cmplx.NaN;
 
             //calculates the result storing temporary values
             double temp1 = Math.Pow(bass, z.real);
@@ -438,18 +447,17 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// The complex logarythim is the inverse of the complex exponential.
-        /// In general, there are infinatly many solutions, similar to the
-        /// inverse trigometric functions on the real numbers. A branch index
-        /// can be spesified to select from the diffrent possable solutions. 
+        /// In general, there are infinatly many solutions to the complex
+        /// logarythim. This method returns the principle branch, with the
+        /// branch cut lying along the negative real axis.
         /// </summary>
         /// <param name="z">Argument of the logarythim</param>
-        /// <param name="n">Branch selector index</param>
         /// <returns>The natural log of a complex number</returns>
-        public static Cmplx Log(Cmplx z, int n = 0)
+        public static Cmplx Log(Cmplx z)
         {
             //calculates the resulting components seperatly
-            double outI = z.Arg + (VMath.TAU * n);
             double outR = Math.Log(z.Abs);
+            double outI = z.Arg;
 
             //returns the constructed number
             return new Cmplx(outR, outI);
@@ -458,19 +466,17 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// This method generalises the complex logarythim, allowing for
         /// any positive real base (except for base-1). Like the natural
-        /// logarythim, it also has infinatly many solutions. A branch index
-        /// can be spesified to select from the diffrent possable solutions. 
+        /// logarythim, it also has infinatly many solutions. This method 
+        /// returns the principle branch, with the branch cut lying along 
+        /// the negative real axis. 
         /// </summary>
         /// <param name="z">Argument of the complex logarythim</param>
         /// <param name="bass">Base of the complex logarythim</param>
-        /// <param name="n">Branch selector index</param>
         /// <returns>The log of a complex number in the given base</returns>
-        /// <exception cref="RangeException">If the base of the lograythim
-        /// is less than or equal to zero</exception>
-        public static Cmplx Log(Cmplx z, double bass, int n = 0)
+        public static Cmplx Log(Cmplx z, double bass)
         {
-            //checks that the base is a positive real number
-            ArgBoundsException.Atleast("bass", bass, 0.0);
+            //return NaN if the bass is invalid
+            if (bass <= 0.0) return Cmplx.NaN;
 
             //computes the radius and the log of the bass
             double outR = Math.Log(z.Abs);
@@ -478,7 +484,7 @@ namespace Vulpine.Core.Calc.Numbers
 
             //calculates the log with the change of base formula
             outR = outR / outI;
-            outI = (z.Arg + (VMath.TAU * n)) / outI;
+            outI = z.Arg / outI;
             return new Cmplx(outR, outI);
         }
 
@@ -507,7 +513,7 @@ namespace Vulpine.Core.Calc.Numbers
         #region Trigimetric Functions...
 
         /// <summary>
-        /// Computes the sine of a complex number. The sign function extends
+        /// Computes the sine of a complex number. The sine function extends
         /// naturaly to the coplex numbers, due to the complex exponential
         /// and Euler's identity.
         /// </summary>
@@ -607,10 +613,10 @@ namespace Vulpine.Core.Calc.Numbers
         /// <param name="z">Number to test</param>
         /// <returns>True if the number is at one of the points of infinity,
         /// and false if otherwise</returns>
-        public static bool IsInfinity(Cmplx z)
+        public bool IsInfinity()
         {
-            if (Double.IsInfinity(z.real)) return true;
-            else if (Double.IsInfinity(z.imag)) return true;
+            if (Double.IsInfinity(real)) return true;
+            else if (Double.IsInfinity(imag)) return true;
             else return false;
         }
 
@@ -621,20 +627,24 @@ namespace Vulpine.Core.Calc.Numbers
         /// </summary>
         /// <param name="z">Number to test</param>
         /// <returns>True if the number is invalid, and false otherwise</returns>
-        public static bool IsNaN(Cmplx z)
+        public bool IsNaN()
         {
-            if (Double.IsNaN(z.real)) return true;
-            else if (Double.IsNaN(z.imag)) return true;
+            if (Double.IsNaN(real)) return true;
+            else if (Double.IsNaN(imag)) return true;
             else return false;
-        }
+        }     
 
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Conversions...
 
-        //creates a new complex number through the constructor
+        /// <summary>
+        /// Converts a double to a complex number through the constructor
+        /// </summary>
         public static implicit operator Cmplx(Double n)
-        { return new Cmplx(n); }
+        { 
+            return new Cmplx(n); 
+        }
 
         /// <summary>
         /// Converts the complex number to a floating point number if it lies 
@@ -642,18 +652,29 @@ namespace Vulpine.Core.Calc.Numbers
         /// </summary>
         public static explicit operator Double(Cmplx n)
         {
-            //bool is_real = VMath.IsZero(n.imag);
             bool is_real = Math.Abs(n.imag) < VMath.TOL;
             return (is_real) ? n.real : Double.NaN;
         }
 
-        //creates a vector containing the real and imagnary components
+        /// <summary>
+        /// Converts the complex number to a 2D vector containing the real
+        /// and imaginary components as elements.
+        /// </summary>
         public static implicit operator Vector(Cmplx n)
-        { return new Vector(n.real, n.imag); }
+        { 
+            return new Vector(n.real, n.imag); 
+        }
 
-        //converts the vector by calling the constructor
+        /// <summary>
+        /// Converts a vector to a complex number by treating the first and second
+        /// elements as the real and imaginary parts respectivly.
+        /// </summary>
         public static explicit operator Cmplx(Vector v)
-        { return new Cmplx(v); }
+        {
+            double r = v.GetExtended(0);
+            double i = v.GetExtended(1);
+            return new Cmplx(r, i);
+        }
 
         #endregion //////////////////////////////////////////////////////////////
 
@@ -686,8 +707,6 @@ namespace Vulpine.Core.Calc.Numbers
         #endregion //////////////////////////////////////////////////////////////
 
         Cmplx Euclidean<Cmplx, Double>.Mult(double scalar)
-        {
-            return this.Mult((Cmplx)scalar);
-        }
+        { return this.Mult((Cmplx)scalar); }
     }
 }

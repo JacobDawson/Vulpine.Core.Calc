@@ -73,7 +73,9 @@ namespace Vulpine_Core_Calc_Tests.AddOns
         /// <param name="writer">Used to discribe the constraint</param>
         public override void WriteDescriptionTo(MessageWriter writer)
         {
-            writer.Write("within {0} error tolerance of {1}", tollerence, expected);
+            string s1 = tollerence.ToString();
+            string s2 = expected.ToString();
+            writer.Write("within {0} error tolerance of {1}", s1, s2);
         }
     }
 }

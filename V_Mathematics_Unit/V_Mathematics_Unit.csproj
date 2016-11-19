@@ -71,6 +71,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AddOns\Generators.cs" />
     <Compile Include="Unit\AlgebraicTests.cs" />
+    <Compile Include="Unit\CmplxTexts.cs" />
     <Compile Include="Unit\EuclideanTests.cs" />
     <Compile Include="Unit\MathTests.cs" />
     <Compile Include="Unit\MatrixTests.cs" />

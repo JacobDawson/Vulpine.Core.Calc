@@ -193,8 +193,8 @@ namespace ComplexMaps
         public static Color CmplxToColor(Cmplx z)
         {
             //takes care of the extreem cases
-            if (Cmplx.IsNaN(z)) return Color.White;
-            if (Cmplx.IsInfinity(z)) return Color.White;
+            if (z.IsNaN()) return Color.White;
+            if (z.IsInfinity()) return Color.White;
 
             double temp = (-1.0 / (z.Abs + 1.0)) + 1.0;
 
