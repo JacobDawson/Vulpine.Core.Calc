@@ -15,43 +15,17 @@ namespace Vulpine_Core_Calc_Tests.Unit
     [TestFixture]
     public class MathTests
     {
-        private Cmplx GetCmplx(int n)
-        {
-            switch (n)
-            {
-                case 0: return new Cmplx(-1.0445184600, -0.57773215910);
-                case 1: return new Cmplx(-1.4976523500, -2.5360755830);
-                case 2: return new Cmplx(0.62263369030, 1.4147873410);
-                case 3: return new Cmplx(-3.4930822410, 0.42607424360);
-                case 4: return new Cmplx(1.9324922290, 0.62974184760);
-                case 5: return new Cmplx(4.2980018690, -3.1013584960);
-                case 6: return new Cmplx(-3.3555079120, 7.9978442920);
-                case 7: return new Cmplx(1.7137449450, 4.6592556790);
-                case 8: return new Cmplx(5.4710230590, 1.3168351430);
-                case 9: return new Cmplx(-2.1002182560, -1.5226184370);
+        /// <summary>
+        /// the tollarance used in desk calculations. it represents the minimum
+        /// amound of relative error allowed in numeric aproximations.
+        /// </summary>
+        public const Double VTOL = 1.0e-10;
 
-                //results of the gamma function
-                case 10: return new Cmplx(-0.142416877516903, -1.132059781631400);
-                case 11: return new Cmplx(-0.00390104093073400, -0.00474677966930664);
-                case 12: return new Cmplx(0.215009010126418, -0.183453949193736);
-                case 13: return new Cmplx(0.112130608749238, 0.0784969554368719);
-                case 14: return new Cmplx(0.826812551025766, 0.216168006211308);
-                case 15: return new Cmplx(-0.764607350709280, 2.69231044936783);
-                case 16: return new Cmplx(-2.81794073754196e-10, 2.50623038614254e-9);
-                case 17: return new Cmplx(-0.00466537086579547, -0.00982974632802859);
-                case 18: return new Cmplx(-22.2777231999429, 35.6868451800111);
-                case 19: return new Cmplx(0.0342414817303455, 0.0122856408869635);
+        //stores a rerenece to the tolarance for this instance
+        private double tol;
 
-                //results of the error funciton
-                case 20: return new Cmplx(-0.998103073230132, -0.185530903382701);
-                case 21: return new Cmplx(-9.53933265834618, -9.67016230935939);
-                case 22: return new Cmplx(2.75211150004256, 0.8126539401906065);
-                case 23: return new Cmplx(-1.000000930031009, 4.82163348333148e-8);
-                case 24: return new Cmplx(1.0081776973528331, 0.0038696318294437144);
-            }
-
-            return 0.0;
-        }
+        public MathTests() { tol = VTOL; }
+        public MathTests(double tol) { this.tol = tol; }
 
 
         [TestCase(Double.NaN)]
@@ -129,7 +103,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public void Sinc_VariousInput_ExpectedOutput(double x, double exp)
         {
             double y = VMath.Sinc(x);
-            Assert.That(y, Ist.WithinTolOf(exp, VMath.TOL));
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
         [TestCase(5.0, 24.0)]
@@ -146,7 +120,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public void Gamma_VariousInput_ExpectedOutput(double x, double exp)
         {
             double y = VMath.Gamma(x);
-            Assert.That(y, Ist.WithinTolOf(exp, VMath.TOL)); 
+            Assert.That(y, Ist.WithinTolOf(exp, tol)); 
         }
 
         [TestCase(-3.78300, -5.42700, -4.69960112311076e-08, -2.39454043917665e-07)]
@@ -163,7 +137,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Cmplx exp = new Cmplx(e1, e2);
 
             Cmplx y = VMath.Gamma(z);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-12));
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
         [TestCase(0.5, 1.3738007307, 0.172637787023159)]
@@ -185,8 +159,69 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public void Gamma_MultiInput_ExpectedOutput(double a, double x, double exp)
         {
             //uses the upper incomplete gamma funciton
-            double y = VMath.Gamma(a) - VMath.Gamma(a, x);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
+            double y = VMath.Gamma(a, x);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
+
+        [TestCase(1.41720, 3.37280, -1.33240, -0.89200, 4.66023033150601e+03, 6.57869478267654e+03)]
+        [TestCase(-1.33240, -0.89200, 1.86510, -2.68050, -2.96870221512415e-03, -7.81450030663611e-04)]
+        [TestCase(1.86510, -2.68050, -0.49927, -1.60900, -2.26810969541599e-02, -1.42528453187021e-01)]
+        [TestCase(-0.49927, -1.60900, 0.92265, 0.43140, 3.18703660633048e-02, -3.01448658207578e-01)]
+        [TestCase(0.92265, 0.43140, 2.27120, 1.44800, 4.54949270748465e-02, -6.22525119947233e-02)]
+        [TestCase(2.27120, 1.44800, -0.62240, 3.51050, 1.23965054401276e+00, 1.60651017136115e-01)]
+        public void Gamma_MultiCmplxInput_ExpectedOutput(double a1, double a2, double x1, double x2, double e1, double e2)
+        {
+            Cmplx a = new Cmplx(a1, a2);
+            Cmplx x = new Cmplx(x1, x2);
+            Cmplx e = new Cmplx(e1, e2);
+
+            Cmplx y = VMath.Gamma(a, x);
+
+            Assert.That(y, Ist.WithinTolOf(e, tol));
+        }
+
+
+        [TestCase(6.0, 3.0, 20.0)]
+        [TestCase(24.0, 5.0, 42504.0)]
+        [TestCase(34.0, 16.0, 2203961430.0)]
+        [TestCase(52.0, 24.0, 426384982032100.0)]
+        [TestCase(72.0, 8.0, 11969016345.0)]
+        [TestCase(72.0, 60.0, 15363284301456.0)]
+        [TestCase(0.5, 10, -0.009273529052734375)]
+        [TestCase(0.5, 20, -0.003214633015886648)]
+        [TestCase(16.0, Math.PI, 675.2486887153615)]
+        [TestCase(VMath.TAU, Math.E, 22.68726548792432)]
+        [TestCase(-1.515572593, -0.1361058568, 0.847702938770886)]
+        [TestCase(-1.45927868, 0.7657063568, -0.895069929286101)]
+        [TestCase(-0.3998426792, -1.360171874, -0.388066067805052)]
+        [TestCase(1.627713632, -2.038288681, 0.00385792748132843)]
+        [TestCase(0.6412807012, 0.04666553127, 1.03228770026497)]
+        [TestCase(1.379424623, 0.6331685928, 1.48705896022135)]
+        public void Binomial_VariousInput_ExpectedOutput(double n, double k, double exp)
+        {
+            //for some reason this returns NaN in debug mode, but passes normaly
+            //[TestCase(100.0, 5.0, 75287520.0)]
+
+            double y = VMath.Binomial(n, k);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
+
+        [TestCase(-0.87785, 2.25320, 1.92690, -1.91340, -4.64143746116780e+02, -6.74129516930783e+01)]
+        [TestCase(1.92690, -1.91340, -1.04490, 1.50320, -2.64624822383974e-01, -3.75929794880916e+00)]
+        [TestCase(-1.04490, 1.50320, 0.91537, 1.44340, 1.90429995549770e-04, 2.59433537228387e-02)]
+        [TestCase(0.91537, 1.44340, 2.22190, -0.55814, -3.56820841910449e+00, -5.63284929814418e-01)]
+        [TestCase(2.22190, -0.55814, -3.03790, -1.40990, -1.80579535265661e-01, -1.77619536057886e-01)]
+        [TestCase(-3.03790, -1.40990, 0.92500, 1.20870, 2.18693208302627e+01, -1.14531045645560e+02)]
+        public void Binomial_ComplexInput_ExpectedOutput(double n1, double n2, double k1, double k2, double e1, double e2)
+        {
+            Cmplx n = new Cmplx(n1, n2);
+            Cmplx k = new Cmplx(k1, k2);
+            Cmplx e = new Cmplx(e1, e2);
+
+            Cmplx y = VMath.Binomial(n, k);
+            Assert.That(y, Ist.WithinTolOf(e, tol));
         }
 
 
@@ -203,46 +238,60 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public void Erf_VariousInput_ExpectedOutput(double x, double exp)
         {
             double y = VMath.Erf(x);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
-        [TestCase(0, 20)]
-        [TestCase(1, 21)]
-        [TestCase(2, 22)]
-        [TestCase(3, 23)]
-        [TestCase(4, 24)]
-        public void Erf_CmplxInput_ExpectedOutput(int zn, int en)
+
+        [TestCase(0.29441, 0.53607, 4.23388115326953e-01, 6.01793842926204e-01)]
+        [TestCase(1.87580, -3.83500, 9.45923967905694e+03, -2.19698202167700e+03)]
+        [TestCase(-0.58450, -2.33380, -2.87686349072186e+01, 3.13483391805746e+01)]
+        [TestCase(1.73620, 1.91150, 8.18745111912825e-01, 3.69684276404134e-01)]
+        [TestCase(-1.96680, 2.23210, -1.57106843639527e+00, -0.0851194355770910e+00)]
+        [TestCase(3.49310, 0.42607, 1.00000092990724e+00, 4.82249604498094e-08)]
+        [TestCase(-0.08288, -3.91680, -3.99640614883861e+05, -5.52276299222953e+05)]
+        [TestCase(-2.89480, 2.80330, -1.02525359594166e+00, -7.89112328205884e-02)]
+        public void Erf_CmplxInput_ExpectedOutput(double z1, double z2, double e1, double e2)
         {
-            Cmplx z = GetCmplx(zn);
-            Cmplx exp = GetCmplx(en);
+            //This test case won't pass for tollerance greator than 1.0e-09
+            //[TestCase(-3.19500, -2.69880, -9.95698806714512e-01, 5.76877499510872e-03)]
+
+            Cmplx z = new Cmplx(z1, z2);
+            Cmplx exp = new Cmplx(e1, e2);
 
             Cmplx y = VMath.Erf(z);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-10));
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
-        [TestCase(6.0, 3.0, 20.0)]
-        [TestCase(24.0, 5.0, 42504.0)]
-        [TestCase(34.0, 16.0, 2203961430.0)]
-        [TestCase(52.0, 24.0, 426384982032100.0)]
-        [TestCase(72.0, 8.0, 11969016345.0)]
-        [TestCase(72.0, 60.0, 15363284301456.0)]
-        [TestCase(0.5, 10, -0.009273529052734375)]
-        [TestCase(0.5, 20, -0.003214633015886648)]
-        [TestCase(16, Math.PI, 675.2486887153615)]
-        [TestCase(VMath.TAU, Math.E, 22.68726548792432)]
-        [TestCase(-1.515572593, -0.1361058568, 0.847702938770886)]
-        [TestCase(-1.45927868, 0.7657063568, -0.895069929286101)]
-        [TestCase(-0.3998426792, -1.360171874, -0.388066067805052)]
-        [TestCase(1.627713632, -2.038288681, 0.00385792748132843)]
-        [TestCase(0.6412807012, 0.04666553127, 1.03228770026497)]
-        [TestCase(1.379424623, 0.6331685928, 1.48705896022135)]
-        public void Binomial_VariousInput_ExpectedOutput(double n, double k, double exp)
+        [TestCase(0.0, 0.5)]
+        [TestCase(-5.0, 2.86651571879194e-7)]
+        [TestCase(-3.0, 1.34989803163009e-3)]
+        [TestCase(-1.0, 0.158655253931457)]
+        [TestCase(-0.5, 0.308537538725987)]
+        [TestCase(0.5, 0.691462461274013)]
+        [TestCase(1.0, 0.841344746068543)]
+        [TestCase(3.0, 0.998650101968370)]
+        [TestCase(5.0, 0.999999713348428)]
+        public void Cdf_VariousInput_ExpectedOutput(double x, double exp)
         {
-            //for some reason this returns NaN in debug mode, but passes normaly
-            //[TestCase(100.0, 5.0, 75287520.0)]
-
-            double y = VMath.Binomial(n, k);
-            Assert.That(y, Ist.WithinTolOf(exp, 1.0e-12));
+            double y = VMath.Cdf(x);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
+
+
+        [TestCase(2.18150, 1.17170, 1.02656410126568e+00, 4.97366511760895e-03)]
+        [TestCase(1.81070, -0.05189, 9.65095113041434e-01, -4.01423530283050e-03)]
+        [TestCase(0.12764, 1.06850, 5.89596276291867e-01, 5.17279885817026e-01)]
+        [TestCase(0.84694, -1.48500, 1.20664001541143e+00, -4.31574632382498e-01)]
+        [TestCase(-0.08288, -3.91680, -6.90890616898446e+01, -2.25921733610230e+02)]
+        [TestCase(-0.29168, 0.49850, 3.70538398255119e-01, 1.98064055693983e-01)]
+        public void Cdf_CmplxInput_ExpectedOutput(double z1, double z2, double e1, double e2)
+        {
+            Cmplx z = new Cmplx(z1, z2);
+            Cmplx exp = new Cmplx(e1, e2);
+
+            Cmplx y = VMath.Cdf(z);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
     }
 }

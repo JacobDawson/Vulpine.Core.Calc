@@ -14,7 +14,7 @@ namespace Vulpine.Core.Calc.RandGen
     /// than smaller PRNGs.
     /// </summary>
     /// <remarks>Last Update: 2016-02-04</remarks>
-    public class RandMT : VRandom
+    public sealed class RandMT : VRandom
     {
         #region Class Definitions...
 

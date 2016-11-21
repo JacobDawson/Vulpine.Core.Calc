@@ -15,7 +15,7 @@ namespace Vulpine.Core.Calc.Matrices
     /// where as vectors are not.
     /// </summary>
     /// <remarks>Last Update: 2016-07-09</remarks>
-    public class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, IFormattable
+    public sealed class Vector : Euclidean<Vector, Double>, IEnumerable<Double>, IFormattable
     {
         //NOTE: Consider adding Contatinaiton and Subvector methods
         //this would be helpfull for nural-nets that build vectors

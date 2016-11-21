@@ -14,7 +14,7 @@ namespace Vulpine.Core.Calc.RandGen
     /// pattern of it's bit sequence.
     /// </summary>
     /// <remarks>Last Update: 2016-02-07</remarks>
-    public class RandR30 : VRandom
+    public sealed class RandR30 : VRandom
     {
         #region Class Definitions...
 

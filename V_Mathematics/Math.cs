@@ -19,6 +19,9 @@ namespace Vulpine.Core.Calc
     /// <remarks>Last Update: 2016-11-14</remarks>
     public static class VMath
     {
+        //NOTES: Perhaps a sigmoid function ranging from -1 to 1 would be more benificial?
+        //Adding A Permutation funciton would help complete the Gamma Funciton set.
+
         #region Mathmatical Constants...
 
         /// <summary>
@@ -51,6 +54,13 @@ namespace Vulpine.Core.Calc
         /// It is aproximatly (0.5772157).
         /// </summary>
         public const double EM = 0.57721566490153286061;
+
+        /// <summary>
+        /// The square root of twice pi, a value which comes up frequently in many
+        /// formulas, and is therefore convenient to have defined as a constant.
+        /// It is aproximatly (2.5066283).
+        /// </summary>
+        public const double RTP = 2.5066282746310005024;
 
         /// <summary>
         /// The default error tollarence used within the mathamatics library.
@@ -340,22 +350,111 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Computes the probability density function for the standard normal
+        /// distribution. That is a distribution with a mean of zero, and a
+        /// variance of one. It is characterised by it's bell-shaped curve.
+        /// </summary>
+        /// <param name="x">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static double Gauss(double x)
+        {
+            double temp = Math.Exp(-0.5 * x * x);
+            return temp / VMath.RTP;
+        }
+
+        /// <summary>
+        /// Computes the probability density function for the standard normal
+        /// distribution. That is a distribution with a mean of zero, and a
+        /// variance of one. It is characterised by it's bell-shaped curve.
+        /// </summary>
+        /// <param name="z">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static Cmplx Gauss(Cmplx z)
+        {
+            Cmplx temp = Cmplx.Exp(-0.5 * z * z);
+            return temp / VMath.RTP;
+        }
+
+        /// <summary>
+        /// Computes the sigmoid funciton, which takes any value on the real
+        /// number line and maps it to the interval [0, 1], this is known
+        /// as flatening the funciton.
+        /// </summary>
+        /// <param name="x">Input to the sigmoid function</param>
+        /// <returns>The result of the sigmoid funciton</returns>
+        public static double Sgmd(double x)
+        {
+            //calculates the standard logistic funciton
+            return 1.0 / (1.0 + Math.Exp(-x));
+        }
+
+        /// <summary>
+        /// Computes the inverse sigmoid funciton, which undoes the action
+        /// taken by the sigmoid funciton. If the input is outside the range
+        /// of zero to one, the funciton maps the value to infinity.
+        /// </summary>
+        /// <param name="x">Input to the inverse sigmoid funciton</param>
+        /// <returns>The result of the inverse sigmoid funciton</returns>
+        public static double Asgmd(double x)
+        {
+            //takes care of the extrem cases
+            if (x <= 0.0) return Double.NegativeInfinity;
+            if (x >= 1.0) return Double.PositiveInfinity;
+
+            double temp = x / (x - 1);
+            return Math.Log(-x);
+        }
+
+        #endregion //////////////////////////////////////////////////////////////////
+
+        #region Advanced Functions...
+
+        /// <summary>
         /// Computes the gamma function applied to the real number line.
         /// The gamma funciton can be thought of as a continuation of the
-        /// factorial function where Gamma(n) is equal to Fact(n - 1).
+        /// factorial function where Fact(n) is equal to Gamma(n + 1).
         /// </summary>
         /// <param name="x">Input to the gamma function</param>
         /// <returns>Output from the gamma funciton</returns>
         public static double Gamma(double x)
         {
-            //calls upon the complex method
-            return (double)Gamma(new Cmplx(x));
+            if (x < 0.5)
+            {
+                //uses the reflection formula for the other half
+                return Math.PI / (Math.Sin(Math.PI * x) * Gamma(1.0 - x));
+            }
+            else
+            {
+                double p, t;
+
+                //initialise the values
+                p = 0.99999999999980993;
+                x = x - 1.0;
+
+                //uses a bunch of magic numbers
+                p += 676.5203681218851 / (x + 1);
+                p += -1259.1392167224028 / (x + 2);
+                p += 771.32342877765313 / (x + 3);
+                p += -176.61502916214059 / (x + 4);
+                p += 12.507343278686905 / (x + 5);
+                p += -0.13857109526572012 / (x + 6);
+                p += 9.9843695780195716e-6 / (x + 7);
+                p += 1.5056327351493116e-7 / (x + 8);
+
+                t = x + 7.5;
+
+                //finalises the result
+                p *= Math.Pow(t, x + 0.5);
+                p *= Math.Exp(-t) * VMath.RTP;
+
+                return p;
+            }
         }
 
         /// <summary>
         /// Computes the gamma funciton applied to the complex plane.
         /// The gamma funciton can be thought of as a continuation of the
-        /// factorial function where Gamma(n) is equal to Fact(n - 1).
+        /// factorial function where Fact(n) is equal to Gamma(n + 1).
         /// </summary>
         /// <param name="z">Input to the gamma function</param>
         /// <returns>Output from the gamma funciton</returns>
@@ -368,35 +467,34 @@ namespace Vulpine.Core.Calc
             }
             else
             {
-                Cmplx x, t;
+                Cmplx p, t;
 
                 //initialise the values
-                x = 0.99999999999980993;
+                p = 0.99999999999980993;
                 z = z - 1.0;
 
                 //uses a bunch of magic numbers
-                x += 676.5203681218851 / (z + 1);
-                x += -1259.1392167224028 / (z + 2);
-                x += 771.32342877765313 / (z + 3);
-                x += -176.61502916214059 / (z + 4);
-                x += 12.507343278686905 / (z + 5);
-                x += -0.13857109526572012 / (z + 6);
-                x += 9.9843695780195716e-6 / (z + 7);
-                x += 1.5056327351493116e-7 / (z + 8);
+                p += 676.5203681218851 / (z + 1);
+                p += -1259.1392167224028 / (z + 2);
+                p += 771.32342877765313 / (z + 3);
+                p += -176.61502916214059 / (z + 4);
+                p += 12.507343278686905 / (z + 5);
+                p += -0.13857109526572012 / (z + 6);
+                p += 9.9843695780195716e-6 / (z + 7);
+                p += 1.5056327351493116e-7 / (z + 8);
 
                 t = z + 7.5;
 
                 //finalises the result
-                x *= 2.506628274631;  //SQRT(2*PI);
-                x *= Cmplx.Pow(t, z + 0.5);
-                x *= Cmplx.Exp(-t);
+                p *= Cmplx.Pow(t, z + 0.5);
+                p *= Cmplx.Exp(-t) * VMath.RTP;
 
-                return x;
+                return p;
             }
         }
 
         /// <summary>
-        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// Evaluates the upper incomplete gamma function. It is related to 
         /// the gamma function in that both can be expressed as an intergral 
         /// of the same soultion. It is a special funciton which arises as
         /// the solution to various mathmatical problems.
@@ -406,12 +504,38 @@ namespace Vulpine.Core.Calc
         /// <returns>The solution to the incomplete gamma function</returns>
         public static double Gamma(double a, double x)
         {
-            //calls upon the complex method
-            return (double)Gamma(new Cmplx(a), new Cmplx(x));
+            //the function is undefined for negative x
+            if (x < 0.0) return Double.NaN;
+
+            //values used in the itteration below
+            double pow = Math.Pow(x, a) * Math.Exp(-x);
+            double error = Double.PositiveInfinity;
+            int k = 0;
+
+            double p = 1.0;
+            double q = 1.0;
+            double sum1 = 0.0;
+            double sum2 = 0.0;
+
+            //uses the power series expansion
+            while (error > VMath.TOL && k < 128)
+            {
+                sum1 = sum2;
+
+                q = q * (a + k);
+                sum2 += (pow * p) / q;
+                p = p * x;
+
+                error = Math.Abs(sum1 - sum2) / Math.Abs(sum1);
+                k++;
+            }
+
+            //returns the upper incomplete gamma
+            return VMath.Gamma(a) - sum2;
         }
 
         /// <summary>
-        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// Evaluates the upper incomplete gamma function. It is related to 
         /// the gamma function in that both can be expressed as an intergral 
         /// of the same soultion. It is a special funciton which arises as
         /// the solution to various mathmatical problems.
@@ -444,7 +568,8 @@ namespace Vulpine.Core.Calc
                 k++;
             }
 
-            return sum2;
+            //returns the upper incomplete gamma
+            return VMath.Gamma(a) - sum2;
         }
 
         /// <summary>
@@ -458,8 +583,20 @@ namespace Vulpine.Core.Calc
         /// <returns>Number of possable combinations</returns>
         public static double Binomial(double n, double k)
         {
-            //calls upon the complex method
-            return (double)Binomial(new Cmplx(n), new Cmplx(k));
+            if (n > 0.0 && k > 0.0 && k < n)
+            {
+                //uses the log-gamma function to avoid multiplication
+                double a = Math.Log(VMath.Gamma(n + 1.0));
+                double b = Math.Log(VMath.Gamma(k + 1.0));
+                double c = Math.Log(VMath.Gamma(n - k + 1.0));
+
+                return Math.Exp(a - b - c);
+            }
+            else
+            {
+                //calls upon the complex method
+                return (double)Binomial(new Cmplx(n), new Cmplx(k));
+            }
         }
 
         /// <summary>
@@ -473,41 +610,12 @@ namespace Vulpine.Core.Calc
         /// <returns>Number of possable combinations</returns>
         public static Cmplx Binomial(Cmplx n, Cmplx k)
         {
+            //uses the log-gamma function to avoid multiplication
             Cmplx a = Cmplx.Log(VMath.Gamma(n + 1.0));
             Cmplx b = Cmplx.Log(VMath.Gamma(k + 1.0));
             Cmplx c = Cmplx.Log(VMath.Gamma(n - k + 1.0));
 
             return Cmplx.Exp(a - b - c);
-        }
-
-        /// <summary>
-        /// Computes the sigmoid funciton, which takes any value on the real
-        /// number line and maps it to the interval [0, 1], this is known
-        /// as flatening the funciton.
-        /// </summary>
-        /// <param name="x">Input to the sigmoid function</param>
-        /// <returns>The result of the sigmoid funciton</returns>
-        public static double Sgmd(double x)
-        {
-            //calculates the standard logistic funciton
-            return 1.0 / (1.0 + Math.Exp(-x));
-        }
-
-        /// <summary>
-        /// Computes the inverse sigmoid funciton, which undoes the action
-        /// taken by the sigmoid funciton. If the input is outside the range
-        /// of zero to one, the funciton maps the value to infinity.
-        /// </summary>
-        /// <param name="x">Input to the inverse sigmoid funciton</param>
-        /// <returns>The result of the inverse sigmoid funciton</returns>
-        public static double Asgmd(double x)
-        {
-            //takes care of the extrem cases
-            if (x <= 0.0) return Double.NegativeInfinity;
-            if (x >= 1.0) return Double.PositiveInfinity;
-
-            double temp = x / (x - 1);
-            return Math.Log(-x);
         }
 
         /// <summary>
@@ -600,6 +708,38 @@ namespace Vulpine.Core.Calc
             return sum2 * 1.1283791670955125739;
         }
 
+        /// <summary>
+        /// Computes the cumulitive distribution funciton for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It returns the probability 
+        /// that a random number will appear below the input value.
+        /// </summary>
+        /// <param name="x">Input value X to test</param>
+        /// <returns>Probablity that some value is less than X</returns>
+        public static double Cdf(double x)
+        {
+            //computes x / sqrt(2)
+            double phi = x * 0.7071067811865475244;
+
+            phi = 1.0 + VMath.Erf(phi);
+            return phi * 0.5;
+        }
+
+        /// <summary>
+        /// Computes the cumulitive distribution funciton for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It returns the probability 
+        /// that a random number will appear below the input value.
+        /// </summary>
+        /// <param name="z">Input value Z to test</param>
+        /// <returns>Probablity that some value is less than Z</returns>
+        public static Cmplx Cdf(Cmplx z)
+        {
+            //computes z / sqrt(2)
+            Cmplx phi = z * 0.7071067811865475244;
+
+            phi = 1.0 + VMath.Erf(phi);
+            return phi * 0.5;
+        }
+
         #endregion //////////////////////////////////////////////////////////////////
 
         #region Conversion Methods...
@@ -609,7 +749,7 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="rad">Input in radians</param>
         /// <returns>The equivlent value in degrees</returns>
-        public static double ToDegrees(double rad)
+        public static double ToDeg(double rad)
         {
             return (rad * (180.0 / Math.PI));
         }
@@ -619,7 +759,7 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="deg">Input in degrees</param>
         /// <returns>The equivlent value in radians</returns>
-        public static double ToRadians(double deg)
+        public static double ToRad(double deg)
         {
             return (deg * (Math.PI / 180.0));
         }

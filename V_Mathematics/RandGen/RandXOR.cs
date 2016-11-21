@@ -13,7 +13,7 @@ namespace Vulpine.Core.Calc.RandGen
     /// were listed in a paper by Geroge Marsaglia.
     /// </summary>
     /// <remarks>Last Update: 2016-02-06</remarks>
-    public class RandXOR : VRandom
+    public sealed class RandXOR : VRandom
     {
         #region Class Definitions...
 

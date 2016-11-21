@@ -13,7 +13,7 @@ namespace Vulpine.Core.Calc.RandGen
     /// the paramaters spesified by the Minimal Standard Generator.
     /// </summary>
     /// <remarks>Last Update: 2016-02-03</remarks>
-    public class RandLCG : VRandom
+    public sealed class RandLCG : VRandom
     {
         #region Class Definitions...
 
