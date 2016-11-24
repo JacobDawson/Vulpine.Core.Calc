@@ -580,12 +580,12 @@ namespace Vulpine.Core.Calc.Matrices
         #region Metric Implementation...
 
         /// <summary>
-        /// Computes the magnitude as the Frobenius Norm of the current matrix.
-        /// It is identical to the norm of the vectorised matrix, and is
-        /// sub-multiplicitive with respect to the matrix product. 
+        /// Computes the Frobenius Norm of the current matrix. It is identical 
+        /// to the Norm of the vectorised matrix, and is sub-multiplicitive 
+        /// with respect to the matrix product. 
         /// </summary>
         /// <returns>The magnitude of the matrix</returns>
-        public double Mag()
+        public double Norm()
         {
             //used to store the result
             double output = 0.0;

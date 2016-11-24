@@ -60,7 +60,7 @@ namespace Vulpine_Core_Calc_Tests.AddOns
                 dynamic e = expected;
 
                 //computes the error value
-                double dist = a.Dist(e) / e.Mag();
+                double dist = a.Dist(e) / e.Norm();
                 error = Math.Abs(dist);
             }
 

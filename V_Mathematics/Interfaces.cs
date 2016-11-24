@@ -8,10 +8,10 @@ namespace Vulpine.Core.Calc
     /// <summary>
     /// This interface treats a class of objects as a Metric Space. It exposes
     /// a notion of 'distance' which can be measured between any two object of
-    /// the same class. It also provides a notion of magnitude, which can be
-    /// thought of as the distance from some implictly defind zero-point object.
-    /// Distances are always a positive real number, and a distance of zero indicates
-    /// that the two objects are the same.
+    /// the same class. This distance mesurement also induces a Norm for all
+    /// objects of the same class. In this way a Norm can be thought of as the
+    /// distance from some fixed null point. Distances are always a positive
+    /// real number, and a distance of zero indicated that two objects are the same.
     /// </summary>
     /// <typeparam name="T">Type of Space</typeparam>
     /// <remarks>Last Update: 2014-10-08</remarks>
@@ -19,8 +19,8 @@ namespace Vulpine.Core.Calc
     {
         /// <summary>
         /// Determins the distance between this object and another
-        /// metrizable object of the same type. Distances are always
-        /// positive, and only zero if the objects are identical.
+        /// object of the same type. Distances are always positive, 
+        /// and are zero if, and only if, the objects are identical.
         /// </summary>
         /// <param name="other">The second object</param>
         /// <returns>The distance from the second object</returns>
@@ -31,7 +31,7 @@ namespace Vulpine.Core.Calc
         /// zero-point object, inplicit in the same metric space.
         /// </summary>
         /// <returns>The magnitude of the object</returns>
-        double Mag();
+        double Norm();
     }
 
     /// <summary>

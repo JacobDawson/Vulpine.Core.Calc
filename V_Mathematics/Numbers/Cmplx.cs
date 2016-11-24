@@ -348,11 +348,11 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Computes the magnitude of the current complex number. This
+        /// Computes the Norm of the current complex number. This
         /// is exactly the same as the absolute value.
         /// </summary>
         /// <returns>The magnitude of the complex number</returns>
-        public double Mag()
+        public double Norm()
         {
             //simply returns the asbolute value
             return this.Abs;

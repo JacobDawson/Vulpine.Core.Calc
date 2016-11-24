@@ -338,11 +338,11 @@ namespace Vulpine.Core.Calc.Geometry
         #region Metric Implementation ...
 
         /// <summary>
-        /// Obtains the magnitude of the current point. It is the same
+        /// Obtains the Norm of the current point. It is the same
         /// as the radius in spherical coridnates.
         /// </summary>
         /// <returns>The magnitude of the point</returns>
-        public double Mag()
+        public double Norm()
         {
             //computes the sum of the squares
             double rad = (y * y) + (x * x) + (z * z);
@@ -366,12 +366,12 @@ namespace Vulpine.Core.Calc.Geometry
 
         /// <summary>
         /// Normalises the point to have a radius of one, placing it
-        /// on the unit circle while maintaining direction. Overloads
+        /// on the unit sphere while maintaining direction. Overloads
         /// the (~) opperator.
         /// </summary>
         /// <param name="p">The point to normalise</param>
         /// <returns>The normalised point</returns>
-        public static Point3D Norm(Point3D p)
+        public static Point3D Unit(Point3D p)
         {
             //computes the magnitude of the vector
             double div = (p.x * p.x) + (p.y * p.y) + (p.z * p.z);
@@ -488,9 +488,9 @@ namespace Vulpine.Core.Calc.Geometry
         public static Point3D operator -(Point3D a)
         { return a.Mult(-1.0); }
 
-        //refrences the Norm(p) function
+        //refrences the Unit(p) function
         public static Point3D operator ~(Point3D a)
-        { return Point3D.Norm(a); }
+        { return Point3D.Unit(a); }
 
         #endregion ////////////////////////////////////////////////////////////
     }

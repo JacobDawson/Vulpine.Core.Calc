@@ -70,13 +70,13 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
-        public void Dist_WithZeroVector_EqualsMag(int xi)
+        public void Dist_WithZeroVector_EqualsNorm(int xi)
         {
             dynamic x = GetSample(xi);
             dynamic y = GetZero();
 
             double d1 = x.Dist(y);
-            double d2 = x.Mag();
+            double d2 = x.Norm();
 
             Assert.That(d1, Ist.WithinTolOf(d2, VMath.TOL));
         }       

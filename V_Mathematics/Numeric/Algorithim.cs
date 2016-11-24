@@ -153,8 +153,8 @@ namespace Vulpine.Core.Calc.Numeric
 
             //computes the error value
             double dist = curr.Dist(last);
-            double mag = last.Mag();
-            error = Math.Abs(dist / mag);
+            double norm = last.Norm();
+            error = Math.Abs(dist / norm);
 
             //determins if sucessive itterations are nessary
             if (error <= tol) return true;

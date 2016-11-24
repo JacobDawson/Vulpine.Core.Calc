@@ -42,7 +42,7 @@ namespace Vulpine_Core_Calc_Tests.AddOns
             else
             {
                 dynamic a = actual;
-                double dist = a.Mag();
+                double dist = a.Norm();
                 error = Math.Abs(dist);
             }
 

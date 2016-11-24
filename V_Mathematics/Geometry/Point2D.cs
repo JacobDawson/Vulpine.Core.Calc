@@ -259,11 +259,11 @@ namespace Vulpine.Core.Calc.Geometry
         #region Metric Implementation ...
 
         /// <summary>
-        /// Obtains the magnitude of the current point. It is the same
+        /// Obtains the Norm of the current point. It is the same
         /// as the radius in polar coridnates.
         /// </summary>
         /// <returns>The magnitude of the point</returns>
-        public double Mag()
+        public double Norm()
         {
             //computes the sum of the squares
             double rad = (y * y) + (x * x);
@@ -304,7 +304,7 @@ namespace Vulpine.Core.Calc.Geometry
         /// </summary>
         /// <param name="p">The point to normalise</param>
         /// <returns>The normalised point</returns>
-        public static Point2D Norm(Point2D p)
+        public static Point2D Unit(Point2D p)
         {
             //computes the magnitude of the vector
             double div = (p.x * p.x) + (p.y * p.y);
@@ -412,9 +412,9 @@ namespace Vulpine.Core.Calc.Geometry
         public static Point2D operator -(Point2D a)
         { return a.Mult(-1.0); }
 
-        //refrences the Norm(p) function
+        //refrences the Unit(p) function
         public static Point2D operator ~(Point2D a)
-        { return Point2D.Norm(a); }
+        { return Point2D.Unit(a); }
 
         #endregion ////////////////////////////////////////////////////////////
     }

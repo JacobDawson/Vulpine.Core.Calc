@@ -314,11 +314,11 @@ namespace Vulpine.Core.Calc.Matrices
         #region Special Methods...
 
         /// <summary>
-        /// Calculates the magnitude of the current vector. The magnitude
-        /// is equivlent to the distance from the origin or zero vector.
+        /// Calculates the Norm of the current vector. The Norm is equivlent 
+        /// to the distance from the origin or zero vector.
         /// </summary>
         /// <returns>The magnitude of the vector</returns>
-        public double Mag()
+        public double Norm()
         {
             //used to store the result
             double output = 0.0;
@@ -359,15 +359,16 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Produces a new normalised version of the curent vector, by
-        /// seting it's magnitude to 1, preserving the vector's direction.
+        /// Produces a new unit vector, pointing in the same direction as the
+        /// original vector. This is done by dividing by the Norm, which is
+        /// why it is sometimes refred to as normalising the vector.
         /// </summary>
-        /// <returns>The normalised vector</returns>
+        /// <returns>The corisponding unit vector</returns>
         /// <remarks>It overloads the (~) opperator</remarks>
-        public Vector Norm()
+        public Vector Unit()
         {
             //uses the inverse magnitude to normalise
-            double bottom = 1.0 / this.Mag();
+            double bottom = 1.0 / this.Norm();
             return this.Mult(bottom);
         }
 
@@ -382,7 +383,7 @@ namespace Vulpine.Core.Calc.Matrices
         {
             //computes the angle using the dot product
             double a = this.Mult(other);
-            double b = this.Mag() * other.Mag();
+            double b = this.Norm() * other.Norm();
             return Math.Acos(a / b);
         }
 
@@ -517,9 +518,9 @@ namespace Vulpine.Core.Calc.Matrices
         public static Vector operator /(Vector v, Double s)
         { return v.Mult(1.0 / s); }
 
-        //refrences the Norm(v) function
+        //refrences the Unit(v) function
         public static Vector operator ~(Vector v)
-        { return v.Norm(); }
+        { return v.Unit(); }
 
         //refrences the Mult(-1) function
         public static Vector operator -(Vector v)

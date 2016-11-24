@@ -531,11 +531,11 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Computes the magnitude of the current quaternion. This
+        /// Computes the Norm of the current quaternion. This
         /// is exactly the same as the absolute value.
         /// </summary>
         /// <returns>The magnitude of the quaternion</returns>
-        public double Mag()
+        public double Norm()
         {
             //simply returns the asbolute value
             return this.Abs;

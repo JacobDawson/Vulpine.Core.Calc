@@ -502,12 +502,12 @@ namespace Vulpine.Core.Calc.Functions
         #region Eucildian Implementation...
 
         /// <summary>
-        /// Computes the magnitude of the curent polynomial. This is defined as
+        /// Computes the Norm of the curent polynomial. This is defined as
         /// the square root, of the sum of the square coffecents, and is equivlent
-        /// to the magnitude of the corsponding n-dimentional vector.
+        /// to the Norm of the corsponding n-dimentional vector.
         /// </summary>
         /// <returns>The magnitude of the polynomial</returns>
-        public double Mag()
+        public double Norm()
         {
             //used to store the result
             double output = 0.0;
@@ -521,8 +521,8 @@ namespace Vulpine.Core.Calc.Functions
         }
 
         /// <summary>
-        /// Computes the euclidian distance metric between any two polynomials,
-        /// regardless of degree. It is defined using the magnitude of the diffrence
+        /// Computes the euclidian distance between any two polynomials,
+        /// regardless of degree. It is defined using the Norm of the diffrence
         /// between the two polynomials.
         /// </summary>
         /// <param name="other">The other polynomial</param>
@@ -530,7 +530,7 @@ namespace Vulpine.Core.Calc.Functions
         public double Dist(Polynomial other)
         {
             //uses the norm to define the metric
-            return this.Sub(other).Mag();
+            return this.Sub(other).Norm();
         }
 
         /// <summary>

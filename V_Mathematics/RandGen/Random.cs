@@ -318,7 +318,7 @@ namespace Vulpine.Core.Calc.RandGen
                 for (int i = 0; i < dim; i++) v[i] = RandGauss();
 
                 //normalises the output
-                return v.Norm();
+                return v.Unit();
             }
         }
 

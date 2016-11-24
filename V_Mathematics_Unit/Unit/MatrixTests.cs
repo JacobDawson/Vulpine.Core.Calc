@@ -410,13 +410,13 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 4.70498)]
         [TestCase(2, 6.73428)]
         [TestCase(3, 5.73176)]
-        public void Mag_RandomMatrix_ExpectedReuslts(int ai, double exp)
+        public void Norm_RandomMatrix_ExpectedReuslts(int ai, double exp)
         {
             dynamic a = GetSample(ai);
 
-            double mag = a.Mag();
+            double norm = a.Norm();
 
-            Assert.That(mag, Ist.WithinTolOf(exp, tol));
+            Assert.That(norm, Ist.WithinTolOf(exp, tol));
         }
 
         [TestCase(1, 2, 9.43826)]

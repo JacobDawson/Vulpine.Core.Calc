@@ -214,13 +214,13 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 6.97343)]
         [TestCase(2, 10.5926)]
         [TestCase(4, 14.0431)] 
-        public void Mag_RandomVector_ExpectedResult(int xi, double result)
+        public void Norm_RandomVector_ExpectedResult(int xi, double result)
         {
             dynamic x = GetSample(xi);
 
-            dynamic mag = x.Mag();
+            dynamic norm = x.Norm();
 
-            Assert.That(mag, Ist.WithinTolOf(result, tol));
+            Assert.That(norm, Ist.WithinTolOf(result, tol));
         }
 
         [TestCase(1, 2, 12.6458)]
@@ -239,14 +239,14 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1, 20)]
         [TestCase(2, 21)]
         [TestCase(3, 22)]
-        public void Norm_RandomVector_ExpectedResult(int xi, int result)
+        public void Unit_RandomVector_ExpectedResult(int xi, int result)
         {
             dynamic x = GetSample(xi);
             dynamic r = GetSample(result);
 
-            dynamic norm = x.Norm();
+            dynamic unit = x.Unit();
 
-            Assert.That(norm, Ist.WithinTolOf(r, tol));
+            Assert.That(unit, Ist.WithinTolOf(r, tol));
         }
 
         [TestCase(1, 2, 1.5646)]
