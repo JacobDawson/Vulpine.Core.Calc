@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Vulpine.Core.Data.Exceptions;
-using Vulpine.Core.Calc.Exceptions;
 using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine.Core.Calc.Numbers
 {
     /// <summary>
-    /// There are many ways to visuilise the quaternions. At their core, they contain
-    /// one real component, and three imaginary components, all orthoginal to each other.
-    /// They can also be thought of as a pair of complex numbers, through Cayely-Dickson
-    /// expantion. Practaly anything that can be done with complex numbers can also be
-    /// done with quaternions. Multiplication, however, is non-comunitive, so care must
-    /// be taken when using algbracic laws that imply comunitivity.
+    /// The Quaternions form a four dimentional algebra. They are an extention 
+    /// of the Complex numbers, in the same way that the Complex numbers are an 
+    /// extention of the Real numbers. They can be thought of as containing one 
+    /// real component and three orthoginal imaginary components. Unlike the 
+    /// Real and Complex numbers, Quaternions are non-comunitive. This means that 
+    /// the product AB is not nessarly the same as the product BA. Quaternions 
+    /// also have a polar form, which consists of there absolute value, an angle 
+    /// theta, and a three-dimentional imaginary vector.
     /// </summary>
-    /// <remarks>Last Update: 2013-09-22</remarks>
-    public struct Qtrin : Algebraic<Qtrin, Double>
+    /// <remarks>Last Update: 2016-11-24</remarks>
+    public struct Qtrin : Algebraic<Qtrin, Double>, IFormattable
     {
         #region Class Definitions...
 
@@ -57,22 +57,10 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Converts a vector to a quaternion.
+        /// Converts a complex number to a quaternion. It scales the
+        /// standard (I) basis vector by default.
         /// </summary>
-        /// <param name="v">Vector to convert</param>
-        public Qtrin(Vector v)
-        {
-            //initialises values
-            real = v.GetElement(0);
-            icof = v.GetElement(1);
-            jcof = v.GetElement(2);
-            kcof = v.GetElement(3);
-        }
-
-        /// <summary>
-        /// Converts a complex number to a quaternion.
-        /// </summary>
-        /// <param name="z">Value to convert</param>
+        /// <param name="z">Complex value to convert</param>
         public Qtrin(Cmplx z)
         {
             //initialises values
@@ -82,20 +70,26 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Constructs a quaternion from a pair of complex numbers, based
-        /// on the Cayely-Dickson expantion. In this way, a quaterion can
-        /// be thought of as a nested complex number, where each imaginary
-        /// axis is unique and orthoginal to each other.
+        /// Constructs a quaternion from a complex number, given an imaginary
+        /// unit vector to rotate the imaginary component. The complex number
+        /// can be thought of as containing the essential real and imaginary
+        /// parts, while the vector contains the directional informaiton.
         /// </summary>
-        /// <param name="first">The first complex number</param>
-        /// <param name="second">The second complex number</param>
-        public Qtrin(Cmplx first, Cmplx second)
+        /// <param name="z">Complex value to convert</param>
+        /// <param name="vec">Vector portion of the quaternion</param>
+        public Qtrin(Cmplx z, Qtrin vec)
         {
-            //sets each of the cofecents individualy
-            real = first.CofR;
-            icof = first.CofI;
-            jcof = second.CofR;
-            kcof = second.CofI;
+            //normalises the vector, if not already   
+            double vn = 1.0 / vec.ImAbs;
+            vn = Double.IsInfinity(vn) ? 0.0 : vn;
+
+            //copies the real part from the base
+            real = z.CofR;
+
+            //scales the imag part based on the vector
+            icof = z.CofI * vec.icof * vn;
+            jcof = z.CofI * vec.jcof * vn;
+            kcof = z.CofI * vec.kcof * vn;
         }
 
         /// <summary>
@@ -105,34 +99,89 @@ namespace Vulpine.Core.Calc.Numbers
         public override string ToString()
         {
             //uses the default format
-            return ToString("0.000");
+            return ToString("g5", null);
         }
 
         /// <summary>
-        /// Generates a string representation of the current quaternion, 
-        /// using a custom format. A seperate format can be provided for
-        /// all four coffecents, by seperating them by a virtical pipe.
+        /// Generates a formated string representation of the current quaternion
+        /// by passing the format infromation to both the real and imaginary 
+        /// components. It handels the sign information independtly from the 
+        /// format string.
         /// </summary>
-        /// <param name="format">A custom format string</param>
-        /// <returns>The number as a string</returns>
-        public string ToString(string format)
+        /// <param name="format">A numeric format string</param>
+        /// <param name="provider">An object that suplies formating information</param>
+        /// <returns>The number formated as a string</returns>
+        public string ToString(string format, IFormatProvider provider)
         {
-            //splits the format string around the comma
-            string[] f = format.Split('|');
-            string xs = (f.Length < 4) ? format : f[0];
-            string ys = (f.Length < 4) ? format : f[1];
-            string zs = (f.Length < 4) ? format : f[2];
-            string ws = (f.Length < 4) ? format : f[3];
+            if (IsInfinity()) return "Inf";
+            if (IsNaN()) return "NaN";
 
-            //formats the diffrent parts seperatly
-            xs = real.ToString(xs);
-            ys = icof.ToString(ys);
-            zs = jcof.ToString(zs);
-            ws = kcof.ToString(ws);
+            StringBuilder sb = new StringBuilder();
+            double r = Math.Abs(real);
+            double i = Math.Abs(icof);
+            double j = Math.Abs(jcof);
+            double k = Math.Abs(kcof);
 
-            //builds and returns the output
-            return String.Format("({0}, {1}, {2}, {3})", 
-                xs, ys, zs, ws);
+            sb.Append(real < 0 ? "-" : "");
+            sb.Append(r.ToString(format, provider));
+
+            sb.Append(icof < 0 ? " - " : " + ");
+            sb.Append(i.ToString(format, provider));
+            sb.Append("i");
+
+            sb.Append(jcof < 0 ? " - " : " + ");
+            sb.Append(j.ToString(format, provider));
+            sb.Append("j");
+
+            sb.Append(kcof < 0 ? " - " : " + ");
+            sb.Append(k.ToString(format, provider));
+            sb.Append("k");
+
+            return sb.ToString();
+        }
+
+        #endregion //////////////////////////////////////////////////////////
+
+        #region Constant Constructors...
+        
+        /// <summary>
+        /// Represents the unit quaternion (I), one of three imaginary
+        /// basis vectors who's square is equivlent to negative one.
+        /// </summary>
+        public static Qtrin I
+        {
+            get { return new Qtrin(0.0, 1.0, 0.0, 0.0); }
+        }
+
+        /// <summary>
+        /// Represents the unit quaternion (J), one of three imaginary
+        /// basis vectors who's square is equivlent to negative one.
+        /// </summary>
+        public static Qtrin J
+        {
+            get { return new Qtrin(0.0, 0.0, 1.0, 0.0); }
+        }
+
+        /// <summary>
+        /// Represents the unit quaternion (K), one of three imaginary
+        /// basis vectors who's square is equivlent to negative one.
+        /// </summary>
+        public static Qtrin K
+        {
+            get { return new Qtrin(0.0, 0.0, 0.0, 1.0); }
+        }
+
+        /// <summary>
+        /// Returns the quaternion equevlent of a NaN (Not a Number) value, borrowed
+        /// from the conventions used by real valued floating-point numbers.
+        /// </summary>
+        public static Qtrin NaN
+        {
+            get 
+            {
+                double nan = Double.NaN;
+                return new Qtrin(nan, nan, nan, nan); 
+            }
         }
 
         #endregion //////////////////////////////////////////////////////////
@@ -140,8 +189,7 @@ namespace Vulpine.Core.Calc.Numbers
         #region Class Properties...
 
         /// <summary>
-        /// The coffecent of the real compoent (1) making up the
-        /// quaternion. Read-Only
+        /// The coffecent of the real compoent (1).
         /// </summary>
         public double CofR
         {
@@ -149,8 +197,7 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// The coffecent of the imaginary component (I) makeing up
-        /// the quaternion. Read-Only
+        /// The coffecent of the imaginary component (I).
         /// </summary>
         public double CofI
         {
@@ -158,8 +205,7 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// The coffecent of the imaginary component (J) makeing up
-        /// the quaternion. Read-Only
+        /// The coffecent of the imaginary component (J).
         /// </summary>
         public double CofJ
         {
@@ -167,8 +213,7 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// The coffecent of the imaginary component (K) makeing up
-        /// the quaternion. Read-Only
+        /// The coffecent of the imaginary component (K).
         /// </summary>
         public double CofK
         {
@@ -177,8 +222,7 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// Obtains the absolute value. In quaternion space this is 
-        /// equivlent to the radius, or the distance from the origin. 
-        /// Read-Only
+        /// equivlent to the radius, or the distance from the origin.
         /// </summary>
         public double Abs
         {
@@ -190,6 +234,35 @@ namespace Vulpine.Core.Calc.Numbers
 
                 //returns the distance generated
                 return Math.Sqrt(temp);
+            }
+        }
+
+        /// <summary>
+        /// Returns the argument of the quaternion as part of it's polar form.
+        /// Unlike the complex argument, which ranges from minius PI to PI, the
+        /// quaternion argument ranges only from 0 to PI. It is equivlent to
+        /// the argument of the degenerate complex form.
+        /// </summary>
+        public double Arg
+        {
+            get
+            {
+                //computes the angle with the real line
+                return Math.Acos(real / this.Abs);
+            }
+        }
+
+        /// <summary>
+        /// Returns the abslute value of the pure imaginary part of the
+        /// quaternion. This value is used frequently by other methods in
+        /// the quaternion class.
+        /// </summary>
+        public double ImAbs
+        {
+            get
+            {
+                double t = (icof * icof) + (jcof * jcof);
+                return Math.Sqrt(t + (kcof * kcof));
             }
         }
 
@@ -222,10 +295,10 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Computes the negative of the current quaternion. It
-        /// overloads the uinary (-) operatoer.
+        /// Computes the negative of the current quaternion.
         /// </summary>
         /// <returns>The negative quaternion</returns>
+        /// <remarks>It overloads the uinary (-) operatoer</remarks>
         public Qtrin Neg()
         {
             //negates each peice of the quaternion
@@ -234,10 +307,10 @@ namespace Vulpine.Core.Calc.Numbers
 
         /// <summary>
         /// Computes the conjgate of the curent quaternion, defined
-        /// by the negation of the imaginary coefecents. It overloads
-        /// the (~) opperator.
+        /// by the negation of the imaginary coefecents.
         /// </summary>
-        /// <returns>The quaternionic conjigate</returns>
+        /// <returns>The quaternionic conjgate</returns>
+        /// <remarks>It overloads the (~) opperator</remarks>
         public Qtrin Conj()
         {
             //negates each peice of vector portion
@@ -256,11 +329,13 @@ namespace Vulpine.Core.Calc.Numbers
             double norm = (real * real) + (icof * icof);
             norm = norm + (jcof * jcof) + (kcof * kcof);
 
+            double a, b, c, d;
+
             //inverts each of the four parts of the quaternion
-            double a = real / norm;
-            double b = icof / norm;
-            double c = jcof / norm;
-            double d = kcof / norm;
+            a = real / norm;
+            b = icof / norm;
+            c = jcof / norm;
+            d = kcof / norm;
 
             //returns the inverted quaternion
             return new Qtrin(a, -b, -c, -d);
@@ -271,7 +346,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// which are conjagets. This method returns the number that has a
         /// positive imaginary coffecent.
         /// </summary>
-        /// <returns>The decomposed from of the quaternion</returns>
+        /// <returns>The degenerate from of the quaternion</returns>
         public Cmplx Decomp()
         {
             //calculates the magnitude of the vector portion
@@ -282,22 +357,19 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// The versor is the purly directional, purly imaginary, part of the
-        /// quaternion. It can be thought of as a unit vector in the three
-        /// dimentional space fromed by the imaginary axies (I), (J), and (K).
-        /// It is exactly the information left-over after decomposing a 
-        /// quaternion into a complex number.
+        /// The versor of a quaternion is an imaginary unit vector, formed by
+        /// the basis vectors (I), (J), and (K). It can be thought of as the
+        /// direction the quaternion points in imaginary space. It is precicly
+        /// the information left-over by the complex degenerate.
         /// </summary>
         /// <returns>The versor of the quaternion</returns>
         public Qtrin Versor()
         {
             //calculates the magnitude of the versor portion
-            double temp = (icof * icof) + (jcof * jcof) + (kcof * kcof);
-            temp = 1.0 / Math.Sqrt(temp);
+            double temp = 1.0 / this.ImAbs;
 
             //we default to the (I) axis if we have no direction
-            if (Double.IsInfinity(temp) || temp <= 0.0)
-            return new Qtrin(0.0, 1.0, 0.0, 0.0);
+            if (Double.IsInfinity(temp)) return Qtrin.I;
 
             //normalises the versor portion
             double ui = icof * temp;
@@ -313,36 +385,40 @@ namespace Vulpine.Core.Calc.Numbers
         #region Binary Operations...
 
         /// <summary>
-        /// Adds the opperand to the curent quaternion and returns 
-        /// the result. It overloads the (+) opperator.
+        /// Adds the opperand to the curent quaternion.
         /// </summary>
         /// <param name="q">The number to add</param>
         /// <returns>The sum of the quaternions</returns>
+        /// <remarks>It overloads the (+) opperator</remarks>
         public Qtrin Add(Qtrin q)
         {
+            double a, b, c, d;
+
             //dose a peicewise adition of all compoents
-            double a = real + q.real;
-            double b = icof + q.icof;
-            double c = jcof + q.jcof;
-            double d = kcof + q.kcof;
+            a = real + q.real;
+            b = icof + q.icof;
+            c = jcof + q.jcof;
+            d = kcof + q.kcof;
 
             //generates the resultant quaternion
             return new Qtrin(a, b, c, d);
         }
 
         /// <summary>
-        /// Subtracts the opperand from the curent quaternion and returns 
-        /// the result. It overloads the (-) opperator.
+        /// Subtracts the opperand from the curent quaternion.
         /// </summary>
         /// <param name="q">The number to subtract</param>
         /// <returns>The diffrence of the quaternions</returns>
+        /// <remarks>It overloads the (-) opperator</remarks>
         public Qtrin Sub(Qtrin q)
         {
+            double a, b, c, d;
+
             //dose a peicewise subtraction of all compoents
-            double a = real - q.real;
-            double b = icof - q.icof;
-            double c = jcof - q.jcof;
-            double d = kcof - q.kcof;
+            a = real - q.real;
+            b = icof - q.icof;
+            c = jcof - q.jcof;
+            d = kcof - q.kcof;
 
             //generates the resultant quaternion
             return new Qtrin(a, b, c, d);
@@ -351,11 +427,11 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// Multiplys the current quaternion by the opperand. Note that
         /// quaternion multiplication is non-comunitive, meaning that the
-        /// order in which two quaternions are multiplied can affect the
-        /// retult. It overloads the (*) opperator.
+        /// order in which two quaternions are multiplied is important.
         /// </summary>
         /// <param name="q">The number used to mutiply</param>
         /// <returns>The product of the quaternions</returns>
+        /// <remarks>It overloads the (*) opperator</remarks>
         public Qtrin Mult(Qtrin q)
         {
             //computes the real portion of the procuct
@@ -387,12 +463,36 @@ namespace Vulpine.Core.Calc.Numbers
         }
 
         /// <summary>
-        /// Computes the right-handed division of the current quaternion
-        /// by the opperand. That is, it multiplies the curent number
-        /// by the recpricial of the operanad. It overloads the (/) opperator.
+        /// Multiplies the quaternion by a real scalar value. Note that unlike
+        /// generic quaternion multiplicaiton, scalar multiplication is always
+        /// communitive. It effectlivly scales the quaternion by the given value. 
+        /// </summary>
+        /// <param name="s">Scalor value</param>
+        /// <returns>The scaled quaternion</returns>
+        /// <remarks>It overloads the (*) and (/) opperators</remarks>
+        public Qtrin Mult(double s)
+        {
+            double a, b, c, d;
+
+            //scales each coffecent by the given abount
+            a = real * s;
+            b = icof * s;
+            c = jcof * s;
+            d = kcof * s;
+
+            //generates the resultant quaternion
+            return new Qtrin(a, b, c, d);
+        }
+
+        /// <summary>
+        /// Divides the current quaternion by the opperand, by multiplying
+        /// by the inverse opperand. This is known as dividing on the right.
+        /// Reversing the multiplication results in division on the left, which
+        /// may not be the same due to the non-comunitivity of multiplication.
         /// </summary>
         /// <param name="q">The number used to devide</param>
         /// <returns>The right-hand quotient of the two numbers</returns>
+        /// <remarks>It overloads the (/) opperator</remarks>
         public Qtrin Div(Qtrin q)
         {
             //multiplies by the recprical on the right
@@ -409,15 +509,16 @@ namespace Vulpine.Core.Calc.Numbers
         /// value of the number's diffrence.
         /// </summary>
         /// <param name="q">The other number</param>
-        /// <returns>The distance between the numbers in quaternion space
-        /// </returns>
+        /// <returns>The distance between the numbers in quaternion space</returns>
         public double Dist(Qtrin q)
         {
+            double xr, yr, zr, wr;
+
             //subtracts the two parts seperatly
-            double xr = q.real - real;
-            double yr = q.icof - icof;
-            double zr = q.jcof - icof;
-            double wr = q.kcof - icof;
+            xr = q.real - real;
+            yr = q.icof - icof;
+            zr = q.jcof - jcof;
+            wr = q.kcof - kcof;
 
             //squares each sub-component
             xr = xr * xr;
@@ -442,31 +543,276 @@ namespace Vulpine.Core.Calc.Numbers
 
         #endregion //////////////////////////////////////////////////////////////
 
+        #region Transindental Functions...
+
+        /// <summary>
+        /// This method extends the domain of the exponintial function
+        /// (defined by euler's constant) for the entire quaternion feild. 
+        /// It is a single-valued function for all quaternions.
+        /// </summary>
+        /// <param name="q">Power of the exponential</param>
+        /// <returns>Euler's constant raised to a quaternion power</returns>
+        public static Qtrin Exp(Qtrin q)
+        {
+            double exp, vn, real, imag, i, j, k;
+
+            //computes the vector norm and exponential
+            exp = Math.Exp(q.real);
+            vn = q.ImAbs;
+
+            //computes the real and imaginary components
+            real = exp * Math.Cos(vn) / 1.0;
+            imag = exp * Math.Sin(vn) / vn;
+
+            //checks if the answer is real
+            if (vn.IsZero()) return new Qtrin(real);
+
+            //builds the rest from the unit vector
+            i = q.icof * imag;
+            j = q.jcof * imag;
+            k = q.kcof * imag;
+
+            return new Qtrin(real, i, j, k);
+        }
+
+        /// <summary>
+        /// This metnod generalises the quaternion exponential function, 
+        /// allowing for any positive real base. It is also uniquly 
+        /// defined for all quaternions under these restrictions.
+        /// </summary>
+        /// <param name="q">Power of the exponential</param>
+        /// <param name="bass">Base of the exponential</param>
+        /// <returns>A given base raised to a quaternion power</returns>
+        public static Qtrin Exp(Qtrin q, double bass)
+        {
+            double vn, temp1, temp2, real, imag, i, j, k;
+
+            //takes care of the special casses
+            if (bass.IsZero()) return new Qtrin();
+            if (bass < 0.0) return Qtrin.NaN;
+
+            //saves the norm of the imaginary vector
+            vn = q.ImAbs;
+
+            //calculates the result in the complex plain
+            temp1 = Math.Pow(bass, q.CofR);
+            temp2 = vn * Math.Log(bass);
+            real = temp1 * Math.Cos(temp2) / 1.0;
+            imag = temp1 * Math.Sin(temp2) / vn;
+
+            //checks if the answer is real
+            if (vn.IsZero()) return new Qtrin(real);
+
+            //builds the rest from the unit vector
+            i = q.icof * imag;
+            j = q.jcof * imag;
+            k = q.kcof * imag;
+
+            return new Qtrin(real, i, j, k);
+        }
+
+        /// <summary>
+        /// Computes the principle value of the quaternion logarythim.
+        /// This is only one possable solution for the exponential
+        /// function, as the real logarythim is multi-valued.
+        /// </summary>
+        /// <param name="q">Argument of the logarythim</param>
+        /// <returns>The natural log of a quaternion</returns>
+        public static Qtrin Log(Qtrin q)
+        {
+            double vn, qn, imag, real, i, j, k;
+
+            //stores both of the vector norms
+            vn = q.ImAbs;
+            qn = q.Abs;
+
+            //computes the real and imaginary components
+            imag = Math.Acos(q.real / qn) / vn;
+            real = Math.Log(qn);
+
+            //checks if the answer is real
+            if (vn.IsZero()) return new Qtrin(real);
+
+            //builds the rest from the unit vector
+            i = q.icof * imag;
+            j = q.jcof * imag;
+            k = q.kcof * imag;
+
+            return new Qtrin(real, i, j, k);
+        }
+
+        /// <summary>
+        /// This method generalises the quaternion logarythim, allowing 
+        /// for any positive real base (except for base-1). Like the 
+        /// natural logarythim, it also has infinatly many solutions. 
+        /// </summary>
+        /// <param name="q">Argument of the logarythim</param>
+        /// <param name="bass">Base of the logarythim</param>
+        /// <returns>The log of a quaternion in the given base</returns>
+        public static Qtrin Log(Qtrin q, double bass)
+        {
+            //return NaN if the base is invalid
+            if (bass <= 0.0) return Qtrin.NaN;
+
+            //invokes the change of base forumla
+            double temp = 1.0 / Math.Log(bass);
+            return Qtrin.Log(q).Mult(temp);
+        }
+
+        /// <summary>
+        /// Raises a quaternion to an arbitrary, real power. In general, 
+        /// this function may have more that one solution. The value 
+        /// returned by this method is the principle value.
+        /// </summary>
+        /// <param name="q">Base of the exponintial</param>
+        /// <param name="exp">Power of the exponential</param>
+        /// <returns>A quaternion raised to a given power</returns>
+        public static Qtrin Pow(Qtrin q, double exp)
+        {
+            double vn, qn, temp1, temp2, real, imag, i, j, k;
+
+            //stores both of the vector norms
+            vn = q.ImAbs;
+            qn = q.Abs;
+
+            //calculates the result in the complex plain
+            temp1 = Math.Pow(qn, exp);
+            temp2 = Math.Acos(q.real / qn) * exp;
+            real = temp1 * Math.Cos(temp2) / 1.0;
+            imag = temp1 * Math.Sin(temp2) / vn;
+
+            //checks if the answer is real
+            if (vn.IsZero()) return new Qtrin(real);
+
+            //builds the rest from the unit vector
+            i = q.icof * imag;
+            j = q.jcof * imag;
+            k = q.kcof * imag;
+
+            return new Qtrin(real, i, j, k);
+        }
+
+        /// <summary>
+        /// This is the most general form of the exponential, as it allows any
+        /// quaternion to be raised to any other quaternion. Not only is it
+        /// mulit-valued, it has diffrent left and right derivations as well,
+        /// similar to quaternion division. If either argument is known to be
+        /// real, it is advised you use one of the other methods.
+        /// </summary>
+        /// <param name="q">Base of the exponential</param>
+        /// <param name="exp">Power of the exponential</param>
+        /// <returns>A quaternion raised to a quaternion power</returns>
+        public static Qtrin Pow(Qtrin q, Qtrin exp)
+        {
+            //allows for computation of zero, avoiding ln(0)
+            if (q.Abs.IsZero()) return new Qtrin();
+
+            //uses the definition of the general exponential
+            return Qtrin.Exp(Qtrin.Log(q).Mult(exp));
+        }
+
+        #endregion //////////////////////////////////////////////////////////////
+
+        #region Value Checking Functions...
+
+        /// <summary>
+        /// Determins if quaternion is infinate. If any part of the quaternion
+        /// is infinate, then the entire quaternion is considred to be infinate.
+        /// </summary>
+        /// <returns>True if the quaternion is infinate</returns>
+        public bool IsInfinity()
+        {
+            bool test = false;
+
+            test |= Double.IsInfinity(real);
+            test |= Double.IsInfinity(icof);
+            test |= Double.IsInfinity(jcof);
+            test |= Double.IsInfinity(kcof);
+
+            return test;
+        }
+
+        /// <summary>
+        /// Determins if the quaternion contains a NaN (Not a Number) value. If
+        /// any part of the quaternion evaluates to NaN then the entire quaternion
+        /// evaluates to NaN.
+        /// </summary>
+        /// <returns>True if the quaternion is a NaN value</returns>
+        public bool IsNaN()
+        {
+            bool test = false;
+
+            test |= Double.IsNaN(real);
+            test |= Double.IsNaN(icof);
+            test |= Double.IsNaN(jcof);
+            test |= Double.IsNaN(kcof);
+
+            return test;
+        }
+
+        #endregion //////////////////////////////////////////////////////////////
+
         #region Class Conversions...
 
-        //creates a new quaternion through the constructor
-        public static implicit operator Qtrin(Cmplx z)
-        { return new Qtrin(z); }
-
-        //generates a complex number through decomposition
-        public static explicit operator Cmplx(Qtrin q)
-        { return q.Decomp(); }
-
-        //creates a new quaternion through the constructor
+        /// <summary>
+        /// Creates a new quaternion through the real constructor.
+        /// </summary>
         public static implicit operator Qtrin(Double n)
-        { return new Qtrin(n); }
+        { 
+            return new Qtrin(n); 
+        }
 
-        //returns the real component, ingnoring the imaginary
-        public static explicit operator Double(Qtrin n)
-        { return n.real; }
+        /// <summary>
+        /// converts a quaternion to a real number if the contribution of 
+        /// the imaginary part is neglegable. Otherwise, it returns NaN. 
+        /// </summary>
+        public static explicit operator Double(Qtrin q)
+        {
+            //determins if the imaginary part is neglegable
+            bool is_real = q.ImAbs < VMath.TOL;
+            return (is_real) ? q.CofR : Double.NaN;
+        }
 
-        //creates a vector containing the real and imagnary components
-        public static implicit operator Vector(Qtrin n)
-        { return new Vector(n.real, n.icof, n.jcof, n.kcof); }
+        /// <summary>
+        /// Creates a new quaternion through the complex constructor.
+        /// </summary>
+        public static implicit operator Qtrin(Cmplx z)
+        { 
+            return new Qtrin(z); 
+        }
 
-        //converts the vector by calling the constructor
+        /// <summary>
+        /// Generates a complex number through decomposition.
+        /// </summary>
+        public static explicit operator Cmplx(Qtrin q)
+        { 
+            return q.Decomp();
+        }
+
+        /// <summary>
+        /// Converts the complex number to a 4D vector containing the 
+        /// real and imaginary coffecents as elements.
+        /// </summary>
+        public static implicit operator Vector(Qtrin q)
+        { 
+            return new Vector(q.real, q.icof, q.jcof, q.kcof); 
+        }
+
+        /// <summary>
+        /// Converts a vector to a quaternion by treating the first four
+        /// elements as the real and imaginary parts respectivly.
+        /// </summary>
         public static explicit operator Qtrin(Vector v)
-        { return new Qtrin(v); }
+        {
+            //extracts the vector components
+            double r = v.GetExtended(0);
+            double i = v.GetExtended(1);
+            double j = v.GetExtended(2);
+            double k = v.GetExtended(3);
+
+            //generates the new quaternion
+            return new Qtrin(r, i, j, k);
+        }
 
         #endregion //////////////////////////////////////////////////////////
 
@@ -488,6 +834,18 @@ namespace Vulpine.Core.Calc.Numbers
         public static Qtrin operator /(Qtrin p, Qtrin q)
         { return p.Div(q); }
 
+        //refrences the Mult(s) funciton
+        public static Qtrin operator *(Qtrin p, Double s)
+        { return p.Mult(s); }
+
+        //references the Mult(s) function
+        public static Qtrin operator *(Double s, Qtrin p)
+        { return p.Mult(s); }
+
+        //references the Mult(s) function
+        public static Qtrin operator /(Qtrin p, Double s)
+        { return p.Mult(1.0 / s); }
+
         //refrences the Neg() function
         public static Qtrin operator -(Qtrin q)
         { return q.Neg(); }
@@ -497,9 +855,6 @@ namespace Vulpine.Core.Calc.Numbers
         { return q.Conj(); }
 
         #endregion ////////////////////////////////////////////////////////////
-
-        Qtrin Euclidean<Qtrin, Double>.Mult(double scalar)
-        { return this.Mult((Qtrin)scalar); }
 
     }
 }

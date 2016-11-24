@@ -76,6 +76,7 @@
     <Compile Include="Unit\MathTests.cs" />
     <Compile Include="Unit\MatrixTests.cs" />
     <Compile Include="Unit\MetricTests.cs" />
+    <Compile Include="Unit\QtrinTests.cs" />
     <Compile Include="Unit\StatRunnerTests.cs" />
     <Compile Include="Unit\VectorTests.cs" />
   </ItemGroup>

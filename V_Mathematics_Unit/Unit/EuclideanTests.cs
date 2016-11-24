@@ -70,7 +70,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
-        public void Mult_WithOne_Unchanged(int xi)
+        public void Mult_WithScalorOne_Unchanged(int xi)
         {
             dynamic x = GetSample(xi);
 

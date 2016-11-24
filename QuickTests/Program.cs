@@ -9,10 +9,10 @@ namespace QuickTests
     {
         static void Main(string[] args)
         {
-            //DivByZero.Run();
+            DivByZero.Run();
             //LU_Decomp.Run();
             //RandomMatrix.Run();
-            Binomial.Run();
+            //Binomial.Run();
         }
     }
 }

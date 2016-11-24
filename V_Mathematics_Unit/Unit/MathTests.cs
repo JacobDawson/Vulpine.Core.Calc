@@ -61,7 +61,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
         [TestCase(0.0)]
         [TestCase(-Double.Epsilon)]
-        [TestCase(Double.Epsilon * 64.0)]
+        [TestCase(Double.Epsilon * 4096.0)]
         public void IsZero_VariousInput_ExpectedTrue(double x)
         {
             bool test = VMath.IsZero(x);

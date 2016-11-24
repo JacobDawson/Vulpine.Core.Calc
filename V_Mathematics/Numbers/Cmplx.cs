@@ -363,45 +363,6 @@ namespace Vulpine.Core.Calc.Numbers
         #region Transindental Functions...
 
         /// <summary>
-        /// Raises a complex number to an arbitrary, real power. In general, this
-        /// function may have more that one solution. The value returned by this
-        /// method is the principle value.
-        /// </summary>
-        /// <param name="z">Base of the exponintial</param>
-        /// <param name="exp">Power of the exponential</param>
-        /// <returns>A complex number raised to a given power</returns>
-        public static Cmplx Pow(Cmplx z, double exp)
-        {
-            //calculates the result storing temporary values
-            double rad = Math.Pow(z.Abs, exp);
-            double arg = z.Arg * exp;
-            double outR = rad * Math.Cos(arg);
-            double outI = rad * Math.Sin(arg);
-
-            //returns the constructed number
-            return new Cmplx(outR, outI);
-        }
-
-        /// <summary>
-        /// This is the most general form of the expnential, as it raises any
-        /// complex number to any complex power, and is in general multi-valued.
-        /// Consider using one of the other functions if either the base or 
-        /// the exponent are known to be real.
-        /// </summary>
-        /// <param name="z">Base of the exponential</param>
-        /// <param name="exp">Power of the exponential</param>
-        /// <param name="n">Branch selector index</param>
-        /// <returns>A complex number raised to a complex power</returns>
-        public static Cmplx Pow(Cmplx z, Cmplx exp)
-        {
-            //allows for computation of zero, avoiding ln(0)
-            if (z.Abs == 0.0) return new Cmplx(0.0, 0.0);
-
-            //uses the definition of the general exponential
-            return Cmplx.Exp(exp * Cmplx.Log(z));
-        }
-
-        /// <summary>
         /// This method extends the domain of the exponintial function
         /// (defined by euler's constant) into the complex plain. It is a
         /// single-valued, continous function for all complex numbers.
@@ -427,12 +388,10 @@ namespace Vulpine.Core.Calc.Numbers
         /// <param name="z">Power of the exponential</param>
         /// <param name="bass">Base of the exponential</param>
         /// <returns>A given base raised to a complex power</returns>
-        /// <exception cref="ArgBoundsException">If the base of the exponential
-        /// is strictly less than zero</exception>
         public static Cmplx Exp(Cmplx z, double bass)
         {
             //takes care of the special casses
-            if (bass == 0.0) return new Cmplx(0.0, 0.0);
+            if (bass.IsZero()) return new Cmplx(0.0, 0.0);
             if (bass < 0.0) return Cmplx.NaN;
 
             //calculates the result storing temporary values
@@ -486,6 +445,44 @@ namespace Vulpine.Core.Calc.Numbers
             outR = outR / outI;
             outI = z.Arg / outI;
             return new Cmplx(outR, outI);
+        }
+
+        /// <summary>
+        /// Raises a complex number to an arbitrary, real power. In general, this
+        /// function may have more that one solution. The value returned by this
+        /// method is the principle value.
+        /// </summary>
+        /// <param name="z">Base of the exponintial</param>
+        /// <param name="exp">Power of the exponential</param>
+        /// <returns>A complex number raised to a given power</returns>
+        public static Cmplx Pow(Cmplx z, double exp)
+        {
+            //calculates the result storing temporary values
+            double rad = Math.Pow(z.Abs, exp);
+            double arg = z.Arg * exp;
+            double outR = rad * Math.Cos(arg);
+            double outI = rad * Math.Sin(arg);
+
+            //returns the constructed number
+            return new Cmplx(outR, outI);
+        }
+
+        /// <summary>
+        /// This is the most general form of the expnential, as it raises any
+        /// complex number to any complex power, and is in general multi-valued.
+        /// Consider using one of the other functions if either the base or 
+        /// the exponent are known to be real.
+        /// </summary>
+        /// <param name="z">Base of the exponential</param>
+        /// <param name="exp">Power of the exponential</param>
+        /// <returns>A complex number raised to a complex power</returns>
+        public static Cmplx Pow(Cmplx z, Cmplx exp)
+        {
+            //allows for computation of zero, avoiding ln(0)
+            if (z.Abs.IsZero()) return new Cmplx(0.0, 0.0);
+
+            //uses the definition of the general exponential
+            return Cmplx.Exp(Cmplx.Log(z).Mult(exp));
         }
 
         /// <summary>
@@ -610,7 +607,6 @@ namespace Vulpine.Core.Calc.Numbers
         /// of the extended complex plane, or as a single point on the 
         /// Riemann Sphere.
         /// </summary>
-        /// <param name="z">Number to test</param>
         /// <returns>True if the number is at one of the points of infinity,
         /// and false if otherwise</returns>
         public bool IsInfinity()
@@ -625,7 +621,6 @@ namespace Vulpine.Core.Calc.Numbers
         /// real or imaginary component is invalid, then the number as a whole
         /// is invalid. It returns true for invlalid numbers.
         /// </summary>
-        /// <param name="z">Number to test</param>
         /// <returns>True if the number is invalid, and false otherwise</returns>
         public bool IsNaN()
         {

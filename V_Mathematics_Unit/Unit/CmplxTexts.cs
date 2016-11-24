@@ -13,7 +13,7 @@ using Vulpine.Core.Calc.Numbers;
 namespace Vulpine_Core_Calc_Tests.Unit
 {
     [TestFixture]
-    public class CmplxTexts : EuclideanTests
+    public class CmplxTexts : AlgebraicTests
     {
         /// <summary>
         /// the tollarance used in desk calculations, the reason this is set 
@@ -27,13 +27,14 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public CmplxTexts() { tol = VTOL; }
         public CmplxTexts(double tol) { this.tol = tol; }
 
-        /// <summary>
-        /// Obtains the complex number zero.
-        /// </summary>
-        /// <returns>Returns zero</returns>
         public override dynamic GetZero()
         {
             return new Cmplx(0.0, 0.0);
+        }
+
+        public override dynamic GetOne()
+        {
+            return new Cmplx(1.0, 0.0);
         }
 
         public override dynamic GetSample(int i)
@@ -51,34 +52,12 @@ namespace Vulpine_Core_Calc_Tests.Unit
                 case 9: return new Cmplx(-3.265105997, 1.782076995);
                 case 10: return new Cmplx(0.9630845028, -0.2288886457);
 
-                //neg(z)
-                case 11: return new Cmplx(0.3359978120, 0.2883891882);
-                case 12: return new Cmplx(-1.665660902, -3.183652389);
-                case 13: return new Cmplx(-2.145846053, 2.082449443);
-                case 14: return new Cmplx(1.180137148, -2.194679590);
-                case 15: return new Cmplx(-3.091222659, 3.340571706);
-
-                //conj(z)
-                case 16: return new Cmplx(-0.3359978120, 0.2883891882);
-                case 17: return new Cmplx(1.665660902, -3.183652389);
-                case 18: return new Cmplx(2.145846053, 2.082449443);
-                case 19: return new Cmplx(-1.180137148, -2.194679590);
-                case 20: return new Cmplx(3.091222659, 3.340571706);
-
-                //z^-1
+                //inv(z)
                 case 21: return new Cmplx(-1.71372499142173, 1.47090171847358);
                 case 22: return new Cmplx(0.129020296568687, -0.246602279555933);
                 case 23: return new Cmplx(0.239993940579611, 0.232903589325374);
                 case 24: return new Cmplx(-0.190058320467283, -0.353448001824298);
                 case 25: return new Cmplx(0.149225739364511, 0.161262819834945);
-
-                //z*i
-                case 26: return new Cmplx(0.2883891882, -0.335997812);
-                case 27: return new Cmplx(-3.183652389, 1.665660902);
-                case 28: return new Cmplx(2.082449443, 2.145846053);
-                case 29: return new Cmplx(-2.19467959, -1.180137148);
-                case 30: return new Cmplx(3.340571706, 3.091222659);
-
 
                 case 31: return new Cmplx(1.32966309, 2.8952632008); //1 + 2
                 case 32: return new Cmplx(3.811506955, 1.101202946); //2 + 3
@@ -171,36 +150,6 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(res, Ist.WithinTolOf(exp, tol));
         }
 
-        [TestCase(1, 11)]
-        [TestCase(2, 12)]
-        [TestCase(3, 13)]
-        [TestCase(4, 14)]
-        [TestCase(5, 15)]
-        public void Neg_VariousInput_ExpectedValue(int a, int exp)
-        {
-            dynamic z1 = GetSample(a);
-            dynamic z2 = GetSample(exp);
-
-            dynamic res = z1.Neg();
-
-            Assert.That(res, Ist.WithinTolOf(z2, tol));
-        }
-
-        [TestCase(1, 16)]
-        [TestCase(2, 17)]
-        [TestCase(3, 18)]
-        [TestCase(4, 19)]
-        [TestCase(5, 20)]
-        public void Conj_VariousInput_ExpectedValue(int a, int exp)
-        {
-            dynamic z1 = GetSample(a);
-            dynamic z2 = GetSample(exp);
-
-            dynamic res = z1.Conj();
-
-            Assert.That(res, Ist.WithinTolOf(z2, tol));
-        }
-
         [TestCase(1, 21)]
         [TestCase(2, 22)]
         [TestCase(3, 23)]
@@ -212,21 +161,6 @@ namespace Vulpine_Core_Calc_Tests.Unit
             dynamic z2 = GetSample(exp);
 
             dynamic res = z1.Inv();
-
-            Assert.That(res, Ist.WithinTolOf(z2, tol));
-        }
-
-        [TestCase(1, 26)]
-        [TestCase(2, 27)]
-        [TestCase(3, 28)]
-        [TestCase(4, 29)]
-        [TestCase(5, 30)]
-        public void MultI_VariousInput_ExpectedValue(int a, int exp)
-        {
-            dynamic z1 = GetSample(a);
-            dynamic z2 = GetSample(exp);
-
-            dynamic res = z1.MultI();
 
             Assert.That(res, Ist.WithinTolOf(z2, tol));
         }
