@@ -36,6 +36,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\NumericStepEventArgs.cs" />
     <Compile Include="Exceptions\ArgBoundsException.cs" />
     <Compile Include="Exceptions\InvBracketExcp.cs" />
     <Compile Include="Exceptions\SquareMatrixExcp.cs" />
@@ -55,11 +56,10 @@
     <Compile Include="Numbers\Cmplx.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
-    <Compile Include="Numeric\Algorithim.cs" />
-    <Compile Include="Numeric\Optimizer.cs" />
-    <Compile Include="Numeric\Result.cs" />
-    <Compile Include="Numeric\RootFinder.cs" />
-    <Compile Include="Numeric\TestExtentions.cs" />
+    <Compile Include="Algorithms\Algorithim.cs" />
+    <Compile Include="Algorithms\Optimizer.cs" />
+    <Compile Include="Algorithms\Result.cs" />
+    <Compile Include="Algorithms\RootFinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandGen\RandLCG.cs" />
     <Compile Include="RandGen\RandMT.cs" />

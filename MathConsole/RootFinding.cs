@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Functions;
-using Vulpine.Core.Calc.Numeric;
+using Vulpine.Core.Calc.Algorithms;
 using Vulpine.Core.Calc.Exceptions;
 
 namespace MathConsole
@@ -50,21 +50,21 @@ namespace MathConsole
 
                 if (temp.Length > 0 && Char.ToUpper(temp[0]) == 'D')
                 {
-                    e = Algorithim.DTOL;
+                    e = Algorithm.DTOL;
                 }
                 else if (sucess == false)
                 {
                     Console.WriteLine("Unable to determin the desired Error " +
                     "Tollerence. Resorting to the default value. ");
                     Console.WriteLine();
-                    e = Algorithim.DTOL;
+                    e = Algorithm.DTOL;
                 }
                 else if (e <= 0.0)
                 {
                     Console.WriteLine("Invalid Error Tollerence given. Now " +
                     "resorting to the default value. ");
                     Console.WriteLine();
-                    e = Algorithim.DTOL;
+                    e = Algorithm.DTOL;
                 }
 
                 Console.Write("Maximum Itterations: ");
@@ -73,14 +73,14 @@ namespace MathConsole
 
                 if (temp.Length > 0 && Char.ToUpper(temp[0]) == 'D')
                 {
-                    max = Algorithim.DMAX;
+                    max = Algorithm.DMAX;
                 }
                 else if (sucess == false)
                 {
                     Console.WriteLine("Unable to determin the desired Maximum " +
                     "Number of Itterations. Resorting to the default value.");
                     Console.WriteLine();
-                    max = Algorithim.DMAX;
+                    max = Algorithm.DMAX;
                 }
                 else if (max < 5)
                 {
@@ -236,7 +236,7 @@ namespace MathConsole
                             value = rf.Secant(f.Evaluate, y, x1, x2);
                             method = "Secant Method"; break;
                         default:
-                            value = new Result<Double>(0.0);
+                            value = new Result<Double>();
                             method = "Error"; break;
                     }
                 }

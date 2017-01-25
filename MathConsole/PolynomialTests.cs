@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Functions;
-using Vulpine.Core.Calc.Numeric;
+using Vulpine.Core.Calc.Algorithms;
 using Vulpine.Core.Calc.Exceptions;
 
 namespace MathConsole

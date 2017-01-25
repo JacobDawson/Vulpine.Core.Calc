@@ -7,7 +7,7 @@ using Vulpine.Core.Data.Exceptions;
 using Vulpine.Core.Calc.Matrices;
 using Vulpine.Core.Calc.Exceptions;
 
-namespace Vulpine.Core.Calc.Numeric
+namespace Vulpine.Core.Calc.Algorithms
 {
     /// <summary>
     /// Several of the numerical methods presented in the mathmatics libarary
@@ -20,7 +20,7 @@ namespace Vulpine.Core.Calc.Numeric
     /// method is gaurenteed to find a solution.
     /// </summary>
     /// <remarks>Last Update: 2013-11-17</remarks>
-    public abstract class Algorithim
+    public abstract class Algorithm
     {
         #region Constant Values...
 
@@ -42,6 +42,9 @@ namespace Vulpine.Core.Calc.Numeric
 
         #region Class Definitions...
 
+        //flag indicating the use of relative error
+        protected bool rel;
+
         //represents the ending conditions
         protected int max;
         protected double tol;
@@ -50,6 +53,47 @@ namespace Vulpine.Core.Calc.Numeric
         private int count;
         private double error;
 
+        //stores the delegate to handel step events
+        private EventHandler<NumericStepEventArgs> step_event;
+
+        /// <summary>
+        /// Creates a new Algorithim object with default stoping criteria.
+        /// </summary>
+        public Algorithm()
+        {
+            this.rel = true;
+            this.max = 1024;
+            this.tol = VMath.TOL;
+        }
+
+        /// <summary>
+        /// Creates a new Algorithim object with the given maximum number of
+        /// itterations and the minimal relitive error allowed.
+        /// </summary>
+        /// <param name="max">Maximum number of itterations</param>
+        /// <param name="tol">Minimial relitave error</param>
+        public Algorithm(int max, double tol)
+        {
+            this.rel = true;
+            this.max = (max > 0) ? max : 1;
+            this.tol = Math.Abs(tol);
+        }
+
+        /// <summary>
+        /// Creates a new Algorithim object with the given maximum number of
+        /// itterations and the minimal error allowed. Set the flag to false
+        /// to use exact error instead of relative error.
+        /// </summary>
+        /// <param name="max">Maximum number of itterations</param>
+        /// <param name="tol">Minimial relitave erro</param>
+        /// <param name="rel">Flag to use relitive error</param>
+        public Algorithm(int max, double tol, bool rel)
+        {
+            this.rel = rel;
+            this.max = (max > 0) ? max : 1;
+            this.tol = Math.Abs(tol);
+        }
+
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Properties...
@@ -57,7 +101,7 @@ namespace Vulpine.Core.Calc.Numeric
         /// <summary>
         /// Determins the maximum number of iterations. All iterative methods 
         /// will return a solution once the maximum number of iterations are 
-        /// exausted, weather or not tollerance has been met. Read-Only
+        /// exausted, weather or not tollerance has been met.
         /// </summary>
         public int MaxIters
         {
@@ -67,7 +111,7 @@ namespace Vulpine.Core.Calc.Numeric
         /// <summary>
         /// Represents the amount of error tolerance in the output. All iterative
         /// methods will return a solution once the reletive error in the output
-        /// drops below this threshold. Read-Only
+        /// drops below this threshold.
         /// </summary>
         public double Tolerance
         {
@@ -75,12 +119,23 @@ namespace Vulpine.Core.Calc.Numeric
         }
 
         /// <summary>
-        /// Determins the amount of error that was reported in the very last
-        /// itteration of algorithim contoler. Read-Only
+        /// Determins what type of error should be used as a stoping criteria.
+        /// Returns true to use releative error, and false for exact error.
         /// </summary>
-        protected double CurError
+        public bool UseRelative
         {
-            get { return error; }
+            get { return rel; }
+        }
+
+        /// <summary>
+        /// The step event is invoked every time the algorythim updates it's
+        /// error values. The event can be used to impart aditional stoping
+        /// criteria, by rasing the Halt flag in the event args.
+        /// </summary>
+        public event EventHandler<NumericStepEventArgs> StepEvent
+        {
+            add { step_event += value; }
+            remove { step_event -= value; }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -105,11 +160,9 @@ namespace Vulpine.Core.Calc.Numeric
         /// usefull for procedures that must run intermediat steps.
         /// </summary>
         /// <param name="steps">Number of steps to advance</param>
-        /// <exception cref="ArgRangeExcp">If the number of steps given
-        /// is less than one</exception>
         protected void Increment(int steps)
         {
-            ArgRangeExcp.Check("steps", steps, 1, Int16.MaxValue);
+            if (steps < 1) steps = 1;
             count = count + steps;
         }
 
@@ -128,12 +181,15 @@ namespace Vulpine.Core.Calc.Numeric
 
             //computes the error value
             double dist = curr - last;
-            dist = dist / last;
+            if (rel) dist = dist / curr;
             error = Math.Abs(dist);
 
+            //informs the listeners & checks for halting
+            if (OnStep(count, error)) return true;
+
             //determins if sucessive itterations are nessary
-            if (error <= tol) return true;
-            if (count >= max) return true;
+            if (error < tol) return true;
+            if (count > max) return true;
 
             return false;
         }
@@ -153,14 +209,61 @@ namespace Vulpine.Core.Calc.Numeric
 
             //computes the error value
             double dist = curr.Dist(last);
-            double norm = last.Norm();
-            error = Math.Abs(dist / norm);
+            if (rel) dist = dist / curr.Norm();
+            error = Math.Abs(dist);
+
+            //informs the listeners & checks for halting
+            if (OnStep(count, error)) return true;
 
             //determins if sucessive itterations are nessary
-            if (error <= tol) return true;
-            if (count >= max) return true;
+            if (error < tol) return true;
+            if (count > max) return true;
 
             return false;     
+        }
+
+        /// <summary>
+        /// Raises the step event and informs all listeners. It returns true if
+        /// any of the listners indicate that the process should stop.
+        /// </summary>
+        /// <param name="step">Curent number of iterations preformed</param>
+        /// <param name="error">Current calculated error value</param>
+        /// <returns>True if the process should stop</returns>
+        private bool OnStep(int step, double error)
+        {
+            //checks that we actualy have someone listening
+            if (step_event == null) return false;
+
+            //creates new event args and invokes the event
+            var args = new NumericStepEventArgs(step, error);
+            step_event(this, args);  return args.Halt;
+        }
+
+
+        protected Result<Double> Finish(double value)
+        {
+            //uses the norm of the value
+            double abs = Math.Abs(value);
+
+            //computes both the relitive and absolute error
+            double err = rel ? error : (error / abs);
+            double del = rel ? (error * abs) : error;
+
+            //returns the generated result
+            return new Result<Double>(value, err, del);
+        }
+
+        protected Result<T> Finish<T>(T value) where T : Metrizable<T>
+        {
+            //uses the norm of the value
+            double abs = value.Norm();
+
+            //computes both the relitive and absolute error
+            double err = rel ? error : (error / abs);
+            double del = rel ? (error * abs) : error;
+
+            //returns the generated result
+            return new Result<T>(value, err, del);
         }
 
         #endregion //////////////////////////////////////////////////////////////

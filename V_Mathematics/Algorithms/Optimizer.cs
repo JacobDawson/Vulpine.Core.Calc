@@ -6,9 +6,9 @@ using System.Text;
 using Vulpine.Core.Data.Exceptions;
 using Vulpine.Core.Calc.Exceptions;
 
-namespace Vulpine.Core.Calc.Numeric
+namespace Vulpine.Core.Calc.Algorithms
 {
-    public class Optimizer : Algorithim
+    public class Optimizer : Algorithm
     {
         public Optimizer(int max = DMAX, double tol = DTOL)
         {

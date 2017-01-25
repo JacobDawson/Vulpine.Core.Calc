@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Vulpine.Core.Calc.Algorithms
+{
+    /// <summary>
+    /// This class contains a collection of event arguments to be passed to some 
+    /// event listner handeling the iteration of some numerical process. It contains 
+    /// values to indicated the curent state of the numerical process, as well as 
+    /// a halting flag to indicate if the proceess should end.
+    /// </summary>
+    public class NumericStepEventArgs : EventArgs
+    {
+        //contains the info from the event
+        private double error;
+        private int step;
+
+        //uses a flag to indicate when to halt
+        private bool halt;
+
+        /// <summary>
+        /// Creates a new collection of numeric event arugments, containing
+        /// the given arguments passed in to the constructor.
+        /// </summary>
+        /// <param name="step">Number of iterations preformed</param>
+        /// <param name="error">Current error value</param>
+        internal NumericStepEventArgs(int step, double error)
+        {
+            this.step = step;
+            this.error = error;
+            this.halt = false;
+        }
+
+        /// <summary>
+        /// The amount of error calculated between the curent value
+        /// generated and the previous value generated.
+        /// </summary>
+        public double Error
+        {
+            get { return error; }
+        }
+
+        /// <summary>
+        /// The number of iterations preformed so far.
+        /// </summary>
+        public int Step
+        {
+            get { return step; }
+        }
+
+        /// <summary>
+        /// A flag indicating if the process should halt. The flag can be
+        /// raised by setting it to true, but it cannot be unraised.
+        /// </summary>
+        public bool Halt
+        {
+            get { return halt; }
+            set { halt |= value; }
+        }
+    }
+}

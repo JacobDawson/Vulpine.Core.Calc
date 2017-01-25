@@ -333,6 +333,43 @@ namespace Vulpine.Core.Calc
             t_weight = temp;
         }
 
+
+        //public void Add2(Vector x, double weight)
+        //{
+        //    //the dimentions of the input vector must match
+        //    if (x.Length != dim) throw new ArgumentShapeException("x");
+
+        //    //only allows positive weight values
+        //    if (weight < 0.0) weight = -weight;
+
+        //    //updates the minimum and maximum bounds
+        //    min = (min == null) ? x : min.Min(x);
+        //    max = (max == null) ? x : max.Max(x);
+
+        //    //used in computing the mean and varance
+        //    double temp = weight + t_weight;
+        //    Vector delta = x.Sub(m1);
+        //    Vector dn = delta.Mult(weight / temp);
+        //    double t1 = delta.Mult(dn) * t_weight;
+        //    double dn2 = dn.Mult(dn);
+
+        //    //updates the fouth central moment
+        //    m4 += t1 * dn2 * (temp * temp - 3.0 * temp + 3.0);
+        //    m4 += 6.0 * dn2 * m2 - 4.0 * dn.Mult(m3);
+
+        //    //updates the third central moment
+        //    m3 = m3.Add(dn.Mult(t1 * (temp - 2.0)));
+        //    m3 = m3.Add(dn.Mult(m2 * -3.0));
+
+        //    //updates the intermediates
+        //    m2 = m2 + t1;
+        //    m1 = m1.Add(dn);
+
+        //    t_weight = temp;
+        //}
+
+
+
         /// <summary>
         /// Resets the StatRunner, clearing all previously acumuliated statistics.
         /// </summary>
