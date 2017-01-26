@@ -618,6 +618,103 @@ namespace Vulpine.Core.Calc.Numbers
 
         #endregion //////////////////////////////////////////////////////////////
 
+        #region Hyperbolic Functions...
+
+        /// <summary>
+        /// Computes the hyperbolic sine of a complex number. It releates 
+        /// imaginary angles to a hyperbola, similar to how the trigometric 
+        /// sine releates angles to circles.
+        /// </summary>
+        /// <param name="arg">Argument of complex hyperbolic sine</param>
+        /// <returns>The hyperbolic sine of the complex number</returns>
+        public static Cmplx Sinh(Cmplx arg)
+        {
+            //inverts the formula used for complex sine
+            double outR = Math.Sinh(arg.real) * Math.Cos(arg.imag);
+            double outI = Math.Cosh(arg.real) * Math.Sin(arg.imag);
+
+            return new Cmplx(outR, outI);
+        }
+
+        /// <summary>
+        /// Computes the hyperbolic cosine of a complex number. It releates 
+        /// imaginary angles to a hyperbola, similar to how the trigometric 
+        /// cosine releates angles to circles.
+        /// </summary>
+        /// <param name="arg">Argument of complex hyperbolic cosine</param>
+        /// <returns>The hyperbolic cosine of the complex number</returns>
+        public static Cmplx Cosh(Cmplx arg)
+        {
+            //inverts the formula used for complex cosine
+            double outR = Math.Cosh(arg.real) * Math.Cos(arg.imag);
+            double outI = Math.Sinh(arg.real) * Math.Sin(arg.imag);
+
+            return new Cmplx(outR, outI);
+        }
+
+        /// <summary>
+        /// Computes the hyperbolic tangent of a complex number. It releates 
+        /// imaginary angles to a hyperbola, similar to how the trigometric 
+        /// tangent releates angles to circles.
+        /// </summary>
+        /// <param name="arg">Argument of complex hyperbolic tangent</param>
+        /// <returns>The hyperbolic tangent of the complex number</returns>
+        public static Cmplx Tanh(Cmplx arg)
+        {
+            //computes the raito of the sign over the cosine
+            return Cmplx.Sinh(arg) / Cmplx.Cosh(arg);
+        }
+
+        /// <summary>
+        /// Computes the inverse of the hyperbolic sine. That is it finds a
+        /// value who's hyperbolic sine is equal to the argument. Since more
+        /// than one value may satisify this contidtion, this function returns
+        /// what is considered the "principle value".
+        /// </summary>
+        /// <param name="arg">Argument of the inverse hyperbolic sine</param>
+        /// <returns>The principle value of the inverse hyperbolic sine</returns>
+        public static Cmplx Asinh(Cmplx arg)
+        {
+            //uses the default mathmatic definition 
+            Cmplx temp = (arg * arg) + 1.0;
+            temp = arg + Cmplx.Sqrt(temp);
+            return Cmplx.Log(temp);
+        }
+
+        /// <summary>
+        /// Computes the inverse of the hyperbolic cosine. That is it finds a
+        /// value who's hyperbolic cosine is equal to the argument. Since more
+        /// than one value may satisify this contidtion, this function returns
+        /// what is considered the "principle value".
+        /// </summary>
+        /// <param name="arg">Argument of the inverse hyperbolic cosine</param>
+        /// <returns>The principle value of the inverse hyperbolic cosine</returns>
+        public static Cmplx Acosh(Cmplx arg)
+        {
+            //factors the square root for the principle value
+            Cmplx a = Cmplx.Sqrt(arg + 1.0);
+            Cmplx b = Cmplx.Sqrt(arg - 1.0);
+            return Cmplx.Log(arg + (a * b));
+        }
+
+        /// <summary>
+        /// Computes the inverse of the hyperbolic tangent. That is it finds a
+        /// value who's hyperbolic tangent is equal to the argument. Since more
+        /// than one value may satisify this contidtion, this function returns
+        /// what is considered the "principle value".
+        /// </summary>
+        /// <param name="arg">Argument of the inverse hyperbolic tangent</param>
+        /// <returns>The principle value of the inverse hyperbolic tangent</returns>
+        public static Cmplx Atanh(Cmplx arg)
+        {
+            //distributes the log for grreator stability
+            Cmplx a = Cmplx.Log(1.0 + arg);
+            Cmplx b = Cmplx.Log(1.0 - arg);
+            return (a - b) * 0.5;
+        }
+
+        #endregion //////////////////////////////////////////////////////////////
+
         #region Value Checking Functions...
 
         /// <summary>

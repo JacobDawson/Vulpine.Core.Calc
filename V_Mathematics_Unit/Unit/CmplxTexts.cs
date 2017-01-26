@@ -419,5 +419,83 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Assert.That(r, Ist.WithinTolOf(e, tol));
         }
+
+        [TestCase(0.165567, 0.637467, 0.1336593218, 0.6033378870)]
+        [TestCase(-0.262204, 0.109338, -0.2636350667, 0.1128928786)]
+        [TestCase(0.197624, -0.345540, 0.1871556839, -0.3453404626)]
+        public void Sinh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Sinh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
+
+        [TestCase(0.507487, -0.531729, 0.9753266290, -0.2684960398)]
+        [TestCase(0.609044, -0.266871, 1.1491015856, -0.1707290587)]
+        [TestCase(-0.673366, -0.228418, 1.2033190330, 0.1642615498)]
+        public void Cosh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Cosh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
+
+        [TestCase(0.953391, 0.356972, 0.7844626957, 0.1560669943)]
+        [TestCase(-0.539569, -0.148166, -0.5009287187, -0.1124242507)]
+        [TestCase(0.558064, -0.706447, 0.7375988792, -0.5345310180)]
+        public void Tanh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Tanh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
+
+        [TestCase(0.376775, -0.594818, 0.4347596437, -0.5736652287)]
+        [TestCase(-0.193600, 0.374937, -0.2066548122, 0.3758582052)]
+        [TestCase(-0.848366, 0.550515, -0.8290030678, 0.4155298238)]
+        public void Asinh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Asinh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
+
+        [TestCase(-0.477237, -0.335177, 0.3664187769, -2.0340921220)]
+        [TestCase(0.348738, -0.970854, 0.8825995172, -1.3218517174)]
+        [TestCase(0.249257, 0.449837, 0.4468016190, 1.3425278341)]
+        public void Acosh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Acosh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
+
+        [TestCase(0.910150, 0.117663, 1.2796539768, 0.4900776895)]
+        [TestCase(0.450414, 0.323364, 0.4230275716, 0.3755941091)]
+        [TestCase(-0.203451, 0.584101, -0.1516388123, 0.5422917300)]
+        public void Atanh_RandomInput_ExpectedResults(double x1, double x2, double e1, double e2)
+        {
+            dynamic x = new Cmplx(x1, x2);
+            dynamic e = new Cmplx(e1, e2);
+
+            dynamic r = Cmplx.Atanh(x);
+
+            Assert.That(r, Ist.WithinTolOf(e, tol));
+        }
     }
 }
