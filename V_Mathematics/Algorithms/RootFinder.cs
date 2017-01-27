@@ -37,37 +37,14 @@ namespace Vulpine.Core.Calc.Algorithms
     /// methods garentee a root will be found.
     /// </summary>
     /// <remarks>Last Update: 2013-11-19</remarks>
-    public class RootFinder : Algorithm
+    public sealed class RootFinder : Algorithm
     {
         #region Class Definitions...
-
-        ///// <summary>
-        ///// Constructs a new root finder instance, set with a given error
-        ///// tollarance and maximum number of itterations, to be used in all
-        ///// root finding methods.
-        ///// </summary>
-        ///// <param name="max">Maximum number of itterations</param>
-        ///// <param name="tol">Error tollerence in output</param>
-        //public RootFinder(int max = DMAX, double tol = DTOL)
-        //{
-        //    //sets the tolerance and max itterations
-        //    base.max = (max > 0) ? max : 1;
-        //    base.tol = (tol > 0.0) ? tol : 0.0;
-
-        //    //initialises the cotroler
-        //    Initialise();
-        //}
-
-        //public override string ToString()
-        //{
-        //    return base.ToString();
-        //}
 
         /// <summary>
         /// Creates a new Root Finder with default stoping criteria.
         /// </summary>
-        public RootFinder() 
-            : base() { }
+        public RootFinder() : base() { }
 
         /// <summary>
         /// Creates a new Root Finder with the given maximum number of
@@ -75,8 +52,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial relitave error</param>
-        public RootFinder(int max, double tol) 
-            : base(max, tol) { }
+        public RootFinder(int max, double tol) : base(max, tol) { }
 
         /// <summary>
         /// Creates a new Root Finder with the given maximum number of
@@ -86,20 +62,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="tol">Minimial relitave error</param>
         public RootFinder(int max, double toll, bool rel) 
             : base(max, toll, rel) { }
-
-
-        public event EventHandler<EventArgs> MyEvent
-        {
-            add
-            {
-                Console.WriteLine("add operation");
-            }
-            remove
-            {
-                Console.WriteLine("remove operation");
-            }
-        }
-
 
         #endregion //////////////////////////////////////////////////////////////
 

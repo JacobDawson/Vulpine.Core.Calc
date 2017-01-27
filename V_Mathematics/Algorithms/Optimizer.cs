@@ -29,14 +29,14 @@ namespace Vulpine.Core.Calc.Algorithms
 {
     public class Optimizer : Algorithm
     {
-        public Optimizer(int max = DMAX, double tol = DTOL)
-        {
-            //sets the tolerance and max itterations
-            base.max = (max > 0) ? max : 1;
-            base.tol = (tol >= 0.0) ? tol : 0.0;
+        //public Optimizer(int max = DMAX, double tol = DTOL)
+        //{
+        //    //sets the tolerance and max itterations
+        //    base.max = (max > 0) ? max : 1;
+        //    base.tol = (tol >= 0.0) ? tol : 0.0;
 
-            //initialises the cotroler
-            Initialise();
-        }
+        //    //initialises the cotroler
+        //    Initialise();
+        //}
     }
 }

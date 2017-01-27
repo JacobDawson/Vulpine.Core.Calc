@@ -28,13 +28,11 @@ namespace Vulpine.Core.Calc.Algorithms
     /// When dealing with numerical methods, particulary itterative methods, values 
     /// are seldom exact. Practaily every value reported has some inherent error 
     /// associated with it, no mater how small. This struct provides a way to report 
-    /// the error allong with a given value. It reports both the relitive and absolute
-    /// error. Relative error is scaled with the value, indicating the amount of
-    /// pricision in the result, while absolute error gives a definitive range on
-    /// where the exact value could lie.
+    /// the error allong with a given value. It also reports the number of itterations
+    /// it took to compute the result when using iterative numerical methods.
     /// </summary>
     /// <typeparam name="T">Type of result</typeparam>
-    /// <remarks>Last Update: 2016-11-24</remarks>
+    /// <remarks>Last Update: 2017-01-26</remarks>
     public struct Result<T> : IFormattable
     {
         #region Class Definitions...
@@ -44,20 +42,22 @@ namespace Vulpine.Core.Calc.Algorithms
 
         //the amount of error in the result
         private double error;
-        private double delta;
+
+        //stores the number of itterations
+        private int count;
 
         /// <summary>
-        /// Constructs a new result with the given relitive and absolute error.
-        /// These values should be pre-computed by the Algorithm class.
+        /// Constructs a new result with the given error value and iteration
+        /// count. These values should be computed by the Algorithm class. 
         /// </summary>
         /// <param name="val">Value of the result</param>
-        /// <param name="err">Reletave error in the result</param>
-        /// <param name="delta">Absolute error in the result</param>
-        internal Result(T val, double err, double delta)
+        /// <param name="err">Amount of error in the result</param>
+        /// <param name="count">Number of interations used</param>
+        internal Result(T val, double err, int count)
         {
             this.result = val;
             this.error = Math.Abs(err);
-            this.delta = Math.Abs(delta);
+            this.count = count;
         }
 
         /// <summary>
@@ -86,18 +86,12 @@ namespace Vulpine.Core.Calc.Algorithms
             var temp = result as IFormattable;
             string s1, s2;
 
-            if (temp != null)
-            {
-                s1 = temp.ToString(format, provider);
-                s2 = delta.ToString(format, provider);
-            }
-            else
-            {
-                s1 = temp.ToString();
-                s2 = delta.ToString("g5");
-            }
+            if (temp == null) s1 = result.ToString();
+            else s1 = temp.ToString(format, provider);
 
-            return String.Format("({0}) +/- {1}", s1, s2); 
+            s2 = error.ToString(format, provider);
+
+            return String.Format("res:<{0}>, err:{1}", s1, s2);
         }     
 
         #endregion /////////////////////////////////////////////////////////////
@@ -113,9 +107,9 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// The amount of relative error contained within the result. Relative
-        /// error is scaled by the value it's acociated with. To get the
-        /// absolute error, see the delta property.
+        /// The amount error between the generated value and the previous value.
+        /// Wheather the error indicated is the reletive error or absolute error,
+        /// is dependent upon the generating algorythim.
         /// </summary>
         public double Error
         {
@@ -123,13 +117,13 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// The amount of absolute error contained within the result. Absolute
-        /// error is indepented of scale, and the true value can be expeted to
-        /// lie within the estimated value +/- the abslout error.
+        /// The number of itterations used to compute the given result. What
+        /// qualifies as an iteration is determined by the spesific algroythim
+        /// that generated the result.
         /// </summary>
-        public double Delta
+        public int NumSteps
         {
-            get { return delta; }
+            get { return count; }
         }
 
         #endregion /////////////////////////////////////////////////////////////

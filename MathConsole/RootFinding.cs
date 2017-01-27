@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Vulpine.Core.Calc;
 using Vulpine.Core.Calc.Functions;
 using Vulpine.Core.Calc.Algorithms;
 using Vulpine.Core.Calc.Exceptions;
@@ -50,21 +51,21 @@ namespace MathConsole
 
                 if (temp.Length > 0 && Char.ToUpper(temp[0]) == 'D')
                 {
-                    e = Algorithm.DTOL;
+                    e = VMath.TOL;
                 }
                 else if (sucess == false)
                 {
                     Console.WriteLine("Unable to determin the desired Error " +
                     "Tollerence. Resorting to the default value. ");
                     Console.WriteLine();
-                    e = Algorithm.DTOL;
+                    e = VMath.TOL;
                 }
                 else if (e <= 0.0)
                 {
                     Console.WriteLine("Invalid Error Tollerence given. Now " +
                     "resorting to the default value. ");
                     Console.WriteLine();
-                    e = Algorithm.DTOL;
+                    e = VMath.TOL;
                 }
 
                 Console.Write("Maximum Itterations: ");
@@ -73,14 +74,14 @@ namespace MathConsole
 
                 if (temp.Length > 0 && Char.ToUpper(temp[0]) == 'D')
                 {
-                    max = Algorithm.DMAX;
+                    max = 1024;
                 }
                 else if (sucess == false)
                 {
                     Console.WriteLine("Unable to determin the desired Maximum " +
                     "Number of Itterations. Resorting to the default value.");
                     Console.WriteLine();
-                    max = Algorithm.DMAX;
+                    max = 1024;
                 }
                 else if (max < 5)
                 {

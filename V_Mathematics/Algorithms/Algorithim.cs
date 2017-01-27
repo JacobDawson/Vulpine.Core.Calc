@@ -38,39 +38,21 @@ namespace Vulpine.Core.Calc.Algorithms
     /// or it exausts the maximum number of itterations. In paticular, no such
     /// method is gaurenteed to find a solution.
     /// </summary>
-    /// <remarks>Last Update: 2013-11-17</remarks>
+    /// <remarks>Last Update: 2017-01-26</remarks>
     public abstract class Algorithm
     {
-        #region Constant Values...
-
-        /// <summary>
-        /// Represents the default maximum number of itterations, set for
-        /// numerical methods when no explicit maximum is given. By default
-        /// we allow up to 1000 iterations before terminating.
-        /// </summary>
-        public const int DMAX = 1000;
-
-        /// <summary>
-        /// Represents the default tolarence in error, set for numerical methods
-        /// when no explicit tolarence is given. It equates to aproximatly
-        /// twelve decimal digits of precision.
-        /// </summary>
-        public const double DTOL = 1e-12;
-
-        #endregion //////////////////////////////////////////////////////////////
-
         #region Class Definitions...
 
         //flag indicating the use of relative error
-        protected bool rel;
+        private bool rel;
 
         //represents the ending conditions
-        protected int max;
-        protected double tol;
+        private int max;
+        private double tol;
 
         //tracks the curent state of the algorythim
-        private int count;
-        private double error;
+        protected int count;
+        protected double error;
 
         //stores the delegate to handel step events
         private EventHandler<NumericStepEventArgs> step_event;
@@ -83,6 +65,8 @@ namespace Vulpine.Core.Calc.Algorithms
             this.rel = true;
             this.max = 1024;
             this.tol = VMath.TOL;
+
+            Initialise();
         }
 
         /// <summary>
@@ -96,6 +80,8 @@ namespace Vulpine.Core.Calc.Algorithms
             this.rel = true;
             this.max = (max > 0) ? max : 1;
             this.tol = Math.Abs(tol);
+
+            Initialise();
         }
 
         /// <summary>
@@ -104,13 +90,15 @@ namespace Vulpine.Core.Calc.Algorithms
         /// to use exact error instead of relative error.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial relitave erro</param>
+        /// <param name="tol">Minimial relitave error</param>
         /// <param name="rel">Flag to use relitive error</param>
         public Algorithm(int max, double tol, bool rel)
         {
             this.rel = rel;
             this.max = (max > 0) ? max : 1;
             this.tol = Math.Abs(tol);
+
+            Initialise();
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -129,7 +117,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
         /// <summary>
         /// Represents the amount of error tolerance in the output. All iterative
-        /// methods will return a solution once the reletive error in the output
+        /// methods will return a solution once the computed error in the output
         /// drops below this threshold.
         /// </summary>
         public double Tolerance
@@ -141,7 +129,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// Determins what type of error should be used as a stoping criteria.
         /// Returns true to use releative error, and false for exact error.
         /// </summary>
-        public bool UseRelative
+        public bool IsRelative
         {
             get { return rel; }
         }
@@ -242,6 +230,19 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
+        /// Uses the given value to generate a result, reporting the curent
+        /// error value and number of iterations along with it. This method
+        /// should be called at the end of each procedure, before returning.
+        /// </summary>
+        /// <param name="value">The final value of computation</param>
+        /// <returns>The packaged result</returns>
+        protected Result<T> Finish<T>(T value)
+        {
+            //returns the generated result
+            return new Result<T>(value, error, count);
+        }
+
+        /// <summary>
         /// Raises the step event and informs all listeners. It returns true if
         /// any of the listners indicate that the process should stop.
         /// </summary>
@@ -255,34 +256,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //creates new event args and invokes the event
             var args = new NumericStepEventArgs(step, error);
-            step_event(this, args);  return args.Halt;
-        }
-
-
-        protected Result<Double> Finish(double value)
-        {
-            //uses the norm of the value
-            double abs = Math.Abs(value);
-
-            //computes both the relitive and absolute error
-            double err = rel ? error : (error / abs);
-            double del = rel ? (error * abs) : error;
-
-            //returns the generated result
-            return new Result<Double>(value, err, del);
-        }
-
-        protected Result<T> Finish<T>(T value) where T : Metrizable<T>
-        {
-            //uses the norm of the value
-            double abs = value.Norm();
-
-            //computes both the relitive and absolute error
-            double err = rel ? error : (error / abs);
-            double del = rel ? (error * abs) : error;
-
-            //returns the generated result
-            return new Result<T>(value, err, del);
+            step_event(this, args); return args.Halt;
         }
 
         #endregion //////////////////////////////////////////////////////////////
