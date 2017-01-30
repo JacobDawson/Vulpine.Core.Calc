@@ -30,6 +30,7 @@ namespace Vulpine.Core.Calc.Algorithms
     /// values to indicated the curent state of the numerical process, as well as 
     /// a halting flag to indicate if the proceess should end.
     /// </summary>
+    /// <remarks>Last Update: 2017-01-26</remarks>
     public class NumericStepEventArgs : EventArgs
     {
         //contains the info from the event

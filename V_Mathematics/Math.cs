@@ -602,7 +602,7 @@ namespace Vulpine.Core.Calc
         /// <returns>Number of possable combinations</returns>
         public static double Binomial(double n, double k)
         {
-            if (n > 0.0 && k > 0.0 && k < n)
+            if (n > k && k > 0.0)
             {
                 //uses the log-gamma function to avoid multiplication
                 double a = Math.Log(VMath.Gamma(n + 1.0));

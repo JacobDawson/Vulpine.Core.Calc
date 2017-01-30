@@ -78,7 +78,7 @@ namespace Vulpine.Core.Calc.Algorithms
         public Algorithm(int max, double tol)
         {
             this.rel = true;
-            this.max = (max > 0) ? max : 1;
+            this.max = (max > 2) ? max : 2;
             this.tol = Math.Abs(tol);
 
             Initialise();
@@ -95,7 +95,7 @@ namespace Vulpine.Core.Calc.Algorithms
         public Algorithm(int max, double tol, bool rel)
         {
             this.rel = rel;
-            this.max = (max > 0) ? max : 1;
+            this.max = (max > 2) ? max : 2;
             this.tol = Math.Abs(tol);
 
             Initialise();
@@ -110,7 +110,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// will return a solution once the maximum number of iterations are 
         /// exausted, weather or not tollerance has been met.
         /// </summary>
-        public int MaxIters
+        public int MaxSteps
         {
             get { return max; }
         }
@@ -163,14 +163,17 @@ namespace Vulpine.Core.Calc.Algorithms
 
         /// <summary>
         /// Increments the algorithim controler several steps at once, without
-        /// updating the error value or checking stoping criteria. This is
-        /// usefull for procedures that must run intermediat steps.
+        /// updating the error value. This is usefull for procedures that must 
+        /// run intermediat steps.
         /// </summary>
         /// <param name="steps">Number of steps to advance</param>
-        protected void Increment(int steps)
+        /// <returns>True if the algorythim should stop</returns>
+        protected bool Increment(int steps)
         {
             if (steps < 1) steps = 1;
             count = count + steps;
+
+            return (count >= max);
         }
 
         /// <summary>
@@ -195,8 +198,8 @@ namespace Vulpine.Core.Calc.Algorithms
             if (OnStep(count, error)) return true;
 
             //determins if sucessive itterations are nessary
-            if (error < tol) return true;
-            if (count > max) return true;
+            if (error <= tol) return true;
+            if (count >= max) return true;
 
             return false;
         }
@@ -223,8 +226,8 @@ namespace Vulpine.Core.Calc.Algorithms
             if (OnStep(count, error)) return true;
 
             //determins if sucessive itterations are nessary
-            if (error < tol) return true;
-            if (count > max) return true;
+            if (error <= tol) return true;
+            if (count >= max) return true;
 
             return false;     
         }

@@ -214,7 +214,7 @@ namespace MathConsole
                 Console.WriteLine();
 
                 Console.WriteLine("Error Tolerance: " + rf.Tolerance);
-                Console.WriteLine("Maximum Itterations: " + rf.MaxIters);
+                Console.WriteLine("Maximum Itterations: " + rf.MaxSteps);
 
                 Result<Double> value = default(Result<Double>);
                 string method = null;

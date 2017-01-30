@@ -25,6 +25,8 @@ using System.Text;
 using Vulpine.Core.Data.Exceptions;
 using Vulpine.Core.Calc.Exceptions;
 
+using Vulpine.Core.Calc.Numbers;
+
 namespace Vulpine.Core.Calc.Algorithms
 {
     /// <summary>
@@ -56,10 +58,12 @@ namespace Vulpine.Core.Calc.Algorithms
 
         /// <summary>
         /// Creates a new Root Finder with the given maximum number of
-        /// itterations and the minimal relitive error allowed.
+        /// itterations and the minimal error allowed. Set the flag to false
+        /// to use exact error instead of relative error.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial relitave error</param>
+        /// <param name="rel">Flag to use relitive error</param>
         public RootFinder(int max, double toll, bool rel) 
             : base(max, toll, rel) { }
 
@@ -77,12 +81,10 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A root of the function</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket
-        /// dose not contain a root of the function</exception>
         public Result<Double> Bisection(VFunc f, double low, double high)
         {
             //makes shure a valid bracket is given
-            InvBracketExcp.CheckOrder(low, high);
+            if (high < low) return Bisection(f, high, low);
 
             //preformes first evaluation
             double y1 = f(low);
@@ -90,11 +92,11 @@ namespace Vulpine.Core.Calc.Algorithms
             double next = 0.0;
             double curr = low;
 
-            //checks that the bracket contains atleast one zero
-            if (y1 * y2 > 0.0) InvBracketExcp.Throw(low, high);
-
             //initialises the cotroler
             Initialise();
+
+            //checks that we contain atleast one zero
+            if (y1 * y2 > 0.0) return Finish(low);
 
             while (true)
             {
@@ -126,8 +128,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A soultion to the inverse function</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket
-        /// dose not contain a solution</exception>
         public Result<Double> Bisection(VFunc f, double y,
             double low, double high)
         {
@@ -140,13 +140,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// two arbitrary functions. The given search bracket must contain 
         /// the desired point of intersection.
         /// </summary>
-        /// <param name="f1">The frist function</param>
+        /// <param name="f1">The first function</param>
         /// <param name="f2">The second function</param>
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A point of intersection between the two functions</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket dose
-        /// not contain a point of intersection</exception>
         public Result<Double> Bisection(VFunc f1, VFunc f2, 
             double low, double high)
         {
@@ -168,12 +166,10 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A root of the function</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket
-        /// dose not contain a root of the function</exception>
         public Result<Double> FalsePos(VFunc f, double low, double high)
         {
             //makes shure a valid bracket is given
-            InvBracketExcp.CheckOrder(low, high);
+            if (high < low) return FalsePos(f, high, low);
 
             //preformes first evaluation
             double y1 = f(low);
@@ -181,14 +177,17 @@ namespace Vulpine.Core.Calc.Algorithms
             double next = 0.0;
             double curr = low;
 
-            //checks that the bracket contains atleast one zero
-            if (y1 * y2 > 0.0) InvBracketExcp.Throw(low, high);
-
             //initialises the cotroler
             Initialise();
+
+            //checks that we contain atleast one zero
+            if (y1 * y2 > 0.0) return Finish(low);
          
             while (true)
             {
+                //NOTE: it seems the calculation of 'next' could be made
+                //more numericaly stable by avoiding subtraciton
+
                 //evaluates the false position
                 y1 = f(low);
                 y2 = f(high);
@@ -220,8 +219,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A soultion to the inverse function</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket
-        /// dose not contain a solution</exception>
         public Result<Double> FalsePos(VFunc f, double y,
             double low, double high)
         {
@@ -234,13 +231,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// two arbitrary functions. The given search bracket must contain 
         /// the desired point of intersection.
         /// </summary>
-        /// <param name="f1">The frist function</param>
+        /// <param name="f1">The first function</param>
         /// <param name="f2">The second function</param>
         /// <param name="low">Lower end of the search bracket</param>
         /// <param name="high">Upper end of the search bracket</param>
         /// <returns>A point of intersection between the two functions</returns>
-        /// <exception cref="InvBracketExcp">If the given search bracket dose
-        /// not contain a point of intersection</exception>
         public Result<Double> FalsePos(VFunc f1, VFunc f2,
             double low, double high)
         {
@@ -261,8 +256,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="f">The function in question</param>
         /// <param name="x1">First initial guess</param>
         /// <param name="x2">Second initial guess</param>
-        /// <returns>A potential root of the given funciton, based off 
-        /// of the initial guesses</returns>
+        /// <returns>A potential root of the given funciton</returns>
         public Result<Double> Secant(VFunc f, double x1, double x2)
         {
             //calls upon the more specialised method
@@ -308,6 +302,63 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //returns the best answer so far
             return Finish(next);
+        }       
+
+        /// <summary>
+        /// Uses the secent method to find the zeros of a complex funciton. Two
+        /// initial gesses for the zero must be given. A zero is not garenteed
+        /// to be found if the initial guesses are far apart or are nowhere near 
+        /// an actual zero. 
+        /// </summary>
+        /// <param name="f">The complex function in question</param>
+        /// <param name="x1">First initial guess</param>
+        /// <param name="x2">Second initial guess</param>
+        /// <returns>A potential zero of the complex funciton</returns>
+        public Result<Cmplx> Secant(VFunc<Cmplx> f, Cmplx x1, Cmplx x2)
+        {
+            //calls upon the more specialised method
+            return Secant(f, 0.0, x1, x2);
+        }
+
+        /// <summary>
+        /// Uses the secant method to find the inverse of a complex funciton.
+        /// Two intial guesses to the function's solution must be given. It is 
+        /// not garenteed to find a solution if the guesses are far apart or
+        /// far from the actual result.
+        /// </summary>
+        /// <param name="f">The complex function to invert</param>
+        /// <param name="y">Input to the inverse function</param>
+        /// <param name="x1">First initial guess</param>
+        /// <param name="x2">Second initial guess</param>
+        /// <returns>A potential soultion to the inverse function</returns>
+        public Result<Cmplx> Secant(VFunc<Cmplx> f, Cmplx y, Cmplx x1, Cmplx x2)
+        {
+            //used in preforming the secant method
+            Cmplx prev = x1;
+            Cmplx curr = x2;
+            Cmplx next = 0.0;
+
+            //initialises the cotroler
+            Initialise();
+
+            while (true)
+            {
+                //preformes the secend formula
+                Cmplx temp = f(curr);
+                next = (temp - y) * (prev - curr);
+                next = next / (f(prev) - temp);
+                next = curr - next;
+
+                //determins if a root is found
+                if (Step(curr, next)) break;
+
+                //updates values
+                prev = curr;
+                curr = next;
+            }
+
+            //returns the best answer so far
+            return Finish(next);
         }
 
         /// <summary>
@@ -316,7 +367,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// the point of intersection. It is not garenteed to find a solution 
         /// if the guesses are far from the actual intersection.
         /// </summary>
-        /// <param name="f1">The frist function</param>
+        /// <param name="f1">The first function</param>
         /// <param name="f2">The second function</param>
         /// <param name="x1">First initial guess</param>
         /// <param name="x2">Second initial guess</param>
@@ -329,6 +380,15 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion //////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Uses Newton's method to locate the root of a deferenciable funciton.
+        /// Note this method only works if the derivitve is known. If the drivitive
+        /// can only be aproximated, consider using the secant method instead.
+        /// </summary>
+        /// <param name="f">The function in question</param>
+        /// <param name="dx">The dirivitive of the funciton</param>
+        /// <param name="guess">An initial guess</param>
+        /// <returns>A potential root of the given funciton</returns>
         public Result<Double> Newton(VFunc f, VFunc dx, double guess)
         {
             //keeps a trailing refrence
@@ -355,45 +415,73 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(next);
         }
 
+        /// <summary>
+        /// Uses Newton's method to compute the inverse of an arbitary funciton, 
+        /// given it's derivitive. Note this method only works if the exact 
+        /// derivitive is known. If the drivitive can only be aproximated, consider 
+        /// using the secant method instead.
+        /// </summary>
+        /// <param name="f">The funciton in question</param>
+        /// <param name="dx">The derivitive of the funciton</param>
+        /// <param name="y">Input to the inverse function</param>
+        /// <param name="guess">An intial guess</param>
+        /// <returns>A potential soultion to the inverse function</returns>
         public Result<Double> Newton(VFunc f, VFunc dx, double y, double guess)
         {
             return Newton(x => f(x) - y, dx, guess);
         }
 
-        ///**
-        // *  Preforms Newton's Method to locate a root to a diffrentiable
-        // *  function.
-        // *  Precondtions: A diffrentiable function to evaluate, and an
-        // *  innital guess at the position of the root.
-        // *  Postcondtions: The root found by using Newton's Method.
-        // *  Throws: CalculusException if the maximum number of allowed
-        // *  itterations are exausted.
-        // */
-        //public double Newtons
-        //(Func f, Func dx, double guess, double target)
-        //{
-        //    double curr = guess;
-        //    double next = 0.0;
-        //    Initialise();
+        /// <summary>
+        /// Uses Newton's method to locate the root of a complex, deferenciable 
+        /// funciton. Note this method only works if the exact derivitve is known. 
+        /// If the drivitive can only be aproximated, consider using the secant 
+        /// method instead.
+        /// </summary>
+        /// <param name="f">The complx function in question</param>
+        /// <param name="dx">The dirivitive of the funciton</param>
+        /// <param name="guess">An initial guess</param>
+        /// <returns>A potential root of the given funciton</returns>
+        public Result<Cmplx> Newton(VFunc<Cmplx> f, VFunc<Cmplx> dx, Cmplx guess)
+        {
+            //keeps a trailing refrence
+            Cmplx curr = guess;
+            Cmplx next = 0.0;
 
-        //    //iterative loop
-        //    while (true)
-        //    {
-        //        //newton's formula
-        //        next = f.Evaluate(curr) - target;
-        //        next = next / dx.Evaluate(curr);
-        //        next = curr - next;
+            //initialises the cotroler
+            Initialise();
 
-        //        //determins if a root is found
-        //        if (Step(curr, next)) break;
+            while (true)
+            {
+                //applys newton's formula
+                next = f(curr) / dx(curr);
+                next = curr - next;
 
-        //        //updates values
-        //        curr = next;
-        //    }
+                //determins if a root is found
+                if (Step(curr, next)) break;
 
-        //    //returns the best answer
-        //    return next;
-        //}
+                //updates values
+                curr = next;
+            }
+
+            //returns the best answer so far
+            return Finish(next);
+        }
+
+        /// <summary>
+        /// Uses Newton's method to compute the inverse of a complex funciton, 
+        /// given it's derivitive. Note this method only works if the exact 
+        /// derivitive is known. If the drivitive can only be aproximated, consider 
+        /// using the secant method instead.
+        /// </summary>
+        /// <param name="f">The complx function in question</param>
+        /// <param name="dx">The derivitive of the funciton</param>
+        /// <param name="y">Input to the inverse function</param>
+        /// <param name="guess">An intial guess</param>
+        /// <returns>A potential soultion to the inverse function</returns>
+        public Result<Cmplx> Newton(VFunc<Cmplx> f, VFunc<Cmplx> dx, Cmplx y, Cmplx guess)
+        {
+            return Newton(x => f(x) - y, dx, guess);
+        }
 
         
     }
