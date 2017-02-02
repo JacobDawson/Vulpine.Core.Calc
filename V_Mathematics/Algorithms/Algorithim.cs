@@ -74,7 +74,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// itterations and the minimal relitive error allowed.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial relitave error</param>
+        /// <param name="tol">Minimial accepted error</param>
         public Algorithm(int max, double tol)
         {
             this.rel = true;
@@ -90,7 +90,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// to use exact error instead of relative error.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial relitave error</param>
+        /// <param name="tol">Minimial accepted error</param>
         /// <param name="rel">Flag to use relitive error</param>
         public Algorithm(int max, double tol, bool rel)
         {
@@ -127,7 +127,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
         /// <summary>
         /// Determins what type of error should be used as a stoping criteria.
-        /// Returns true to use releative error, and false for exact error.
+        /// Returns true to use releative error, and false for absolute error.
         /// </summary>
         public bool IsRelative
         {

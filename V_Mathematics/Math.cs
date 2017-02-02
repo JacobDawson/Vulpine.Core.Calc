@@ -40,6 +40,7 @@ namespace Vulpine.Core.Calc
     {
         //NOTES: Perhaps a sigmoid function ranging from -1 to 1 would be more benificial?
         //Adding A Permutation funciton would help complete the Gamma Funciton set.
+        //I still need to replace the complex error function
 
         #region Mathmatical Constants...
 
@@ -66,7 +67,7 @@ namespace Vulpine.Core.Calc
         public const double PHI = 1.6180339887498948482;
 
         /// <summary>
-        /// The Euler–Mascheroni constant, not to be confused with Euler's constant
+        /// The Euler–Mascheroni constant, not to be confused with Euler's number
         /// which is the base of the natural logarythim. It is defined as the limiting 
         /// difference between the harmonic series and the natural logarithm, and is
         /// usualy denoted by the lower greek letter gamma.
@@ -295,6 +296,35 @@ namespace Vulpine.Core.Calc
         #endregion //////////////////////////////////////////////////////////////////
 
         #region Special Functions...
+
+        /// <summary>
+        /// Determins the sign of a floating point number, returning negative one
+        /// for negative numbers, and positive one for positive numbers. It returns
+        /// zero if the number is zero. This method also propagates NaN values.
+        /// </summary>
+        /// <param name="x">Input to the sign funciton</param>
+        /// <returns>The sign value of the input</returns>
+        public static double Sign(double x)
+        {
+            if (Double.IsNaN(x)) return x;
+            if (x < 0.0) return -1.0;
+            if (x > 0.0) return 1.0;
+            return 0.0;
+        }
+
+        /// <summary>
+        /// This method extends the sign funciton to the complex domain. It returns
+        /// the point on the unit circle closest to the input. It returns zero if
+        /// the input is zero.
+        /// </summary>
+        /// <param name="z">Input to the sign funciton</param>
+        /// <returns>The normalised complex vector</returns>
+        public static Cmplx Sign(Cmplx z)
+        {
+            double abs = z.Abs;
+            if (abs.IsZero()) return 0.0;
+            return z / abs;
+        }
 
         /// <summary>
         /// Computes the standard sinc function, which is defined as sin(x) / x,
@@ -537,7 +567,7 @@ namespace Vulpine.Core.Calc
             double sum2 = 0.0;
 
             //uses the power series expansion
-            while (error > VMath.TOL && k < 128)
+            while (error > VMath.TOL && k < 64)
             {
                 sum1 = sum2;
 
@@ -575,7 +605,7 @@ namespace Vulpine.Core.Calc
             Cmplx sum2 = 0.0;
 
             //uses the power series expansion
-            while (error > VMath.TOL && k < 128)
+            while (error > VMath.TOL && k < 64)
             {
                 sum1 = sum2;
 

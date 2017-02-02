@@ -21,12 +21,16 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         private double tol;
         private double exp;
 
+        private bool loging;
+
 
         public RootFinderTests()
         {
             max = 256;
             tol = 1.0e-12;
             exp = 1.0e-11;
+
+            loging = false;
         }
 
 
@@ -34,11 +38,19 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var rf = new RootFinder(max, tol);
 
-            //rf.StepEvent += delegate(Object o, NumericStepEventArgs args) {
+            //rf.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            //{
             //    Console.WriteLine("Step{0}: {1}", args.Step, args.Error);
             //};
 
             return rf;
+        }
+
+
+        public void LogResults(int f, Result<Double> res)
+        {
+            if (loging) Console.WriteLine
+                ("Bisection:{0} error:{1} ittr:{2}", f, res.Error, res.NumSteps);
         }
 
 
@@ -80,6 +92,20 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                 case 18: return x => Math.Cos(x) / (Math.Sin(x) + 1.0);
 
 
+                //invertable funcitons
+                case 21: return x => x * x;
+                case 22: return x => Math.Exp(x);
+                case 23: return x => Math.Log(x);
+                case 24: return x => Math.Cos(x);
+                case 25: return x => Math.Pow(x, x);
+
+
+                //derivitives of invertable funcitons
+                case 31: return x => x + x;
+                case 32: return x => Math.Exp(x);
+                case 33: return x => 1.0 / x;
+                case 34: return x => -Math.Sin(x);
+                case 35: return x => Math.Pow(x, x) * (Math.Log(x) + 1.0);
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -91,12 +117,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(2, -3.0, 3.0, -2.0)]
         [TestCase(2, 1.0, 5.0, 4.0)]
         [TestCase(3, 0.0, 3.0, 2.0)]
-        [TestCase(4, 0.0, 2.5, 1.64069591402822)]
+        [TestCase(4, 0.0, 5.0, 1.64069591402822)]
         [TestCase(6, -5.0, 0.0, -2.35482004503095)]
-        [TestCase(6, -2.0, 2.5, 2.35482004503095)]
-        [TestCase(7, 0.1, 0.3, 0.153516789663953)]
-        [TestCase(7, 0.5, 0.8, 0.636262939294531)]
-        [TestCase(8, 3.0, 4.0, Math.PI)]
+        [TestCase(6, -2.0, 3.0, 2.35482004503095)]
+        [TestCase(7, 0.1, 0.4, 0.153516789663953)]
+        [TestCase(7, 0.4, 1.0, 0.636262939294531)]
+        [TestCase(8, 2.0, 4.0, Math.PI)]
         [TestCase(8, 4.0, 8.0, Math.PI * 2.0)]
         public void Bisection_IdealConditions_FindsRoot(int findex, double low, double high, double root)
         {
@@ -105,8 +131,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var res = rf.Bisection(f, low, high);
 
-            //Console.WriteLine("Bisection:{0} error:{1} ittr:{2}", findex, res.Error, res.NumSteps);
+            LogResults(findex, res);
             Assert.That(res.Value, Ist.WithinTolOf(root, exp));    
+        }
+
+        [TestCase(21, 7.0, 0.0, 10.0, 2.64575131106459)]
+        [TestCase(21, 18.0, 0.0, 10.0, 4.24264068711929)]
+        [TestCase(22, 22.0, 0.0, 5.0, 3.09104245335831)]
+        [TestCase(22, 47.0, 0.0, 5.0, 3.85014760171006)]
+        [TestCase(23, 4.0, 1.0, 100.0, 54.5981500331442)]
+        [TestCase(23, 4.5, 1.0, 100.0, 90.0171313005218)]
+        [TestCase(24, 0.25, 0.0, Math.PI, 1.31811607165282)]
+        [TestCase(24, 0.75, 0.0, Math.PI, 0.722734247813416)]
+        [TestCase(25, 3.0, 1.0, 3.0, 1.82545502292483)]
+        [TestCase(25, 5.0, 1.0, 3.0, 2.12937248276016)]
+        public void Bisection_InverseFunction_FindsSolution(int findex, double y, double low, double high, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Bisection(f, y, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp));   
         }
 
         [TestCase(1, -2.0, 0.0, -1.0)]
@@ -114,12 +161,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(2, -3.0, 3.0, -2.0)]
         [TestCase(2, 1.0, 5.0, 4.0)]
         [TestCase(3, 0.0, 3.0, 2.0)]
-        [TestCase(4, 0.0, 2.5, 1.64069591402822)]
+        [TestCase(4, 0.0, 5.0, 1.64069591402822)]
         [TestCase(6, -5.0, 0.0, -2.35482004503095)]
-        [TestCase(6, -2.0, 2.5, 2.35482004503095)]
-        [TestCase(7, 0.1, 0.3, 0.153516789663953)]
-        [TestCase(7, 0.5, 0.8, 0.636262939294531)]
-        [TestCase(8, 3.0, 4.0, Math.PI)]
+        [TestCase(6, -2.0, 3.0, 2.35482004503095)]
+        [TestCase(7, 0.1, 0.4, 0.153516789663953)]
+        [TestCase(7, 0.4, 1.0, 0.636262939294531)]
+        [TestCase(8, 2.0, 4.0, Math.PI)]
         [TestCase(8, 4.0, 8.0, Math.PI * 2.0)]
         public void FalsePos_IdealConitions_FindsRoot(int findex, double low, double high, double root)
         {
@@ -128,8 +175,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var res = rf.FalsePos(f, low, high);
 
-            //Console.WriteLine("FalsePos:{0} error:{1} ittr:{2}", findex, res.Error, res.NumSteps);
+            LogResults(findex, res);
             Assert.That(res.Value, Ist.WithinTolOf(root, exp));  
+        }
+
+        [TestCase(21, 7.0, 0.0, 10.0, 2.64575131106459)]
+        [TestCase(21, 18.0, 0.0, 10.0, 4.24264068711929)]
+        [TestCase(22, 22.0, 0.0, 5.0, 3.09104245335831)]
+        [TestCase(22, 47.0, 0.0, 5.0, 3.85014760171006)]
+        [TestCase(23, 4.0, 1.0, 100.0, 54.5981500331442)]
+        [TestCase(23, 4.5, 1.0, 100.0, 90.0171313005218)]
+        [TestCase(24, 0.25, 0.0, Math.PI, 1.31811607165282)]
+        [TestCase(24, 0.75, 0.0, Math.PI, 0.722734247813416)]
+        [TestCase(25, 3.0, 1.0, 3.0, 1.82545502292483)]
+        [TestCase(25, 5.0, 1.0, 3.0, 2.12937248276016)]
+        public void FalsePos_InverseFunction_FindsSolution(int findex, double y, double low, double high, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.FalsePos(f, y, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp));
         }
 
         [TestCase(1, -2.0, -1.5, -1.0)]
@@ -151,8 +219,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var res = rf.Secant(f, x1, x2);
 
-            //Console.WriteLine("Secant:{0} error:{1} ittr:{2}", findex, res.Error, res.NumSteps);
+            LogResults(findex, res);
             Assert.That(res.Value, Ist.WithinTolOf(root, exp));  
+        }
+
+        [TestCase(21, 7.0, 0.0, 10.0, 2.64575131106459)]
+        [TestCase(21, 18.0, 0.0, 10.0, 4.24264068711929)]
+        [TestCase(22, 22.0, 0.0, 5.0, 3.09104245335831)]
+        [TestCase(22, 47.0, 0.0, 5.0, 3.85014760171006)]
+        [TestCase(23, 4.0, 1.0, 100.0, 54.5981500331442)]
+        [TestCase(23, 4.5, 1.0, 100.0, 90.0171313005218)]
+        [TestCase(24, 0.25, 0.0, Math.PI, 1.31811607165282)]
+        [TestCase(24, 0.75, 0.0, Math.PI, 0.722734247813416)]
+        [TestCase(25, 3.0, 1.0, 3.0, 1.82545502292483)]
+        [TestCase(25, 5.0, 1.0, 3.0, 2.12937248276016)]
+        public void Secant_InverseFunction_FindsSolution(int findex, double y, double x1, double x2, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Secant(f, y, x1, x2);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp));
         }
 
         [TestCase(1, 11, -0.9, -1.0)]
@@ -175,9 +264,126 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var res = rf.Newton(f, dx, g);
 
-            //Console.WriteLine("Newton:{0} error:{1} ittr:{2}", findex, res.Error, res.NumSteps);
+            LogResults(findex, res);
             Assert.That(res.Value, Ist.WithinTolOf(root, exp));  
         }
+
+
+        [TestCase(21, 31, 7.0, 5.0, 2.64575131106459)]
+        [TestCase(21, 31, 18.0, 5.0, 4.24264068711929)]
+        [TestCase(22, 32, 22.0, 2.5, 3.09104245335831)]
+        [TestCase(22, 32, 47.0, 2.5, 3.85014760171006)]
+        [TestCase(23, 33, 4.0, 50.0, 54.5981500331442)]
+        [TestCase(23, 33, 4.5, 50.0, 90.0171313005218)]
+        [TestCase(24, 34, 0.25, 1.5, 1.31811607165282)]
+        [TestCase(24, 34, 0.75, 1.5, 0.722734247813416)]
+        [TestCase(25, 35, 3.0, 2.0, 1.82545502292483)]
+        [TestCase(25, 35, 5.0, 2.0, 2.12937248276016)]
+        public void Newton_InverseFunction_FindsSolution(int findex, int dxindex, double y, double g, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+            VFunc dx = GetFunciton(dxindex);
+
+            var res = rf.Newton(f, dx, y, g);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp)); 
+        }
+
+
+        /*******************************************************************************/
+
+
+        [TestCase(1, -2.0, 0.0, -1.0)]
+        [TestCase(1, 0.0, 4.0, 3.0)]
+        [TestCase(2, -3.0, 3.0, -2.0)]
+        [TestCase(2, 1.0, 5.0, 4.0)]
+        [TestCase(3, 0.0, 3.0, 2.0)]
+        [TestCase(4, 0.0, 5.0, 1.64069591402822)]
+        [TestCase(6, -5.0, 0.0, -2.35482004503095)]
+        [TestCase(6, -2.0, 3.0, 2.35482004503095)]
+        [TestCase(7, 0.1, 0.4, 0.153516789663953)]
+        [TestCase(7, 0.4, 1.0, 0.636262939294531)]
+        [TestCase(8, 2.0, 4.0, Math.PI)]
+        [TestCase(8, 4.0, 8.0, Math.PI * 2.0)]
+        public void Ridder_IdealConitions_FindsRoot(int findex, double low, double high, double root)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Ridders(f, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(root, exp));
+        }
+
+        [TestCase(21, 7.0, 0.0, 10.0, 2.64575131106459)]
+        [TestCase(21, 18.0, 0.0, 10.0, 4.24264068711929)]
+        [TestCase(22, 22.0, 0.0, 5.0, 3.09104245335831)]
+        [TestCase(22, 47.0, 0.0, 5.0, 3.85014760171006)]
+        [TestCase(23, 4.0, 1.0, 100.0, 54.5981500331442)]
+        [TestCase(23, 4.5, 1.0, 100.0, 90.0171313005218)]
+        [TestCase(24, 0.25, 0.0, Math.PI, 1.31811607165282)]
+        [TestCase(24, 0.75, 0.0, Math.PI, 0.722734247813416)]
+        [TestCase(25, 3.0, 1.0, 3.0, 1.82545502292483)]
+        [TestCase(25, 5.0, 1.0, 3.0, 2.12937248276016)]
+        public void Ridder_InverseFunction_FindsSolution(int findex, double y, double low, double high, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Ridders(f, y, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp));
+        }
+
+
+        [TestCase(1, -2.0, 0.0, -1.0)]
+        [TestCase(1, 0.0, 4.0, 3.0)]
+        [TestCase(2, -3.0, 3.0, -2.0)]
+        [TestCase(2, 1.0, 5.0, 4.0)]
+        [TestCase(3, 0.0, 3.0, 2.0)]
+        [TestCase(4, 0.0, 5.0, 1.64069591402822)]
+        [TestCase(6, -5.0, 0.0, -2.35482004503095)]
+        [TestCase(6, -2.0, 3.0, 2.35482004503095)]
+        [TestCase(7, 0.1, 0.4, 0.153516789663953)]
+        [TestCase(7, 0.4, 1.0, 0.636262939294531)]
+        [TestCase(8, 2.0, 4.0, Math.PI)]
+        [TestCase(8, 4.0, 8.0, Math.PI * 2.0)]
+        public void Brent_IdealConitions_FindsRoot(int findex, double low, double high, double root)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Brent(f, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(root, exp));
+        }
+
+        [TestCase(21, 7.0, 0.0, 10.0, 2.64575131106459)]
+        [TestCase(21, 18.0, 0.0, 10.0, 4.24264068711929)]
+        [TestCase(22, 22.0, 0.0, 5.0, 3.09104245335831)]
+        [TestCase(22, 47.0, 0.0, 5.0, 3.85014760171006)]
+        [TestCase(23, 4.0, 1.0, 100.0, 54.5981500331442)]
+        [TestCase(23, 4.5, 1.0, 100.0, 90.0171313005218)]
+        [TestCase(24, 0.25, 0.0, Math.PI, 1.31811607165282)]
+        [TestCase(24, 0.75, 0.0, Math.PI, 0.722734247813416)]
+        [TestCase(25, 3.0, 1.0, 3.0, 1.82545502292483)]
+        [TestCase(25, 5.0, 1.0, 3.0, 2.12937248276016)]
+        public void Brent_InverseFunction_FindsSolution(int findex, double y, double low, double high, double t)
+        {
+            RootFinder rf = GetFinder();
+            VFunc f = GetFunciton(findex);
+
+            var res = rf.Brent(f, y, low, high);
+
+            LogResults(findex, res);
+            Assert.That(res.Value, Ist.WithinTolOf(t, exp));
+        }
+
 
 
     }
