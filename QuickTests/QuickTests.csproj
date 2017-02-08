@@ -49,6 +49,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomMatrix.cs" />
+    <Compile Include="RootFinding.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\V_DataStruk\V_DataStruk\V_DataStruk.csproj">

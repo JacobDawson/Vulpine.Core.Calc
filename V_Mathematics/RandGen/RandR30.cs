@@ -76,7 +76,7 @@ namespace Vulpine.Core.Calc.RandGen
             uint h = x1;
 
             unchecked
-            {
+            {            
                 h ^= (h << 5) + (h >> 2) + y1;
                 h ^= (h << 5) + (h >> 2) + z1;
                 h ^= (h << 5) + (h >> 2) + w1;

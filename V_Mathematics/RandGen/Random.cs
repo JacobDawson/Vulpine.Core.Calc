@@ -54,7 +54,8 @@ namespace Vulpine.Core.Calc.RandGen
         /// <returns>The random number generator as a string</returns>
         public override string ToString()
         {
-            return "RNG:" + seed.ToString("X8");
+            Type t = base.GetType();
+            return String.Format("{0}: {1:X8}", t.Name, seed);
         }
 
         /// <summary>
@@ -252,7 +253,7 @@ namespace Vulpine.Core.Calc.RandGen
 
         /// <summary>
         /// Generates a random value with Standard Normal Distribution, that is
-        /// a normal distribution with a mean of 0 and a standard diviaiton of 1.
+        /// a normal distribution with a mean of 0.0 and a standard diviaiton of 1.0.
         /// </summary>
         /// <returns>A random value with normal distribution</returns>
         public double RandGauss()

@@ -141,22 +141,68 @@ namespace Vulpine.Core.Calc.Numbers
             double j = Math.Abs(jcof);
             double k = Math.Abs(kcof);
 
-            sb.Append(real < 0 ? "-" : "");
+            sb.Append(real < 0.0 ? "-" : "");
             sb.Append(r.ToString(format, provider));
 
-            sb.Append(icof < 0 ? " - " : " + ");
+            sb.Append(icof < 0.0 ? " - " : " + ");
             sb.Append(i.ToString(format, provider));
             sb.Append("i");
 
-            sb.Append(jcof < 0 ? " - " : " + ");
+            sb.Append(jcof < 0.0 ? " - " : " + ");
             sb.Append(j.ToString(format, provider));
             sb.Append("j");
 
-            sb.Append(kcof < 0 ? " - " : " + ");
+            sb.Append(kcof < 0.0 ? " - " : " + ");
             sb.Append(k.ToString(format, provider));
             sb.Append("k");
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Determins if another quaternion Exactly equals the current number
+        /// based on their respective floating point representations. In order 
+        /// to determin if two numbers are aproximatly equal, an alternate 
+        /// method should be employed.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is Qtrin)
+            {
+                Qtrin other = (Qtrin)obj;
+
+                if (real != other.real) return false;
+                if (icof != other.icof) return false;
+                if (jcof != other.jcof) return false;
+                if (kcof != other.kcof) return false;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Generates a sudo-unique hash code for the current quaternion.
+        /// </summary>
+        /// <returns>The hash of the quaternion</returns>
+        public override int GetHashCode()
+        {
+            int h = real.GetHashCode();
+            int a1 = icof.GetHashCode();
+            int a2 = jcof.GetHashCode();
+            int a3 = kcof.GetHashCode();
+
+            unchecked
+            {
+                h = (h * 907) ^ a1;
+                h = (h * 7393) ^ a2;
+                h = (h * 5939) ^ a3;
+            }
+
+            return h;
         }
 
         #endregion //////////////////////////////////////////////////////////

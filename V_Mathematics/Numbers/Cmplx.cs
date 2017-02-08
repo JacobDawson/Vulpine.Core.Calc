@@ -94,14 +94,48 @@ namespace Vulpine.Core.Calc.Numbers
             double r = Math.Abs(real);
             double i = Math.Abs(imag);
 
-            sb.Append(real < 0 ? "-" : "");
+            sb.Append(real < 0.0 ? "-" : "");
             sb.Append(r.ToString(format, provider));
 
-            sb.Append(imag < 0 ? " - " : " + ");
+            sb.Append(imag < 0.0 ? " - " : " + ");
             sb.Append(i.ToString(format, provider));
 
             sb.Append("i");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Determins if another complex number Exactly equals the current number
+        /// based on their respective floating point representations. In order to
+        /// determin if two numbers are aproximatly equal, an alternate method 
+        /// should be employed.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is Cmplx)
+            {
+                Cmplx other = (Cmplx)obj;
+
+                if (real != other.real) return false;
+                if (imag != other.imag) return false;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Generates a sudo-unique hash code for the current complex number.
+        /// </summary>
+        /// <returns>The hash of the complex number</returns>
+        public override int GetHashCode()
+        {
+            int a1 = real.GetHashCode();
+            int a2 = imag.GetHashCode();
+
+            return unchecked((a1 * 907) ^ a2);
         }
 
         #endregion //////////////////////////////////////////////////////////////

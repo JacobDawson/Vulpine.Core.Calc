@@ -195,6 +195,42 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Converts the given floating point value to the next smallest interger
+        /// value. Note that even though the result is an interger, it is returned 
+        /// as a  floating point, because the value may exceed the range of an int.
+        /// </summary>
+        /// <param name="val">Value to convert</param>
+        /// <returns>The next smallest interger</returns>
+        public static double Floor(this double val)
+        {
+            return Math.Floor(val);
+        }
+
+        /// <summary>
+        /// Rounds off the given floating point value to the closest interger value.
+        /// Note that even though the result is an interger, it is returned as a 
+        /// floating point, because the value may exceed the range of an int.
+        /// </summary>
+        /// <param name="val">Value to convert</param>
+        /// <returns>The closest interger value</returns>
+        public static double Round(this double val)
+        {
+            return Math.Floor(val + 0.5);
+        }
+
+        /// <summary>
+        /// Extracts the fractional part of a floating point number. For positive
+        /// real numbers, this is equivilent to the part of the number that apears
+        /// after the radix point. It creates a sawtooth-like wave funciton.
+        /// </summary>
+        /// <param name="val">Value to convert</param>
+        /// <returns>The fractional part of the value</returns>
+        public static double Frac(this double val)
+        {
+            return val - Math.Floor(val);
+        }
+
+        /// <summary>
         /// Clamps the floating point value to be between zero and one.
         /// </summary>
         /// <param name="val">Value to be clamped</param>
@@ -222,27 +258,17 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
-        /// Converts the given floating point value to the next smallest interger
-        /// value. Note that even though the result is an interger, it is returned 
-        /// as a  floating point, because the value may exceed the range of an int.
+        /// Computes the floating point modulus of a given number. The function is
+        /// designed sutch that the output is always between zero and the modulus,
+        /// regardless of the sign of the input.
         /// </summary>
-        /// <param name="val">Value to convert</param>
-        /// <returns>The next smallest interger</returns>
-        public static double Floor(this double val)
+        /// <param name="val">Value to modulate</param>
+        /// <param name="mod">The modulus</param>
+        /// <returns>A value between zero and the modulus</returns>
+        public static double Mod(this double val, double mod)
         {
-            return Math.Floor(val);
-        }
-
-        /// <summary>
-        /// Rounds off the given floating point value to the closest interger value.
-        /// Note that even though the result is an interger, it is returned as a 
-        /// floating point, because the value may exceed the range of an int.
-        /// </summary>
-        /// <param name="val">Value to convert</param>
-        /// <returns>The closest interger value</returns>
-        public static double Round(this double val)
-        {
-            return Math.Floor(val + 0.5);
+            double s = Math.Floor(val / mod);
+            return val - (mod * s);
         }
 
         #endregion //////////////////////////////////////////////////////////////////

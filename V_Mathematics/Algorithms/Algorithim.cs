@@ -101,6 +101,68 @@ namespace Vulpine.Core.Calc.Algorithms
             Initialise();
         }
 
+        /// <summary>
+        /// Generates a string representaiton of the curent Algorithim instance,
+        /// reporting both it's underlying type and it's meta paramaters, sutch as
+        /// the minimum error tollarance and maximum number of itterations.
+        /// </summary>
+        /// <returns>The Algorithim as a string</returns>
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            Type t = base.GetType();
+
+            sb.AppendFormat("{0}: ", t.Name);
+            sb.AppendFormat("Max={0}, ", max);
+            sb.AppendFormat("Tol={0:g5}", tol);
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Determins if two instances of the Algorithim class are equal. Two
+        /// instances are considered equal if they are of the same underlying
+        /// type and share the same meta-paramaters.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            Algorithm other = obj as Algorithm;
+            if (other == null) return false;
+
+            Type t1 = this.GetType();
+            Type t2 = other.GetType();
+
+            bool test = t1.Equals(t2);
+            test &= (this.max == other.max);
+            test &= (this.tol == other.tol);
+            test &= (this.rel == other.rel);
+
+            return test;
+        }
+
+        /// <summary>
+        /// Generates a sudo-unique hash code for the curent Alogrithim instance, 
+        /// by combining it's meta paramaters: the maximum number of itterations 
+        /// with the minimum tollarance value. 
+        /// </summary>
+        /// <returns>The hash of the current Algorithim</returns>
+        public override int GetHashCode()
+        {
+            int h = max.GetHashCode();
+            int a1 = tol.GetHashCode();
+            int a2 = rel.GetHashCode();
+
+            unchecked
+            {
+                h = (h * 2243) ^ a1;
+                h = (h * 5581) ^ a2;
+            }
+
+            return h;
+        }
+
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Properties...

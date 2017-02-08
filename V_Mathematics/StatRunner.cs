@@ -47,7 +47,7 @@ namespace Vulpine.Core.Calc
         //stores the sum of the weights
         private double t_weight;
 
-        //stores the first and second central moments
+        //stores the first and third central moments
         private Vector m1;
         private Vector m3;
 
