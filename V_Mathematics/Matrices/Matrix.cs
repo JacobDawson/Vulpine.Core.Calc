@@ -166,6 +166,48 @@ namespace Vulpine.Core.Calc.Matrices
             }
         }
 
+        /// <summary>
+        /// Determins if this matrix is equal to another matrix. Two matricies 
+        /// are considered equal if they have the same shape and the values of
+        /// their elements are equal. Note that if one of the matricies changes, 
+        /// then the two matricies will no longer be equal.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            Matrix other = obj as Matrix;
+            if (other == null) return false;
+
+            if (other.num_cols != num_cols) return false;
+            if (other.num_rows != num_rows) return false;
+
+            for (int i = 0; i < matrix.Length; i++)
+                if (matrix[i] != other.matrix[i]) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Generates a sudo-unique hash code for the current matrix, based on the 
+        /// elements of the matrix. Note that if the value of the elements should 
+        /// change, it's hash code will change acordingly.
+        /// </summary>
+        /// <returns>The hash of the current matrix</returns>
+        public override int GetHashCode()
+        {
+            int hash = 1764;
+            int temp = 0;
+
+            for (int i = 0; i < matrix.Length; i++)
+            {
+                temp = matrix[i].GetHashCode();
+                hash ^= (hash << 5) + (hash >> 2) + temp;
+            }
+
+            return hash;
+        }
+
         #endregion //////////////////////////////////////////////////////////////
 
         #region Class Properties...
@@ -957,6 +999,10 @@ namespace Vulpine.Core.Calc.Matrices
         //references the InvAx() function
         public static Vector operator /(Vector b, Matrix a)
         { return a.InvAx(b); }
+
+        //references the Mult(s) function
+        public static Matrix operator /(Matrix a, Double x)
+        { return a.Mult(1.0 / x); }
 
         //refrences the Mult(-1) function
         public static Matrix operator -(Matrix a)

@@ -33,7 +33,7 @@ namespace Vulpine.Core.Calc.Algorithms
     /// </summary>
     /// <typeparam name="T">Type of result</typeparam>
     /// <remarks>Last Update: 2017-01-26</remarks>
-    public struct Result<T> : IFormattable
+    public struct Result<T> : IFormattable, IComparable<Result<T>>
     {
         #region Class Definitions...
 
@@ -92,7 +92,57 @@ namespace Vulpine.Core.Calc.Algorithms
             s2 = error.ToString(format, provider);
 
             return String.Format("res:<{0}>, err:{1}", s1, s2);
-        }     
+        }
+
+        /// <summary>
+        /// Determins if this result is equal to another result. Two results 
+        /// are considered the same if they have the same value and the same 
+        /// amount of error.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is Result<T>)
+            {
+                var other = (Result<T>)obj;
+
+                if (!result.Equals(other.result)) return false;
+                if (!error.Equals(other.error)) return false;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Generates a hash code for the curent result, constructed from
+        /// the value of the result, and the amound of error in the result.
+        /// </summary>
+        /// <returns>The hash of the result</returns>
+        public override int GetHashCode()
+        {
+            int a1 = result.GetHashCode();
+            int a2 = error.GetHashCode();
+
+            return unchecked((a1 * 907) ^ a2);
+        }
+
+        /// <summary>
+        /// Compares the amount of error in the current result to another
+        /// result. It returns a negative value if the curent result is more 
+        /// actuate, a positive value if it is less accurate, and zero if
+        /// they are the same.
+        /// </summary>
+        /// <param name="other">A result to compare</param>
+        /// <returns>See description</returns>
+        public int CompareTo(Result<T> other)
+        {
+            if (this.error < other.error) return -1;
+            if (this.error > other.error) return 1;
+
+            return 0;
+        }
 
         #endregion /////////////////////////////////////////////////////////////
 
@@ -140,5 +190,26 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         #endregion /////////////////////////////////////////////////////////////
+
+        #region Operator Overlodes...
+
+        //refferences the CompareTo() function
+        public static bool operator >(Result<T> a, Result<T> b)
+        { return a.CompareTo(b) > 0; }
+
+        //refferences the CompareTo() function
+        public static bool operator <(Result<T> a, Result<T> b)
+        { return a.CompareTo(b) < 0; }
+
+        //refferences the CompareTo() function
+        public static bool operator >=(Result<T> a, Result<T> b)
+        { return a.CompareTo(b) >= 0; }
+
+        //refferences the CompareTo() function
+        public static bool operator <=(Result<T> a, Result<T> b)
+        { return a.CompareTo(b) <= 0; }
+
+        #endregion /////////////////////////////////////////////////////////////
+
     }
 }

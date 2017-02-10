@@ -145,6 +145,46 @@ namespace Vulpine.Core.Calc.Matrices
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Determins if this vector is equal to another vector. Two vectors are
+        /// considered equal if they have the same dimention and the values of
+        /// their elements are equal. Note that if one of the vectors changes, 
+        /// then the two vectors will no longer be equal.
+        /// </summary>
+        /// <param name="obj">Object to compare</param>
+        /// <returns>True if the objects are equal</returns>
+        public override bool Equals(object obj)
+        {
+            Vector other = obj as Vector;
+            if (other == null) return false;
+            if (other.Length != Length) return false;
+
+            for (int i = 0; i < vector.Length; i++)
+                if (vector[i] != other.vector[i]) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Generates a sudo-unique hash code for the current vector, based on the 
+        /// elements of the vector. Note that if the value of the elements should 
+        /// change, it's hash code will change acordingly.
+        /// </summary>
+        /// <returns>The hash of the current vector</returns>
+        public override int GetHashCode()
+        {
+            int hash = 1764;
+            int temp = 0;
+
+            for (int i = 0; i < vector.Length; i++)
+            {
+                temp = vector[i].GetHashCode();
+                hash ^= (hash << 5) + (hash >> 2) + temp;
+            }
+
+            return hash;
+        }
+
         #endregion /////////////////////////////////////////////////////////////
 
         #region Class Properties...
