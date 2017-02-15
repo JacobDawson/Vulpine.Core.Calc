@@ -22,9 +22,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Vulpine.Core.Data.Exceptions;
-using Vulpine.Core.Calc.Exceptions;
-
 using Vulpine.Core.Calc.Numbers;
 
 namespace Vulpine.Core.Calc.Algorithms

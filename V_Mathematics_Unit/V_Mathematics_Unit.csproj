@@ -72,6 +72,7 @@
     <Compile Include="AddOns\Generators.cs" />
     <Compile Include="Unit\AlgebraicTests.cs" />
     <Compile Include="Unit\Algorythims\AlgorythimTests.cs" />
+    <Compile Include="Unit\Algorythims\IntegratorTests.cs" />
     <Compile Include="Unit\Algorythims\RootFinderTests.cs" />
     <Compile Include="Unit\CmplxTexts.cs" />
     <Compile Include="Unit\EuclideanTests.cs" />
