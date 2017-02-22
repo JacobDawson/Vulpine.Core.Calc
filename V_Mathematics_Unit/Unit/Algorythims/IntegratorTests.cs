@@ -29,9 +29,9 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             max = 28; //1048576;
             tol = 1.0e-10;
-            exp = 1.0e-08;
+            exp = 1.0e-09;
 
-            loging = true;
+            loging = false;
         }
 
 
@@ -39,7 +39,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var ing = new Integrator(max, tol);
 
-            //rf.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            //ing.StepEvent += delegate(Object o, NumericStepEventArgs args)
             //{
             //    Console.WriteLine("Step{0}: {1}", args.Step, args.Error);
             //};
@@ -102,65 +102,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                 case 12: return x => Math.Cos(Math.Sqrt(x));
 
 
-
-                //////////  Improper Intergrals //////////
-
-
-
-                //INT [0 .. 1] (sqrt(x) - 2x^2) / x dx = 1
-                case 21: return x => (Math.Sqrt(x) - (2.0 * x * x)) / x;
-
-                //INT [0 .. 1] x^2 * ln(x) dx = -1/9
-                case 22: return x => x * x * Math.Log(x);
-
-                //INT [0 .. 2] x / sqrt(4 - x^2) = 2
-                case 23: return x => x / Math.Sqrt(4.0 - (x * x));
-
-                //INT [0 .. 1] 1 / sqrt(x - x^2) dx = pi
-                case 24: return x => 1.0 / Math.Sqrt(x - (x * x));
-
-                //INT [0 .. 4] e^sqrt(x) / sqrt(x)
-                case 25: return x => Math.Exp(Math.Sqrt(x)) / Math.Sqrt(x);
-
-                //INT [3 .. 9] 1 / sqrt(x^2 - 9) dx = ln(3 + 2 * sqrt(2))
-                case 26: return x => 1.0 / Math.Sqrt((x * x) - 9.0);
-
-                //INT [0 .. 3pi] sin(x) / x dx = Si(3pi)
-                case 27: return x => Math.Sin(x) / x;
-
-                //INT [0 .. pi/2] sqrt(tan(x)) dx = 2pi / (2 sqrt(2))
-                case 28: return x => Math.Sqrt(Math.Tan(x));
-
-
-
-                //////////  Intergrals With Infiniat Bounds //////////
-
-
-
-                //INT [1 .. inf] 1/x^2 dx = 1
-                case 41: return x => 1.0 / (x * x);
-
-                //INT [-inf .. 0] x * e^(-x^2) dx = -1/2
-                case 42: return x => x * Math.Exp(-x * x);
-
-                //INT [1 .. inf] 4 * x^(-4) dx = 4/3
-                case 43: return x => 4.0 * Math.Sqrt(Math.Sqrt(x));
-
-                //INT [0 .. inf] -x / (1 + e^(pi*x)) dt = -1/12
-                case 44: return x => -x / (1.0 + Math.Exp(Math.PI * x));
-
-                //INT [0 .. inf] 1/((x+1) * sqrt(x)) dx = pi
-                case 45: return x => 1.0 / ((x + 1.0) * Math.Sqrt(x));
-
-                //INT [-inf .. 0] 4 / (36 + x^2) dx = pi/3
-                case 46: return x => 4.0 / (36.0 + (x * x));
-
-                //INT [0 .. inf] x / (e^x - 1) dx = (pi^2)/6
-                case 47: return x => x / (Math.Exp(x) - 1.0);
-
-                //INT [0 .. inf] x^4.2 * e^(-x) dx = gamma(26/5)
-                case 48: return x => Math.Pow(x, 4.2) * Math.Exp(-x);
-
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -174,12 +115,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(3, 1.0, 3.0, -20.0)]
         [TestCase(4, -3.0, 5.0, 1024.0 / 15.0)]
         [TestCase(5, -1.0, 1.0, 1.5707963267948966192)]
-        [TestCase(6, 0.0, 2.0, 16.452627765507230225)]
-        [TestCase(7, 2.0, 4.0, -1.0568528194400546906)]
-        [TestCase(8, 0.0, Math.PI, 2.2214414690791831235)]
+        [TestCase(6, 2.0, 0.0, -16.452627765507230225)]
+        [TestCase(7, 4.0, 2.0, 1.0568528194400546906)]
+        [TestCase(8, Math.PI, 0.0, -2.2214414690791831235)]
         [TestCase(9, -VMath.TAU, VMath.TAU, 2.8363031522652569005)]
         [TestCase(10, -1.0, 2.0, 4.0826185263905451134)]
-        [TestCase(11, -8.0, 8.0, 8.5759616473227345073)]
+        [TestCase(11, 8.0, -8.0, -8.5759616473227345073)]
         [TestCase(12, 0.0, 10.0, -4.1303862851374246194)]
         public void Trapezoid_NormalIntergral_ExpectedValue(int fx, double a, double b, double act)
         {
@@ -202,12 +143,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(3, 1.0, 3.0, -20.0)]
         [TestCase(4, -3.0, 5.0, 1024.0 / 15.0)]
         [TestCase(5, -1.0, 1.0, 1.5707963267948966192)]
-        [TestCase(6, 0.0, 2.0, 16.452627765507230225)]
-        [TestCase(7, 2.0, 4.0, -1.0568528194400546906)]
-        [TestCase(8, 0.0, Math.PI, 2.2214414690791831235)]
+        [TestCase(6, 2.0, 0.0, -16.452627765507230225)]
+        [TestCase(7, 4.0, 2.0, 1.0568528194400546906)]
+        [TestCase(8, Math.PI, 0.0, -2.2214414690791831235)]
         [TestCase(9, -VMath.TAU, VMath.TAU, 2.8363031522652569005)]
         [TestCase(10, -1.0, 2.0, 4.0826185263905451134)]
-        [TestCase(11, -8.0, 8.0, 8.5759616473227345073)]
+        [TestCase(11, 8.0, -8.0, -8.5759616473227345073)]
         [TestCase(12, 0.0, 10.0, -4.1303862851374246194)]
         public void Romberg_NormalIntergral_ExpectedValue(int fx, double a, double b, double act)
         {
@@ -229,12 +170,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(3, 1.0, 3.0, -20.0)]
         [TestCase(4, -3.0, 5.0, 1024.0 / 15.0)]
         [TestCase(5, -1.0, 1.0, 1.5707963267948966192)]
-        [TestCase(6, 0.0, 2.0, 16.452627765507230225)]
-        [TestCase(7, 2.0, 4.0, -1.0568528194400546906)]
-        [TestCase(8, 0.0, Math.PI, 2.2214414690791831235)]
+        [TestCase(6, 2.0, 0.0, -16.452627765507230225)]
+        [TestCase(7, 4.0, 2.0, 1.0568528194400546906)]
+        [TestCase(8, Math.PI, 0.0, -2.2214414690791831235)]
         [TestCase(9, -VMath.TAU, VMath.TAU, 2.8363031522652569005)]
         [TestCase(10, -1.0, 2.0, 4.0826185263905451134)]
-        [TestCase(11, -8.0, 8.0, 8.5759616473227345073)]
+        [TestCase(11, 8.0, -8.0, -8.5759616473227345073)]
         [TestCase(12, 0.0, 10.0, -4.1303862851374246194)]
         public void Gauss_NormalIntergral_ExpectedValue(int fx, double a, double b, double act)
         {
@@ -257,62 +198,21 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(3, 1.0, 3.0, -20.0)]
         [TestCase(4, -3.0, 5.0, 1024.0 / 15.0)]
         [TestCase(5, -1.0, 1.0, 1.5707963267948966192)]
-        [TestCase(6, 0.0, 2.0, 16.452627765507230225)]
-        [TestCase(7, 2.0, 4.0, -1.0568528194400546906)]
-        [TestCase(8, 0.0, Math.PI, 2.2214414690791831235)]
+        [TestCase(6, 2.0, 0.0, -16.452627765507230225)]
+        [TestCase(7, 4.0, 2.0, 1.0568528194400546906)]
+        [TestCase(8, Math.PI, 0.0, -2.2214414690791831235)]
         [TestCase(9, -VMath.TAU, VMath.TAU, 2.8363031522652569005)]
         [TestCase(10, -1.0, 2.0, 4.0826185263905451134)]
-        [TestCase(11, -8.0, 8.0, 8.5759616473227345073)]
+        [TestCase(11, 8.0, -8.0, -8.5759616473227345073)]
         [TestCase(12, 0.0, 10.0, -4.1303862851374246194)]
         public void Kronrod_NormalIntergral_ExpectedValue(int fx, double a, double b, double act)
         {
             VFunc f = GetFunc(fx);
-            double res = Integrator.Kronrod(f, a, b, 1.0e-08);
+            double res = Integrator.Kronrod(f, a, b);
             double error = Math.Abs((res - act) / act);
 
             if (loging) Console.WriteLine("function:{0:00} accuracy:{1:G5}", fx, error);
         
-            Assert.That(res, Ist.WithinTolOf(act, exp));
-        }
-
-
-
-        [TestCase(21, 0.0, 1.0, 1.0)]
-        [TestCase(22, 0.0, 1.0, -1.0 / 9.0)]
-        [TestCase(23, 0.0, 2.0, 2.0)]
-        [TestCase(24, 0.0, 1.0, Math.PI)]
-        [TestCase(25, 0.0, 4.0, 12.778112197861300454)]
-        //[TestCase(26, 3.0, 9.0, 1.7627471740390860505)]
-        [TestCase(27, 0.0, 3.0 * Math.PI, 1.6747617989799612659)]
-        [TestCase(28, 0.0, Math.PI / 2.0, 2.2214414690791831235)]
-        public void Kronrod_ImproperIntergral_ExpectedValue(int fx, double a, double b, double act)
-        {
-            VFunc f = GetFunc(fx);
-            double res = Integrator.Kronrod(f, a, b, 1.0e-08);
-            double error = Math.Abs((res - act) / act);
-
-            if (loging) Console.WriteLine("function:{0:00} accuracy:{1:G5}", fx, error);
-
-            Assert.That(res, Ist.WithinTolOf(act, exp));
-        }
-
-
-        [TestCase(41, 1.0, VMath.InfP, 1.0)]
-        [TestCase(42, VMath.InfN, 0.0, -0.5)]
-        [TestCase(43, 1.0, VMath.InfP, 4.0 / 3.0)]
-        [TestCase(44, 0.0, VMath.InfP, -1.0 / 12.0)]
-        [TestCase(45, 0.0, VMath.InfP, Math.PI)]
-        [TestCase(46, VMath.InfN, 0.0, 1.0471975511965977462)]
-        [TestCase(47, 0.0, VMath.InfP, 1.6449340668482264365)]
-        //[TestCase(48, 0.0, VMath.InfP, 32.578096050331346083)]
-        public void Kronrod_InfiniteIntergral_ExpectedValue(int fx, double a, double b, double act)
-        {
-            VFunc f = GetFunc(fx);
-            double res = Integrator.Kronrod(f, a, b, 1.0e-08);
-            double error = Math.Abs((res - act) / act);
-
-            if (loging) Console.WriteLine("function:{0:00} accuracy:{1:G5}", fx, error);
-
             Assert.That(res, Ist.WithinTolOf(act, exp));
         }
 

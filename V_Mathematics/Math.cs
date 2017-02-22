@@ -83,20 +83,6 @@ namespace Vulpine.Core.Calc
         public const double RTP = 2.5066282746310005024;
 
         /// <summary>
-        /// Represents the value of positive infinity on the extended real number
-        /// line. Note that infinite values are considered special floating-point
-        /// values. In paticular, they are not numeric values.
-        /// </summary>
-        public const double InfP = Double.PositiveInfinity;
-
-        /// <summary>
-        /// Represents the value of negative infinity on the extended real number
-        /// line. Note that infinite values are considered special floating-point
-        /// values. In paticular, they are not numeric values.
-        /// </summary>
-        public const double InfN = Double.NegativeInfinity;
-
-        /// <summary>
         /// The default error tollarence used within the mathamatics library.
         /// It is desined to be greater that the precision of a single floating
         /// point value, but less than the presision of a double. Note this value

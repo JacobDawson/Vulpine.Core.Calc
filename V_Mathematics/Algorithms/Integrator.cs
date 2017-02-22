@@ -24,18 +24,67 @@ using System.Text;
 
 namespace Vulpine.Core.Calc.Algorithms
 {
+    /// <summary>
+    /// This class provides methods for intergrating arbitrary functions, as well as
+    /// various other methods related to intergration. A definite intergral can be
+    /// visualised as the area beneth the function's curve, bordered by the endpoints
+    /// of intergration. Indefinite intergrals can be computed from definite intergrals
+    /// via the fundemental therum of calclus. All of the intergration methods in this 
+    /// class were designed to work with proper definate intergrals. They are ideal for 
+    /// functions which are continious on the closed interval of intergration. Improper 
+    /// intergrals are not garenteed to converge.
+    /// </summary>
+    /// <remarks>Last Update: 2017-02-22</remarks>
     public sealed class Integrator : Algorithm
     {
         //Things To Add:
 
         //Complex Intergration
-        //Inversion of the Intergrand
+        //Inverse Intergration
         //Computing the Average Value
         //Computing the Arc Length
         //Multi-varient Intergration
 
 
         #region Class Definitions...
+
+        //used in 3-point Gausian intergration
+        private const double G3 = 0.77459666924148337704;
+        
+        //stores the weights for 7-point Gausian quadrature
+        private static readonly double[] GW =
+        {
+            4.1795918367346938776e-01,
+            3.8183005050511894495e-01,
+            2.7970539148927666790e-01,
+            1.2948496616886969327e-01,
+        };
+
+        //stores the weights for 15-point Kronrod quadrature
+        private static readonly double[] KW =
+        {
+            2.0948214108472782801e-01,
+            2.0443294007529889241e-01,
+            1.9035057806478540991e-01,
+            1.6900472663926790283e-01,
+            1.4065325971552591875e-01,
+            1.0479001032225018384e-01,
+            6.3092092629978553291e-02,
+            2.2935322010529224964e-02,
+        };
+
+        //stores the nodal points for Gauss-Kronrod quadrature
+        private static readonly double[] GKN =
+        {
+            0.0,
+            2.0778495500789846760e-01,
+            4.0584515137739716691e-01,
+            5.8608723546769113029e-01,
+            7.4153118559939443986e-01,
+            8.6486442335976907279e-01,
+            9.4910791234275852453e-01,
+            9.9145537112081263921e-01,
+        };
 
         /// <summary>
         /// Creates a new Integrator with default stoping criteria.
@@ -95,12 +144,10 @@ namespace Vulpine.Core.Calc.Algorithms
             {
                 var res = Trapezoid(f, b, a);
                 return Finish(-res.Value);
-
-                //return Trapezoid(x => -f(x), b, a);
             }
 
             //start with 4 subdivisions
-            int n = 4;
+            long n = 4;
 
             //used in main loop
             double trap = 0.0;
@@ -114,9 +161,6 @@ namespace Vulpine.Core.Calc.Algorithms
                 return Finish(0.0);
             }
 
-            ////adjusts for intfinite intervals
-            //f = CheckBounds(f, ref a, ref b);
-
             while (true)
             {
                 //preforms the trapizoid rule
@@ -127,7 +171,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //trailing refrence
                 last = trap;
-                //n = n + n;
                 n = n << 1;
             }
 
@@ -140,7 +183,7 @@ namespace Vulpine.Core.Calc.Algorithms
         #region Romberg Intergration...
 
         /// <summary>
-        /// Uses Romberg intergration to aproximate the antidrivitive of the
+        /// Uses Romberg intergration to aproximate the anti-drivitive of the
         /// function at the given value. That is, it aproximates the function 
         /// who's dirivitive is the given funciton.
         /// </summary>
@@ -180,8 +223,6 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             //sets up the array for romberg intergration
-            //NEED TO CHECK THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //int array_size = (int)(2.0 + Math.Sqrt(0.25 + 2 * max));
             int array_size = base.MaxSteps + 2;
             double[] prev = new double[array_size];
             double[] curr = new double[array_size];
@@ -192,27 +233,37 @@ namespace Vulpine.Core.Calc.Algorithms
             //used in main loop
             double rombn = 0.0;
             double rombl = 0.0;
+            long trap = 2;
             int level = 1;
-            int trap = 2;
 
             while (true)
             {
-                //prefroms romberg intergration
-                curr[0] = SingleTrap(f, a, b, trap);
-                RombergLevel(prev, curr, level);
+                if (level % 2 == 0)
+                {
+                    //prefroms romberg intergration
+                    prev[0] = SingleTrap(f, a, b, trap);
+                    RombergLevel(curr, prev, level);
 
-                //checks for validation
-                rombn = curr[level];
-                rombl = prev[level - 1];
-                if (Step(rombl, rombn)) break;
+                    //checks for validation
+                    rombn = prev[level];
+                    rombl = curr[level - 1];
+                    if (Step(rombl, rombn)) break;
+                }
+                else
+                {
+                    //prefroms romberg intergration
+                    curr[0] = SingleTrap(f, a, b, trap);
+                    RombergLevel(prev, curr, level);
 
-                //copyes prev to curr
-                for (int i = 0; i <= level; i++)
-                    prev[i] = curr[i];
+                    //checks for validation
+                    rombn = curr[level];
+                    rombl = prev[level - 1];
+                    if (Step(rombl, rombn)) break;
+                }
 
                 //updates counters
                 level = level + 1;
-                trap = trap + trap;
+                trap = trap << 1;
             }
 
             //returns the best answer
@@ -222,8 +273,30 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion //////////////////////////////////////////////////////////////////
 
+        #region Gausian Quadrature...
 
+        /// <summary>
+        /// Uses 3-Point Gausian quadrature to aproximate the anti-drivitive of the
+        /// function at the given value. That is, it aproximates the function 
+        /// who's dirivitive is the given funciton.
+        /// </summary>
+        /// <param name="f">The integrand</param>
+        /// <param name="x">Input to the anti-drivitive</param>
+        /// <returns>The anti-drivitive at the given value</returns>
+        public Result<Double> Gauss(VFunc f, double x)
+        {
+            return Gauss(f, 0.0, x);
+        }
 
+        /// <summary>
+        /// Uses 3-Point Gausian quadrature to aproximate the given definate intergral 
+        /// to the requested acuracy. Geometricly, this can be thought of as finding 
+        /// the area under the curve, bracketed by the two endpoints.
+        /// </summary>
+        /// <param name="f">The integrand</param>
+        /// <param name="a">The lower bound</param>
+        /// <param name="b">The upper bound</param>
+        /// <returns>The results of intergration</returns>
         public Result<Double> Gauss(VFunc f, double a, double b)
         {
             //checks that we have a correct bracket
@@ -234,7 +307,7 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             //start with 4 subdivisions
-            int n = 4;
+            long n = 4;
 
             //used in main loop
             double curr = 0.0;
@@ -248,20 +321,16 @@ namespace Vulpine.Core.Calc.Algorithms
                 return Finish(0.0);
             }
 
-            //adjusts for intfinite intervals
-            f = CheckBounds(f, ref a, ref b);
-
             while (true)
             {
                 //preforms the trapizoid rule
-                curr = SingleLobatto5(f, a, b, n);
+                curr = SingleGauss3(f, a, b, n);
 
                 //determins if tollerence is met
                 if (Step(last, curr)) break;
 
                 //trailing refrence
                 last = curr;
-                //n = n + n;
                 n = n << 1;
             }
 
@@ -269,76 +338,66 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(curr);
         }
 
+        #endregion //////////////////////////////////////////////////////////////////
+
+        #region Gauss-Kronrod Quadrature...
+
+        /// <summary>
+        /// Uses Gauss-Kronrod quadrature to aproximate the anti-drivitive of the
+        /// function at the given value. This is achieved by sub-dividing the 
+        /// intergral only where greater accuracy is required.
+        /// </summary>
+        /// <param name="f">The function to intergrate</param>
+        /// <param name="x">Input to the anti-drivitive</param>
+        /// <returns>The anti-drivitive at the given value</returns>
+        public static double Kronrod(VFunc f, double x)
+        {
+            return Kronrod(f, 0.0, x);
+        }
+
+        /// <summary>
+        /// Uses Gauss-Kronrod quadrature to aproximate the given definate intergral 
+        /// to near machine acuracy. This is achieved by sub-dividing the intergral
+        /// only where greater accuracy is required.
+        /// </summary>
+        /// <param name="f">The function to intergrate</param>
+        /// <param name="a">Lower bound of intergraiton</param>
+        /// <param name="b">Upper bound of intergration</param>
+        /// <returns>The results of intergration</returns>
+        public static double Kronrod(VFunc f, double a, double b)
+        {
+            //takes care of special cases
+            if (VMath.IsZero(a - b)) return 0.0;
+            if (a > b) return -KronrodRec(f, b, a, 0);
+
+            //intitiates the recursive procedure
+            return KronrodRec(f, a, b, 0);
+        }
 
 
+        #endregion //////////////////////////////////////////////////////////////////
 
         #region Helper Methods...
 
         /// <summary>
-        /// Helper method, adjusts the bounds and the inergrand for open intervals,
-        /// that is where the bounds are infinate. This makes it possable to compute
-        /// infinate invervals with finite methods.
+        /// Preforms a single level of the trapizoid rule, with the desired number 
+        /// of sub-divisions. Basicly it splits the intgral into equal parts, 
+        /// computes the area of a trapizoid under each part, and sums them together.
         /// </summary>
-        /// <param name="f">The ingergrand</param>
+        /// <param name="f">The intergrand</param>
         /// <param name="a">The lower bound</param>
         /// <param name="b">The upper bound</param>
-        /// <returns>The modified intergrand</returns>
-        private static VFunc CheckBounds(VFunc f, ref double a, ref double b)
+        /// <param name="n">Number of sub-divisions</param>
+        /// <returns>A single level of the trapizoid rule</returns>
+        private static double SingleTrap(VFunc f, double a, double b, long n)
         {
-            //stores the original bounds
-            double x1 = a;
-            double x2 = b;
-
-            if (a.IsInfinity() && b.IsInfinity())
-            {
-                a = -1.0; 
-                b = 1.0;
-
-                //intergrates over the entire real line
-                return delegate(double t)
-                {
-                    double t2 = t * t;
-                    double tm = 1.0 - t2;
-                    return f(t / tm) * (1.0 + t2) / (tm * tm);
-                };
-            }
-            else if (a.IsInfinity())
-            {
-                a = 0.0;
-                b = 1.0;
-
-                //intergrates from negative infinity to (b)
-                return t => f(x2 - (1.0 - t) / t) / (t * t);
-            }
-            else if (b.IsInfinity())
-            {
-                a = 0.0;
-                b = 1.0;
-
-                //intergrates from (a) to positive inifinty
-                return delegate(double t)
-                {
-                    double tm = 1.0 - t;
-                    return f(x1 + (t / tm)) / (tm * tm);
-                };
-            }
-
-            return f;
-        }
-
-
-        private double SingleTrap(VFunc f, double a, double b, int n)
-        {
-            //notes that we preform n + 1 evaluations
-            //Increment(n);
-
             //calculates the step size
             double h = (b - a) / n;
             double curr = a;
             double trap = f(a);
 
             //preforms trapazoid rule
-            for (int i = 1; i < n; i++)
+            for (long i = 1; i < n; i++)
             {
                 curr = curr + h;
                 trap = trap + (2.0 * f(curr));
@@ -347,309 +406,84 @@ namespace Vulpine.Core.Calc.Algorithms
             trap = trap + f(b);
 
             //finishes rule and returns
-            trap = trap * (h / 2.0);
-            return trap;
+            return trap * (h / 2.0);
         }
 
-
-        //private double SingleTrap2(VFunc f, double a, double b, int n)
-        //{
-        //    //notes that we preform n + 1 evaluations
-        //    //Increment(n);
-
-        //    //calculates the step size
-        //    double h = (b - a) / n;
-        //    double curr = a + h;
-        //    double trap = f(curr);
-
-        //    //preforms trapazoid rule
-        //    for (int i = 2; i < (n - 1); i++)
-        //    {
-        //        curr = curr + h;
-        //        trap = trap + (2.0 * f(curr));
-        //    }
-
-        //    trap = trap + f(b - h);
-
-        //    //finishes rule and returns
-        //    trap = trap * (h / 2.0);
-        //    return trap;
-        //}
-
-
-
-
-        private void RombergLevel(double[] prev, double[] curr, int level)
+        /// <summary>
+        /// Computes the next level of values for Romberg intergration, using
+        /// the exisiting values of the previous level. It overwrites the
+        /// values of the curent level as it goes.
+        /// </summary>
+        /// <param name="prev">The previous level</param>
+        /// <param name="curr">The curent level</param>
+        /// <param name="level">Index of the curent level</param>
+        private static void RombergLevel(double[] prev, double[] curr, int level)
         {
             //used in loop
             double a1 = 0.0;
             double a2 = 0.0;
-            double factor = 0.0;
+            double factor = 1.0;
 
             for (int i = 1; i <= level; i++)
             {
                 //obtains the values to combine
                 a1 = curr[i - 1];
                 a2 = prev[i - 1];
-                factor = Math.Pow(4.0, i);
+                factor = factor * 4.0;
 
                 //combines the values
-                curr[i] = ((factor * a1) - a2) / (factor - 1);
+                curr[i] = ((factor * a1) - a2) / (factor - 1.0);
             }
 
         }
 
-
-        private double SingleGauss(VFunc f, double a, double b, int n)
+        /// <summary>
+        /// Preforms a single level of 3-Point Gausian quadrature, with the
+        /// desired number of sub-divisions. It preforms Gausian intergration
+        /// on each sub-interval, and sums them to get the final result.
+        /// </summary>
+        /// <param name="f">The intergrand</param>
+        /// <param name="a">The lower bound</param>
+        /// <param name="b">The upper bound</param>
+        /// <param name="n">Number of sub-divisions</param>
+        /// <returns>A single level of Gausian intergration</returns>
+        private static double SingleGauss3(VFunc f, double a, double b, long n)
         {
             //calculates the step size
-            double h = (b - a) / n;
+            double h = (b - a) / (2 * n);
             double curr = a;
             double gauss = 0.0;
 
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
+            //preforms gausian intergration
+            for (long i = 0; i < n; i++)
             {
-                double a1 = (curr);
-                double b1 = (curr + h);
+                double mid = curr + h;
 
-                double mid = (b1 - a1) / 2.0;
-                double avg = (b1 + a1) / 2.0;
+                double temp = f(mid) * 8.0;
+                temp += f((h * G3) + mid) * 5.0;
+                temp += f((h * -G3) + mid) * 5.0;
 
-                double x1 = (mid * 0.57735026918962576451) + avg;
-                double x2 = (mid * -0.57735026918962576451) + avg;
-
-
-                double temp = f(x1) + f(x2);
-                gauss += temp * mid;
-
-
-                curr = curr + h;
+                gauss += (temp / 9.0) * h;
+                curr += h + h;
             }
 
             return gauss;
         }
 
-
-        private double SingleGauss3(VFunc f, double a, double b, int n)
-        {
-            //calculates the step size
-            double h = (b - a) / n;
-            double curr = a;
-            double gauss = 0.0;
-
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
-            {
-                double a1 = (curr);
-                double b1 = (curr + h);
-
-                double mid = (b1 - a1) / 2.0;
-                double avg = (b1 + a1) / 2.0;
-
-                double x1 = avg;
-                double x2 = (mid * 0.77459666924148337704) + avg;
-                double x3 = (mid * -0.77459666924148337704) + avg;
-
-
-                double temp = f(x1) * (8.0 / 9.0);
-                temp += f(x2) * (5.0 / 9.0);
-                temp += f(x3) * (5.0 / 9.0);
-                gauss += temp * mid;
-
-
-                curr = curr + h;
-            }
-
-            return gauss;
-        }
-
-
-        private double SingleGauss4(VFunc f, double a, double b, int n)
-        {
-            //calculates the step size
-            double h = (b - a) / n;
-            double curr = a;
-            double gauss = 0.0;
-
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
-            {
-                double a1 = (curr);
-                double b1 = (curr + h);
-
-                double mid = (b1 - a1) / 2.0;
-                double avg = (b1 + a1) / 2.0;
-
-                double x1 = (mid * 0.33998104358485626480) + avg;
-                double x2 = (mid * -0.33998104358485626480) + avg;
-                double x3 = (mid * 0.86113631159405257522) + avg;
-                double x4 = (mid * -0.86113631159405257522) + avg;
-
-
-                double temp = f(x1) * 0.65214515486254614263;
-                temp += f(x2) * 0.65214515486254614263;
-                temp += f(x3) * 0.34785484513745385737;
-                temp += f(x4) * 0.34785484513745385737;
-                gauss += temp * mid;
-
-
-                curr = curr + h;
-            }
-
-            return gauss;
-        }
-
-
-        private double SingleGauss5(VFunc f, double a, double b, int n)
-        {
-            //calculates the step size
-            double h = (b - a) / n;
-            double curr = a;
-            double gauss = 0.0;
-
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
-            {
-                double a1 = (curr);
-                double b1 = (curr + h);
-
-                double mid = (b1 - a1) / 2.0;
-                double avg = (b1 + a1) / 2.0;
-
-                double x1 = avg;
-                double x2 = (mid * 0.53846931010568309104) + avg;
-                double x3 = (mid * -0.53846931010568309104) + avg;
-                double x4 = (mid * 0.90617984593866399280) + avg;
-                double x5 = (mid * -0.90617984593866399280) + avg;
-
-
-                double temp = f(x1) * (128.0 / 225.0);
-                temp += f(x2) * 0.47862867049936646804;
-                temp += f(x3) * 0.47862867049936646804;
-                temp += f(x4) * 0.23692688505618908751;
-                temp += f(x5) * 0.23692688505618908751;
-                gauss += temp * mid;
-
-
-                curr = curr + h;
-            }
-
-            return gauss;
-        }
-
-
-        private double SingleGauss7(VFunc f, double a, double b, int n)
-        {
-            //calculates the step size
-            double h = (b - a) / n;
-            double curr = a;
-            double gauss = 0.0;
-
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
-            {
-                double a1 = (curr);
-                double b1 = (curr + h);
-
-                double dif = (b1 - a1) / 2.0;
-                double mid = (b1 + a1) / 2.0;
-
-
-                double temp = f(mid) * GW[0];
-                temp += f((dif * GKN[2]) + mid) * GW[1];
-                temp += f((dif * -GKN[2]) + mid) * GW[1];
-                temp += f((dif * GKN[4]) + mid) * GW[2];
-                temp += f((dif * -GKN[4]) + mid) * GW[2];
-                temp += f((dif * GKN[6]) + mid) * GW[3];
-                temp += f((dif * -GKN[6]) + mid) * GW[3];
-
-
-                gauss += temp * dif;
-
-                curr = curr + h;
-            }
-
-            return gauss;
-        }
-
-
-        private double SingleLobatto5(VFunc f, double a, double b, int n)
-        {
-            //calculates the step size
-            double h = (b - a) / n;
-            double curr = a;
-            double gauss = 0.0;
-
-            //preforms trapazoid rule
-            for (int i = 0; i < n; i++)
-            {
-                double a1 = (curr);
-                double b1 = (curr + h);
-
-                double dif = (b1 - a1) / 2.0;
-                double mid = (b1 + a1) / 2.0;
-
-
-                double temp = f(mid) * (64.0 / 90.0);
-                temp += f((dif * 0.65465367070797714380) + mid) * (49.0 / 90.0);
-                temp += f((dif * -0.65465367070797714380) + mid) * (49.0 / 90.0);
-                temp += f((dif * 1.0) + mid) * (9.0 / 90.0);
-                temp += f((dif * -1.0) + mid) * (9.0 / 90.0);
-
-
-                gauss += temp * dif;
-
-                curr = curr + h;
-            }
-
-            return gauss;
-        }
-
-
-
-        #endregion //////////////////////////////////////////////////////////////////
-
-
-        private static readonly double[] GKN =
-        {
-            0.0,
-            2.0778495500789846760e-01,
-            4.0584515137739716691e-01,
-            5.8608723546769113029e-01,
-            7.4153118559939443986e-01,
-            8.6486442335976907279e-01,
-            9.4910791234275852453e-01,
-            9.9145537112081263921e-01,
-        };
-
-        private static readonly double[] GW =
-        {
-            4.1795918367346938776e-01,
-            3.8183005050511894495e-01,
-            2.7970539148927666790e-01,
-            1.2948496616886969327e-01,
-        };
-
-        private static readonly double[] KW =
-        {
-            2.0948214108472782801e-01,
-            2.0443294007529889241e-01,
-            1.9035057806478540991e-01,
-            1.6900472663926790283e-01,
-            1.4065325971552591875e-01,
-            1.0479001032225018384e-01,
-            6.3092092629978553291e-02,
-            2.2935322010529224964e-02,
-        };
-
-
-
-        private static double KronrodRec
-            (VFunc f, double a, double b, double tol, int depth)
+        /// <summary>
+        /// Recursivly preforms Gauss-Kronrod quadrature on the given function,
+        /// subdividing the interval of intergration when and only when greater 
+        /// precision is needed. 
+        /// </summary>
+        /// <param name="f">The function to intergrate</param>
+        /// <param name="a">Lower bound of intergraiton</param>
+        /// <param name="b">Upper bound of intergration</param>
+        /// <param name="depth">Curent number of subdivisions</param>
+        /// <returns>The intergral over the sub-interval</returns>
+        private static double KronrodRec(VFunc f, double a, double b, int depth)
         {
             //used to evaluate the intergrand
-            double dif = (b - a) / 2.0;  
+            double dif = (b - a) / 2.0;
             double mid = (b + a) / 2.0;
             double x1 = f(mid);
             double x2 = 0.0;
@@ -657,7 +491,6 @@ namespace Vulpine.Core.Calc.Algorithms
             //samples the middle point
             double gauss = x1 * GW[0];
             double kron = x1 * KW[0];
-
 
             for (int i = 1; i < 8; i++)
             {
@@ -670,76 +503,23 @@ namespace Vulpine.Core.Calc.Algorithms
                 if (i % 2 == 0) gauss += (x1 + x2) * GW[i / 2];
             }
 
-            gauss = gauss * dif;
-            kron = kron * dif;
-
-            ////computes the recomended error estimate
-            //double err = 200.0 * Math.Abs(gauss - kron);
-            //err = Math.Sqrt(err * err * err);
-
-            ////computes the apropriately scaled error
-            //double err = Math.Abs((gauss - kron) / kron);
-            //err = Math.Sqrt(err * err * err);
-
-
+            //computes the reletive error in the estiments
             double err = (gauss - kron) / kron;
 
-
-            if (depth < 64 && Math.Abs(err) > 1.0e-10)
+            if (depth < 64 && Math.Abs(err) > 1.0e-08)
             {
-                tol = tol / 2.0;
-
-                x1 = KronrodRec(f, a, mid, tol, depth + 1);
-                x2 = KronrodRec(f, mid, b, tol, depth + 1);
+                x1 = KronrodRec(f, a, mid, depth + 1);
+                x2 = KronrodRec(f, mid, b, depth + 1);
 
                 return x1 + x2;
             }
             else
             {
-                if (depth < 16)
-                {
-                    Console.WriteLine("Depth: " + depth);
-                }
-
-
-                return kron;
-
-                
+                return kron * dif;
             }
-
         }
 
-
-        public static double Kronrod(VFunc f, double a, double b, double tol)
-        {
-            f = CheckBounds(f, ref a, ref b);
-
-            //intitiates the recursive procedure
-            return KronrodRec(f, a, b, tol, 0);
-        }
-
-
-
-        /**
-         * NOTES:
-         * 
-         * Consider using both the 3-point and the 5-point gausuian quadrature rules
-         * as seperate methods of intergration.
-         * 
-         * Try adding Gauss-Loboto quadrature as a static recursive method, utlising
-         * the 3-point and the 5-point rules, to see how that works. I could also
-         * use Adaptive Simpisons method, should I need another recursive method.
-         * 
-         * Gauss-Kronrod quadrature is probably the best intergration formula I could
-         * get. However, it is a static recursive method, which means that it cannot
-         * be compared to the other dynamic methods.
-         * 
-         * At this point in time, I don't think I want to bother with Clenshaw-Kurtius,
-         * or Chebychev quadrature. They don't exactly work the way I intend to use
-         * them, and I doubt they would add mutch to my toolbox.
-         * 
-         */
-
+        #endregion //////////////////////////////////////////////////////////////////
 
 
     }
