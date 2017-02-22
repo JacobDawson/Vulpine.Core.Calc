@@ -114,6 +114,9 @@ namespace Vulpine.Core.Calc.Algorithms
                 return Finish(0.0);
             }
 
+            ////adjusts for intfinite intervals
+            //f = CheckBounds(f, ref a, ref b);
+
             while (true)
             {
                 //preforms the trapizoid rule
@@ -124,7 +127,8 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //trailing refrence
                 last = trap;
-                n = n + n;
+                //n = n + n;
+                n = n << 1;
             }
 
             //returns the best answer
@@ -199,7 +203,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //checks for validation
                 rombn = curr[level];
-                rombl = curr[level - 1];
+                rombl = prev[level - 1];
                 if (Step(rombl, rombn)) break;
 
                 //copyes prev to curr
@@ -218,6 +222,56 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion //////////////////////////////////////////////////////////////////
 
+
+
+        public Result<Double> Gauss(VFunc f, double a, double b)
+        {
+            //checks that we have a correct bracket
+            if (a > b)
+            {
+                var res = Gauss(f, b, a);
+                return Finish(-res.Value);
+            }
+
+            //start with 4 subdivisions
+            int n = 4;
+
+            //used in main loop
+            double curr = 0.0;
+            double last = 0.0;
+            Initialise();
+
+            //checks to see if we have zero length
+            if (VMath.IsZero(b - a))
+            {
+                base.error = Math.Abs(b - a);
+                return Finish(0.0);
+            }
+
+            //adjusts for intfinite intervals
+            f = CheckBounds(f, ref a, ref b);
+
+            while (true)
+            {
+                //preforms the trapizoid rule
+                curr = SingleLobatto5(f, a, b, n);
+
+                //determins if tollerence is met
+                if (Step(last, curr)) break;
+
+                //trailing refrence
+                last = curr;
+                //n = n + n;
+                n = n << 1;
+            }
+
+            //returns the best answer
+            return Finish(curr);
+        }
+
+
+
+
         #region Helper Methods...
 
         /// <summary>
@@ -229,7 +283,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="a">The lower bound</param>
         /// <param name="b">The upper bound</param>
         /// <returns>The modified intergrand</returns>
-        private VFunc CheckBounds(VFunc f, ref double a, ref double b)
+        private static VFunc CheckBounds(VFunc f, ref double a, ref double b)
         {
             //stores the original bounds
             double x1 = a;
@@ -298,6 +352,33 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
+        //private double SingleTrap2(VFunc f, double a, double b, int n)
+        //{
+        //    //notes that we preform n + 1 evaluations
+        //    //Increment(n);
+
+        //    //calculates the step size
+        //    double h = (b - a) / n;
+        //    double curr = a + h;
+        //    double trap = f(curr);
+
+        //    //preforms trapazoid rule
+        //    for (int i = 2; i < (n - 1); i++)
+        //    {
+        //        curr = curr + h;
+        //        trap = trap + (2.0 * f(curr));
+        //    }
+
+        //    trap = trap + f(b - h);
+
+        //    //finishes rule and returns
+        //    trap = trap * (h / 2.0);
+        //    return trap;
+        //}
+
+
+
+
         private void RombergLevel(double[] prev, double[] curr, int level)
         {
             //used in loop
@@ -319,9 +400,345 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
+        private double SingleGauss(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double mid = (b1 - a1) / 2.0;
+                double avg = (b1 + a1) / 2.0;
+
+                double x1 = (mid * 0.57735026918962576451) + avg;
+                double x2 = (mid * -0.57735026918962576451) + avg;
+
+
+                double temp = f(x1) + f(x2);
+                gauss += temp * mid;
+
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
+        private double SingleGauss3(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double mid = (b1 - a1) / 2.0;
+                double avg = (b1 + a1) / 2.0;
+
+                double x1 = avg;
+                double x2 = (mid * 0.77459666924148337704) + avg;
+                double x3 = (mid * -0.77459666924148337704) + avg;
+
+
+                double temp = f(x1) * (8.0 / 9.0);
+                temp += f(x2) * (5.0 / 9.0);
+                temp += f(x3) * (5.0 / 9.0);
+                gauss += temp * mid;
+
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
+        private double SingleGauss4(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double mid = (b1 - a1) / 2.0;
+                double avg = (b1 + a1) / 2.0;
+
+                double x1 = (mid * 0.33998104358485626480) + avg;
+                double x2 = (mid * -0.33998104358485626480) + avg;
+                double x3 = (mid * 0.86113631159405257522) + avg;
+                double x4 = (mid * -0.86113631159405257522) + avg;
+
+
+                double temp = f(x1) * 0.65214515486254614263;
+                temp += f(x2) * 0.65214515486254614263;
+                temp += f(x3) * 0.34785484513745385737;
+                temp += f(x4) * 0.34785484513745385737;
+                gauss += temp * mid;
+
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
+        private double SingleGauss5(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double mid = (b1 - a1) / 2.0;
+                double avg = (b1 + a1) / 2.0;
+
+                double x1 = avg;
+                double x2 = (mid * 0.53846931010568309104) + avg;
+                double x3 = (mid * -0.53846931010568309104) + avg;
+                double x4 = (mid * 0.90617984593866399280) + avg;
+                double x5 = (mid * -0.90617984593866399280) + avg;
+
+
+                double temp = f(x1) * (128.0 / 225.0);
+                temp += f(x2) * 0.47862867049936646804;
+                temp += f(x3) * 0.47862867049936646804;
+                temp += f(x4) * 0.23692688505618908751;
+                temp += f(x5) * 0.23692688505618908751;
+                gauss += temp * mid;
+
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
+        private double SingleGauss7(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double dif = (b1 - a1) / 2.0;
+                double mid = (b1 + a1) / 2.0;
+
+
+                double temp = f(mid) * GW[0];
+                temp += f((dif * GKN[2]) + mid) * GW[1];
+                temp += f((dif * -GKN[2]) + mid) * GW[1];
+                temp += f((dif * GKN[4]) + mid) * GW[2];
+                temp += f((dif * -GKN[4]) + mid) * GW[2];
+                temp += f((dif * GKN[6]) + mid) * GW[3];
+                temp += f((dif * -GKN[6]) + mid) * GW[3];
+
+
+                gauss += temp * dif;
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
+        private double SingleLobatto5(VFunc f, double a, double b, int n)
+        {
+            //calculates the step size
+            double h = (b - a) / n;
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms trapazoid rule
+            for (int i = 0; i < n; i++)
+            {
+                double a1 = (curr);
+                double b1 = (curr + h);
+
+                double dif = (b1 - a1) / 2.0;
+                double mid = (b1 + a1) / 2.0;
+
+
+                double temp = f(mid) * (64.0 / 90.0);
+                temp += f((dif * 0.65465367070797714380) + mid) * (49.0 / 90.0);
+                temp += f((dif * -0.65465367070797714380) + mid) * (49.0 / 90.0);
+                temp += f((dif * 1.0) + mid) * (9.0 / 90.0);
+                temp += f((dif * -1.0) + mid) * (9.0 / 90.0);
+
+
+                gauss += temp * dif;
+
+                curr = curr + h;
+            }
+
+            return gauss;
+        }
+
+
 
         #endregion //////////////////////////////////////////////////////////////////
 
+
+        private static readonly double[] GKN =
+        {
+            0.0,
+            2.0778495500789846760e-01,
+            4.0584515137739716691e-01,
+            5.8608723546769113029e-01,
+            7.4153118559939443986e-01,
+            8.6486442335976907279e-01,
+            9.4910791234275852453e-01,
+            9.9145537112081263921e-01,
+        };
+
+        private static readonly double[] GW =
+        {
+            4.1795918367346938776e-01,
+            3.8183005050511894495e-01,
+            2.7970539148927666790e-01,
+            1.2948496616886969327e-01,
+        };
+
+        private static readonly double[] KW =
+        {
+            2.0948214108472782801e-01,
+            2.0443294007529889241e-01,
+            1.9035057806478540991e-01,
+            1.6900472663926790283e-01,
+            1.4065325971552591875e-01,
+            1.0479001032225018384e-01,
+            6.3092092629978553291e-02,
+            2.2935322010529224964e-02,
+        };
+
+
+
+        private static double KronrodRec
+            (VFunc f, double a, double b, double tol, int depth)
+        {
+            //used to evaluate the intergrand
+            double dif = (b - a) / 2.0;  
+            double mid = (b + a) / 2.0;
+            double x1 = f(mid);
+            double x2 = 0.0;
+
+            //samples the middle point
+            double gauss = x1 * GW[0];
+            double kron = x1 * KW[0];
+
+
+            for (int i = 1; i < 8; i++)
+            {
+                //calculates the kronrod value for all points
+                x1 = f((dif * GKN[i]) + mid);
+                x2 = f((dif * -GKN[i]) + mid);
+                kron += (x1 + x2) * KW[i];
+
+                //calculates the gausian value for even points
+                if (i % 2 == 0) gauss += (x1 + x2) * GW[i / 2];
+            }
+
+            gauss = gauss * dif;
+            kron = kron * dif;
+
+            ////computes the recomended error estimate
+            //double err = 200.0 * Math.Abs(gauss - kron);
+            //err = Math.Sqrt(err * err * err);
+
+            ////computes the apropriately scaled error
+            //double err = Math.Abs((gauss - kron) / kron);
+            //err = Math.Sqrt(err * err * err);
+
+
+            double err = (gauss - kron) / kron;
+
+
+            if (depth < 64 && Math.Abs(err) > 1.0e-10)
+            {
+                tol = tol / 2.0;
+
+                x1 = KronrodRec(f, a, mid, tol, depth + 1);
+                x2 = KronrodRec(f, mid, b, tol, depth + 1);
+
+                return x1 + x2;
+            }
+            else
+            {
+                if (depth < 16)
+                {
+                    Console.WriteLine("Depth: " + depth);
+                }
+
+
+                return kron;
+
+                
+            }
+
+        }
+
+
+        public static double Kronrod(VFunc f, double a, double b, double tol)
+        {
+            f = CheckBounds(f, ref a, ref b);
+
+            //intitiates the recursive procedure
+            return KronrodRec(f, a, b, tol, 0);
+        }
+
+
+
+        /**
+         * NOTES:
+         * 
+         * Consider using both the 3-point and the 5-point gausuian quadrature rules
+         * as seperate methods of intergration.
+         * 
+         * Try adding Gauss-Loboto quadrature as a static recursive method, utlising
+         * the 3-point and the 5-point rules, to see how that works. I could also
+         * use Adaptive Simpisons method, should I need another recursive method.
+         * 
+         * Gauss-Kronrod quadrature is probably the best intergration formula I could
+         * get. However, it is a static recursive method, which means that it cannot
+         * be compared to the other dynamic methods.
+         * 
+         * At this point in time, I don't think I want to bother with Clenshaw-Kurtius,
+         * or Chebychev quadrature. They don't exactly work the way I intend to use
+         * them, and I doubt they would add mutch to my toolbox.
+         * 
+         */
 
 
 

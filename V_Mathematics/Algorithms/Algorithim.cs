@@ -260,6 +260,7 @@ namespace Vulpine.Core.Calc.Algorithms
             if (OnStep(count, error)) return true;
 
             //determins if sucessive itterations are nessary
+            if (error.IsNaN()) return true;
             if (error <= tol) return true;
             if (count >= max) return true;
 
@@ -288,6 +289,7 @@ namespace Vulpine.Core.Calc.Algorithms
             if (OnStep(count, error)) return true;
 
             //determins if sucessive itterations are nessary
+            if (error.IsNaN()) return true;
             if (error <= tol) return true;
             if (count >= max) return true;
 
