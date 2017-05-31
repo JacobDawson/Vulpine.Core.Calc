@@ -40,6 +40,8 @@ namespace Vulpine.Core.Calc.RandGen
     {
         #region Class Definitions...
 
+        //NOTE: Consider adding a Clone method
+
         //used in generating normal distriubtion values
         private double last_norm = 0.0;
         private bool has_norm = false;
@@ -329,6 +331,19 @@ namespace Vulpine.Core.Calc.RandGen
 
                 return new Vector(x, y);
             }
+            else if (dim == 3)
+            {
+                //generates two uniform variables
+                double t = RandDouble(VMath.TAU);
+                double z = RandDouble(-1.0, 1.0);
+
+                //uses the cylindrical equal-area projection
+                double r = Math.Sqrt(1.0 - z * z);
+                double x = r * Math.Cos(t);
+                double y = r * Math.Sin(t);
+
+                return new Vector(x, y, z);
+            }
             else
             {
                 //creates a vector to store our temproary values
@@ -399,6 +414,9 @@ namespace Vulpine.Core.Calc.RandGen
         /// <exception cref="ArgumentNullException">If the source is null</exception>
         public IEnumerable<T> Shuffel<T>(IEnumerable<T> source)
         {
+            //NOTE: I should be able to run this method using an array
+            //instead of relying on VList, it also requires testing
+
             if (source == null) throw new ArgumentNullException("source");
             VList<T> shuffel = new VListArray<T>(source.Count());
 

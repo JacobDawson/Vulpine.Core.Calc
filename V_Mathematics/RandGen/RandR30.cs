@@ -122,9 +122,9 @@ namespace Vulpine.Core.Calc.RandGen
         {
             x1 = unchecked((uint)seed);
 
-            y1 = x1 ^ 0x1E4952DAU;
-            z1 = x1 ^ 0x0B8CDF48U;
-            w1 = x1 ^ 0xEF4BB1BDU;
+            y1 = x1 ^ 0x31415926U;
+            z1 = x1 ^ 0x23581321U;
+            w1 = x1 ^ 0x05101986U;
         }
 
         /// <summary>

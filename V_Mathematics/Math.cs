@@ -53,11 +53,18 @@ namespace Vulpine.Core.Calc
         public const double TAU = Math.PI * 2.0;
 
         /// <summary>
-        /// The nautual lograthim of 2. This is of primary importance for 
+        /// The nautual lograthim of two. This is of primary importance for 
         /// takeing base 2 lograthims, using the change of base formula.
         /// It is aproximatly (0.6931472).
         /// </summary>
         public const double LN2 = 0.69314718055994530942;
+
+        /// <summary>
+        /// The suqare root of two. One of the first irational numbers to be
+        /// discovered, it often occors in geometric probelms in two dimetions.
+        /// It is aproximatly (1.4142136)
+        /// </summary>
+        public const double R2 = 1.4142135623730950488;
 
         /// <summary>
         /// The golden ratio, or golden mean. It is the ratio generated when

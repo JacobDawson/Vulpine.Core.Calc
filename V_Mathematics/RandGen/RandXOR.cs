@@ -122,9 +122,9 @@ namespace Vulpine.Core.Calc.RandGen
         {
             x = unchecked((uint)seed);
 
-            y = x ^ 0x9FA7B2E7U;
-            z = x ^ 0x51DF156EU;
-            w = x ^ 0x10702939U;
+            y = x ^ 0x31415926U;
+            z = x ^ 0x23581321U;
+            w = x ^ 0x05101986U;
         }
 
         #endregion /////////////////////////////////////////////////////////////////
