@@ -1,6 +1,6 @@
 # Vulpine Core Library: Numerical Methods
 
-https://www.jacobs-den.org/projects/core-library/
+http://www.jakesden.com/corelibrary.html
 
 The Vulpine Core Library is a collection of software libraries (assemblies) written in the C# programing language. It is my personal repository of code, in that I am the sole developer. However, I have opened it up to the public, under the Apache License 2.0, with the hope that it would be of some benefit. It serves as the backbone of most of my homegrown video games and applications. The fractals and other computer generated art I have on display were created using the code from this library.
 
