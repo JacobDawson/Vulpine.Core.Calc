@@ -280,6 +280,26 @@ namespace Vulpine.Core.Calc
 
         #endregion //////////////////////////////////////////////////////////////////
 
+        #region Floating Point Comparison...
+
+        public static double Error(double actual, double expected)
+        {
+            double error = actual - expected;
+            error = error / expected;
+
+            return Math.Abs(error);
+        }
+
+        public static double Error(Cmplx actual, Cmplx expected)
+        {
+            double error = actual.Dist(expected);
+            error = error / expected.Abs;
+
+            return error;
+        }
+
+        #endregion //////////////////////////////////////////////////////////////////
+
         #region Statistics...
 
         /// <summary>

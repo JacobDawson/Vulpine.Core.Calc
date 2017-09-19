@@ -140,6 +140,23 @@ namespace Vulpine.Core.Calc.RandGen
         }
 
         /// <summary>
+        /// Generates a random boolean value with the given probablity
+        /// of the result being true. Probablity values are given in
+        /// the range of 0.0 to 1.0 inclusive.
+        /// </summary>
+        /// <param name="prob">Probabilty of result being true</param>
+        /// <returns>A psudo-random boolean value</returns>
+        public bool RandBool(double prob)
+        {
+            //takes care of the extream cases
+            if (prob < 0.0) return false;
+            if (prob > 1.0) return true;
+
+            //generates a true result with given probabilty
+            return (NextDouble() < prob);
+        }
+
+        /// <summary>
         /// Generates a psudo-random ingerger value between zero and the given
         /// maximum, but not including the maximum value.
         /// </summary>

@@ -124,6 +124,68 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(next);
         }
 
+        public static Result<Double> Bisection2(VFunc f, double low, 
+            double high, double tol = VMath.TOL, int max = 256)
+        {
+            //makes shure a valid bracket is given
+            if (high < low) Swap(ref high, ref low);
+
+            //preformes first evaluation
+            double y1 = f(low);
+            double y2 = f(high);
+            double next = 0.0;
+            double curr = low;
+
+            //checks that we contain atleast one zero
+            if (y1 * y2 > 0.0) return new Result<double>(low);
+
+            double error = 1.0;
+            int count = 0;
+
+            while (error >= tol && count < max)
+            {
+                //evaluates the midpoint
+                next = (low + high) / 2.0;
+                error = VMath.Error(curr, next);
+
+                double test = f(next);
+
+                if (y1 * test > 0.0)
+                {
+                    //selects the upper bracket
+                    low = next;
+                    y1 = test;
+                }
+                else
+                {
+                    //selects the upper bracket
+                    high = next;
+                    y2 = test;
+                }
+
+                //updates values
+                curr = next;
+                count++;
+            }
+
+            //returns the best answer so far
+            return new Result<Double>(next, error, count);
+        }
+
+        public static Result<Double> Bisection2(VFunc f, double y, double low,
+            double high, double tol = VMath.TOL, int max = 256)
+        {
+            //finds the root of the modified fucntion
+            return Bisection2(x => f(x) - y, low, high, tol, max);
+        }
+
+        public static Result<Double> Bisection2(VFunc f1, VFunc f2, double low,
+            double high, double tol = VMath.TOL, int max = 256)
+        {
+            //finds the root of the functions' diffrence
+            return Bisection2(x => f1(x) - f2(x), low, high, tol, max);
+        }
+
         /// <summary>
         /// Uses bisection to compute the inverse of an arbitary function.
         /// The solution of the inverse funciton must be contained within
@@ -749,7 +811,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="a">First value to swap</param>
         /// <param name="b">Second value to swap</param>
-        private void Swap(ref double a, ref double b)
+        private static void Swap(ref double a, ref double b)
         {
             double temp = a;
             a = b;

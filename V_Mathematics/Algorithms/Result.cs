@@ -60,6 +60,13 @@ namespace Vulpine.Core.Calc.Algorithms
             this.count = count;
         }
 
+        internal Result(T val)
+        {
+            this.result = val;
+            this.error = Double.PositiveInfinity;
+            this.count = 0;
+        }
+
         /// <summary>
         /// Reports the computed value plus or minius the associated absolute
         /// error, indicating a range of values where the true value is
