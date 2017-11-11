@@ -186,6 +186,59 @@ namespace Vulpine.Core.Calc.Algorithms
             return Bisection2(x => f1(x) - f2(x), low, high, tol, max);
         }
 
+
+
+        public static IEnumerable<Double> Bisection3(VFunc f, double low,
+            double high, double tol = VMath.TOL, int max = 256)
+        {
+            //makes shure a valid bracket is given
+            if (high < low) Swap(ref high, ref low);
+
+            //preformes first evaluation
+            double y1 = f(low);
+            double y2 = f(high);
+            double next = 0.0;
+            double curr = low;
+
+            //checks that we contain atleast one zero
+            if (y1 * y2 > 0.0) yield break;
+
+            double error = 1.0;
+            int count = 0;
+
+            while (true)
+            {
+                //evaluates the midpoint
+                next = (low + high) / 2.0;
+                error = VMath.Error(curr, next);
+
+                double test = f(next);
+
+                if (y1 * test > 0.0)
+                {
+                    //selects the upper bracket
+                    low = next;
+                    y1 = test;
+                }
+                else
+                {
+                    //selects the upper bracket
+                    high = next;
+                    y2 = test;
+                }
+
+                //updates values
+                curr = next;
+                count++;
+
+                //yields the best value so far
+                yield return curr;
+            }
+        }
+
+
+
+
         /// <summary>
         /// Uses bisection to compute the inverse of an arbitary function.
         /// The solution of the inverse funciton must be contained within

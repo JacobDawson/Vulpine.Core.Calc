@@ -262,6 +262,59 @@ namespace Vulpine.Core.Calc.Algorithms
         //error = 2 * |b - a| / |m2 + m1|
 
 
+
+        public static IEnumerable<Double> GoldenMinIttr(VFunc f, 
+            double low, double high)
+        {
+            //makes shure a valid bracket is given
+            if (high < low) Swap(ref high, ref low);
+
+            //sets the initial bounds
+            double a = low;
+            double b = high;
+
+            //computes the middle points
+            double m1 = b - (b - a) / VMath.PHI;
+            double m2 = a + (b - a) / VMath.PHI;
+
+            //computes the intitial funciton vlaues
+            double f1 = f(m1);
+            double f2 = f(m2);
+
+            while (true)
+            {
+                //computes the next value
+                double curr = (a + b) / 2.0;
+                yield return curr;
+
+                if (f1 > f2)
+                {
+                    a = m1;
+
+                    //reclaculates the middel values (m1' = m2)
+                    m1 = b - (b - a) / VMath.PHI;
+                    m2 = a + (b - a) / VMath.PHI;
+
+                    //updates the function vlaues 
+                    f1 = f2;
+                    f2 = f(m2);
+                }
+                else
+                {
+                    b = m2;
+
+                    //reclaculates the middel values (m2' = m1)
+                    m2 = a + (b - a) / VMath.PHI;
+                    m1 = b - (b - a) / VMath.PHI;
+
+                    //updates the function vlaues
+                    f2 = f1;
+                    f1 = f(m1);
+                }
+            }
+        }
+
+
         #endregion /////////////////////////////////////////////////////////////////////////
 
 
@@ -279,6 +332,64 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //travels the path of steepest decent
                 xn = xn - Gradient(f, xn, an);
+            }
+
+
+            //return default(Result<Vector>);
+
+        }
+
+
+        public Result<Vector> GradinetMin(MFunc f, Vector x)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //we create a second optimizer and initilise our own
+            Optimizer op = new Optimizer();
+            this.Initialise();
+
+            while (true)
+            {
+                //determins the optimal step-size using golden search
+                VFunc af = a => f(xn - Gradient(f, xn, a));
+                double an = op.GoldenMin(af, 0.0, 1.0);
+
+                //travels the path of steepest decent
+                curr = xn - Gradient(f, xn, an);
+
+                //determins if we should stop
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+            }
+
+
+            return Finish(curr);
+
+        }
+
+
+        public static IEnumerable<Vector> GradinetMinIttr(MFunc f, Vector x)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+
+            while (true)
+            {
+                //determins the optimal step-size using golden search
+                VFunc af = a => f(xn - Gradient(f, xn, a));
+                var golden = GoldenMinIttr(af, 0.0, 1.0);
+                double an = golden.Limit().Last();
+
+                //NOTE: The choice of limit in computing 'an' is totaly arbitrary!!
+
+                //travels the path of steepest decent
+                xn = xn - Gradient(f, xn, an);
+
+                yield return xn;
             }
 
 
