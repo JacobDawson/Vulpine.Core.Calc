@@ -28,15 +28,33 @@ namespace Vulpine.Core.Calc.Algorithms
 {
     public class Optimizer : Algorithm
     {
-        //public Optimizer(int max = DMAX, double tol = DTOL)
-        //{
-        //    //sets the tolerance and max itterations
-        //    base.max = (max > 0) ? max : 1;
-        //    base.tol = (tol >= 0.0) ? tol : 0.0;
+        #region Class Definitions...
 
-        //    //initialises the cotroler
-        //    Initialise();
-        //}
+        /// <summary>
+        /// Creates a new Optimizer with default stoping criteria.
+        /// </summary>
+        public Optimizer() : base() { }
+
+        /// <summary>
+        /// Creates a new Optimizer with the given maximum number of
+        /// itterations and the minimal relitive error allowed.
+        /// </summary>
+        /// <param name="max">Maximum number of itterations</param>
+        /// <param name="tol">Minimial accepted error</param>
+        public Optimizer(int max, double tol) : base(max, tol) { }
+
+        /// <summary>
+        /// Creates a new Optimizer with the given maximum number of
+        /// itterations and the minimal error allowed. Set the flag to false
+        /// to use exact error instead of relative error.
+        /// </summary>
+        /// <param name="max">Maximum number of itterations</param>
+        /// <param name="tol">Minimial accepted error</param>
+        /// <param name="rel">Flag to use relitive error</param>
+        public Optimizer(int max, double toll, bool rel) 
+            : base(max, toll, rel) { }
+
+        #endregion //////////////////////////////////////////////////////////////
 
         #region Ternary Search...
 
@@ -45,22 +63,29 @@ namespace Vulpine.Core.Calc.Algorithms
             //makes shure a valid bracket is given
             if (high < low) Swap(ref high, ref low);
 
-            //sets the initial bounds
-            double a = low;
-            double b = high;
+            ////sets the initial bounds
+            //double a = low;
+            //double b = high;
 
             //used in computing the minimum
             double c, m1, m2, f1, f2;
 
-            double curr = (a + b) / 2.0;
-            double last = a;
+            Initialise();
 
-            while (!Step(last, curr))
+            //tracks the values as they change
+            double last = low;
+            double curr = high;
+
+            while (true)
             {
+                //checks the midpoint for termination
+                curr = (low + high) / 2.0;
+                if (Step(last, curr)) break;
+
                 //selects two points inside the bracket
-                c = (b - a) / 3.0;
-                m1 = a + c;
-                m2 = b - c;
+                c = (high - low) / 3.0;
+                m1 = low + c;
+                m2 = high - c;
 
                 //evaluates the funciton at those points
                 f1 = f(m1);
@@ -69,63 +94,14 @@ namespace Vulpine.Core.Calc.Algorithms
                 Increment(1);
 
                 //updates the bounds acordingly
-                if (f1 > f2) a = m1;
-                else b = m2;
+                if (f1 > f2) low = m1;
+                else high = m2;
 
                 last = curr;
-                curr = (a + b) / 2.0;
             }
 
             //returns the minimum argument found
             return Finish(curr);
-        }
-
-
-        public static Result<Double> TernaryMin(VFunc f, double low, double high,
-            double tol = VMath.TOL, int max = 1024)
-        {
-            //makes shure a valid bracket is given
-            if (high < low) Swap(ref high, ref low);
-
-            //sets the initial bounds
-            double a = low;
-            double b = high;
-
-            //used in computing the minimum
-            double c, m1, m2, f1, f2;
-
-            //tracks the status of the algorythim
-            double last = (a + b) / 2.0;
-            double curr = 0.0;
-            double error = 1.0;
-            int count = 0;
-
-            while (error > tol && count < max)
-            {
-                //selects two points inside the bracket
-                c = (b - a) / 3.0;
-                m1 = a + c;
-                m2 = b - c;
-
-                //evaluates the funciton at those points
-                f1 = f(m1);
-                f2 = f(m2);
-
-                //updates the bounds acordingly
-                if (f1 > f2) a = m1;
-                else b = m2;
-
-                //computes the relitive error
-                curr = (a + b) / 2.0;
-                error = VMath.Error(last, curr);
-
-                //updates the status
-                last = curr;
-                count += 2;
-            }
-
-            //returns the minimum argument found
-            return new Result<Double>(curr, error, count);
         }
 
 
@@ -143,6 +119,8 @@ namespace Vulpine.Core.Calc.Algorithms
             double a = low;
             double b = high;
 
+            Initialise();
+
             //computes the middle points
             double m1 = b - (b - a) / VMath.PHI;
             double m2 = a + (b - a) / VMath.PHI;
@@ -151,11 +129,16 @@ namespace Vulpine.Core.Calc.Algorithms
             double f1 = f(m1);
             double f2 = f(m2);
 
-            double curr = (a + b) / 2.0;
+            //tracks the values as they change
             double last = a;
+            double curr = b;
 
-            while (!Step(last, curr))
+            while (true)
             {
+                //checks the midpoint for termination
+                curr = (a + b) / 2.0;
+                if (Step(last, curr)) break;
+
                 if (f1 > f2)
                 {
                     a = m1;
@@ -182,7 +165,6 @@ namespace Vulpine.Core.Calc.Algorithms
                 }
 
                 last = curr;
-                curr = (a + b) / 2.0;
             }
 
             //returns the minimum argument found
@@ -191,153 +173,13 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
-        public static Result<Double> GoldenMin(VFunc f, double low, double high,
-            double tol = VMath.TOL, int max = 1024)
-        {
-            //makes shure a valid bracket is given
-            if (high < low) Swap(ref high, ref low);
-
-            //sets the initial bounds
-            double a = low;
-            double b = high;
-
-            //computes the middle points
-            double m1 = b - (b - a) / VMath.PHI;
-            double m2 = a + (b - a) / VMath.PHI;
-
-            //computes the intitial funciton vlaues
-            double f1 = f(m1);
-            double f2 = f(m2);
-
-            //tracks the status of the algorythim
-            double last = (a + b) / 2.0;
-            double curr = 0.0;
-            double error = 1.0;
-            int count = 0;
-
-            while (error > tol && count < max)
-            {
-                if (f1 > f2)
-                {
-                    a = m1;
-
-                    //reclaculates the middel values (m1' = m2)
-                    m1 = b - (b - a) / VMath.PHI;
-                    m2 = a + (b - a) / VMath.PHI;
-
-                    //updates the function vlaues 
-                    f1 = f2;
-                    f2 = f(m2);
-                }
-                else
-                {
-                    b = m2;
-
-                    //reclaculates the middel values (m2' = m1)
-                    m2 = a + (b - a) / VMath.PHI;
-                    m1 = b - (b - a) / VMath.PHI;
-
-                    //updates the function vlaues
-                    f2 = f1;
-                    f1 = f(m1);
-                }
-
-                //computes the relitive error
-                curr = (a + b) / 2.0;
-                error = VMath.Error(last, curr);
-
-                //updates the status
-                last = curr;
-                count++;
-
-            }
-
-            //returns the minimum argument found
-            return new Result<Double>(curr, error, count);
-
-        }
-
         //NOTE: alternate error forumla ??
         //error = |b - a| / (|m2| + |m1|)
         //error = 2 * |b - a| / |m2 + m1|
 
 
 
-        public static IEnumerable<Double> GoldenMinIttr(VFunc f, 
-            double low, double high)
-        {
-            //makes shure a valid bracket is given
-            if (high < low) Swap(ref high, ref low);
-
-            //sets the initial bounds
-            double a = low;
-            double b = high;
-
-            //computes the middle points
-            double m1 = b - (b - a) / VMath.PHI;
-            double m2 = a + (b - a) / VMath.PHI;
-
-            //computes the intitial funciton vlaues
-            double f1 = f(m1);
-            double f2 = f(m2);
-
-            while (true)
-            {
-                //computes the next value
-                double curr = (a + b) / 2.0;
-                yield return curr;
-
-                if (f1 > f2)
-                {
-                    a = m1;
-
-                    //reclaculates the middel values (m1' = m2)
-                    m1 = b - (b - a) / VMath.PHI;
-                    m2 = a + (b - a) / VMath.PHI;
-
-                    //updates the function vlaues 
-                    f1 = f2;
-                    f2 = f(m2);
-                }
-                else
-                {
-                    b = m2;
-
-                    //reclaculates the middel values (m2' = m1)
-                    m2 = a + (b - a) / VMath.PHI;
-                    m1 = b - (b - a) / VMath.PHI;
-
-                    //updates the function vlaues
-                    f2 = f1;
-                    f1 = f(m1);
-                }
-            }
-        }
-
-
         #endregion /////////////////////////////////////////////////////////////////////////
-
-
-        public static Result<Vector> GradinetMin(MFunc f, Vector x,
-            double tol = VMath.TOL, int max = 1024)
-        {
-            //makes a copy of our starting point
-            Vector xn = new Vector(x);
-
-            while (true)
-            {
-                //determins the optimal step-size using golden search
-                VFunc af = a => f(xn - Gradient(f, xn, a));
-                double an = GoldenMin(af, 0.0, 1.0, tol, max);
-
-                //travels the path of steepest decent
-                xn = xn - Gradient(f, xn, an);
-            }
-
-
-            //return default(Result<Vector>);
-
-        }
 
 
         public Result<Vector> GradinetMin(MFunc f, Vector x)
@@ -371,31 +213,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
         }
 
-
-        public static IEnumerable<Vector> GradinetMinIttr(MFunc f, Vector x)
-        {
-            //makes a copy of our starting point
-            Vector xn = new Vector(x);
-
-            while (true)
-            {
-                //determins the optimal step-size using golden search
-                VFunc af = a => f(xn - Gradient(f, xn, a));
-                var golden = GoldenMinIttr(af, 0.0, 1.0);
-                double an = golden.Limit().Last();
-
-                //NOTE: The choice of limit in computing 'an' is totaly arbitrary!!
-
-                //travels the path of steepest decent
-                xn = xn - Gradient(f, xn, an);
-
-                yield return xn;
-            }
-
-
-            //return default(Result<Vector>);
-
-        }
 
 
         public static Result<Vector> GradientMin(MFunc f, Vector x, double step,

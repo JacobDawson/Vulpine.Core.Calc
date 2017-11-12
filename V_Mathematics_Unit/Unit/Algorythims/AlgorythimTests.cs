@@ -212,7 +212,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var alg = new TestableAlgorythim(100, 0.001, true);
 
             bool called = false;
-            alg.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            alg.StepEvent += delegate(Object o, StepEventArgs args)
             { called = true; };
 
             alg.Call_Step(0.5, 1.0);
@@ -225,7 +225,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var alg = new TestableAlgorythim(100, 0.001, true);
 
-            alg.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            alg.StepEvent += delegate(Object o, StepEventArgs args)
             { args.Halt = true; };
 
             bool stop = alg.Call_Step(0.5, 1.0);
@@ -319,7 +319,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var alg = new TestableAlgorythim(100, 0.001, true);
 
             bool called = false;
-            alg.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            alg.StepEvent += delegate(Object o, StepEventArgs args)
             { called = true; };
 
             Vector v1 = GetVector(1);
@@ -334,7 +334,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var alg = new TestableAlgorythim(100, 0.001, true);
 
-            alg.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            alg.StepEvent += delegate(Object o, StepEventArgs args)
             { args.Halt = true; };
 
             Vector v1 = GetVector(1);

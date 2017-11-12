@@ -31,7 +31,7 @@ namespace Vulpine.Core.Calc.Algorithms
     /// a halting flag to indicate if the proceess should end.
     /// </summary>
     /// <remarks>Last Update: 2017-01-26</remarks>
-    public class NumericStepEventArgs : EventArgs
+    public class StepEventArgs : EventArgs
     {
         //contains the info from the event
         private double error;
@@ -46,7 +46,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="step">Number of iterations preformed</param>
         /// <param name="error">Current error value</param>
-        internal NumericStepEventArgs(int step, double error)
+        internal StepEventArgs(int step, double error)
         {
             this.step = step;
             this.error = error;

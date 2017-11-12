@@ -55,7 +55,11 @@ namespace Vulpine.Core.Calc.Algorithms
         protected double error;
 
         //stores the delegate to handel step events
-        private EventHandler<NumericStepEventArgs> step_event;
+        private EventHandler<StepEventArgs> e_step;
+
+        //stores the delegates for the start and finish events
+        private EventHandler e_start;
+        private EventHandler e_finish;
 
         /// <summary>
         /// Creates a new Algorithim object with default stoping criteria.
@@ -196,15 +200,41 @@ namespace Vulpine.Core.Calc.Algorithms
             get { return rel; }
         }
 
+        #endregion //////////////////////////////////////////////////////////////
+
+        #region Class Events...
+
         /// <summary>
         /// The step event is invoked every time the algorythim updates it's
         /// error values. The event can be used to impart aditional stoping
         /// criteria, by rasing the Halt flag in the event args.
         /// </summary>
-        public event EventHandler<NumericStepEventArgs> StepEvent
+        public event EventHandler<StepEventArgs> StepEvent
         {
-            add { step_event += value; }
-            remove { step_event -= value; }
+            add { e_step += value; }
+            remove { e_step -= value; }
+        }
+
+        /// <summary>
+        /// The start event is envoked as soon as the algorythim starts,
+        /// before anything else happens. It's mostly included for sake of
+        /// completness, but may be useful in a multi-threaded enviroment.
+        /// </summary>
+        public event EventHandler StartEvent
+        {
+            add { e_start += value; }
+            remove { e_start -= value; }
+        }
+
+        /// <summary>
+        /// The finish event is envoked once the algorythim reaches a
+        /// terminal condition, allowing the end user to prefrom any 
+        /// nessary post processing.
+        /// </summary>
+        public event EventHandler FinishEvent
+        {
+            add { e_finish += value; }
+            remove { e_finish -= value; }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -218,6 +248,9 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         protected void Initialise()
         {
+            //invokes any starting events that are regesterd
+            if (e_start != null) e_start(this, EventArgs.Empty);
+
             //Initialises the algorythim for a new run
             error = Double.PositiveInfinity;
             count = 0;
@@ -297,19 +330,6 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Uses the given value to generate a result, reporting the curent
-        /// error value and number of iterations along with it. This method
-        /// should be called at the end of each procedure, before returning.
-        /// </summary>
-        /// <param name="value">The final value of computation</param>
-        /// <returns>The packaged result</returns>
-        protected Result<T> Finish<T>(T value)
-        {
-            //returns the generated result
-            return new Result<T>(value, error, count);
-        }
-
-        /// <summary>
         /// Raises the step event and informs all listeners. It returns true if
         /// any of the listners indicate that the process should stop.
         /// </summary>
@@ -319,11 +339,27 @@ namespace Vulpine.Core.Calc.Algorithms
         private bool OnStep(int step, double error)
         {
             //checks that we actualy have someone listening
-            if (step_event == null) return false;
+            if (e_step == null) return false;
 
             //creates new event args and invokes the event
-            var args = new NumericStepEventArgs(step, error);
-            step_event(this, args); return args.Halt;
+            var args = new StepEventArgs(step, error);
+            e_step(this, args); return args.Halt;
+        }
+
+        /// <summary>
+        /// Uses the given value to generate a result, reporting the curent
+        /// error value and number of iterations along with it. This method
+        /// should be called at the end of each procedure, before returning.
+        /// </summary>
+        /// <param name="value">The final value of computation</param>
+        /// <returns>The packaged result</returns>
+        protected Result<T> Finish<T>(T value)
+        {
+            //invokes any finishing events that are regesterd
+            if (e_finish != null) e_finish(this, EventArgs.Empty);
+
+            //returns the generated result
+            return new Result<T>(value, error, count);
         }
 
         #endregion //////////////////////////////////////////////////////////////

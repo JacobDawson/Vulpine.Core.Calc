@@ -17,7 +17,7 @@ namespace QuickTests
             var sw = new StreamWriter("root_tests.txt");
             var rf = new RootFinder(20, 0.0);
 
-            rf.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            rf.StepEvent += delegate(Object o, StepEventArgs args)
             {
                 double loginv = -Math.Log10(args.Error);
                 sw.WriteLine("{0}, {1:g8}, {2:g8}", args.Step, args.Error, loginv);

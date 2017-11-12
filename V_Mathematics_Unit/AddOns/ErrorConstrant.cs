@@ -12,6 +12,7 @@ namespace Vulpine_Core_Calc_Tests.AddOns
     {
         private object expected;
         private double tollerence;
+        private double error;
 
         /// <summary>
         /// Creates a new tolerance constraint with the epected value
@@ -24,6 +25,7 @@ namespace Vulpine_Core_Calc_Tests.AddOns
             this.expected = expected;
             this.tollerence = tollerence;
             this.actual = null;
+            this.error = 0.0;
         }
 
         /// <summary>
@@ -34,7 +36,6 @@ namespace Vulpine_Core_Calc_Tests.AddOns
         public override bool Matches(object actual)
         {
             this.actual = actual;
-            double error;
 
             if (actual is double)
             {
@@ -76,6 +77,17 @@ namespace Vulpine_Core_Calc_Tests.AddOns
             string s1 = tollerence.ToString();
             string s2 = expected.ToString();
             writer.Write("within {0} error tolerance of {1}", s1, s2);
+        }
+
+        /// <summary>
+        /// Wrties the actual value, along with the actual error.
+        /// </summary>
+        /// <param name="writer">Used to write the actual value</param>
+        public override void WriteActualValueTo(MessageWriter writer)
+        {
+            string s1 = actual.ToString();
+            string s2 = error.ToString("G5");
+            writer.Write("{0} with {1} error", s1, s2);
         }
     }
 }

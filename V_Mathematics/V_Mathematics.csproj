@@ -37,8 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\Integrator.cs" />
-    <Compile Include="Algorithms\NumericStepEventArgs.cs" />
-    <Compile Include="Algorithms\Limits.cs" />
+    <Compile Include="Algorithms\StepEventArgs.cs" />
     <Compile Include="Exceptions\ArgBoundsException.cs" />
     <Compile Include="Exceptions\InvBracketExcp.cs" />
     <Compile Include="Exceptions\SquareMatrixExcp.cs" />
