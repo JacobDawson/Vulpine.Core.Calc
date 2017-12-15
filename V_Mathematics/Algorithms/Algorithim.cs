@@ -271,6 +271,24 @@ namespace Vulpine.Core.Calc.Algorithms
             return (count >= max);
         }
 
+
+        protected bool Step(double error)
+        {
+            //updates the count and the error
+            this.count = count + 1;
+            this.error = error;
+
+            //informs the listeners & checks for halting
+            if (OnStep(count, error)) return true;
+
+            //determins if sucessive itterations are nessary
+            if (error.IsNaN()) return true;
+            if (error <= tol) return true;
+            if (count >= max) return true;
+
+            return false;
+        }
+
         /// <summary>
         /// Increments the algorithim controler by one step. It updates
         /// the error value and determins if it is nessary to continue

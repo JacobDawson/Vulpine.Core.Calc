@@ -10,6 +10,7 @@ using Vulpine_Core_Calc_Tests.AddOns;
 using Vulpine.Core.Calc;
 using Vulpine.Core.Calc.Algorithms;
 using Vulpine.Core.Calc.Numbers;
+using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 {
@@ -20,14 +21,18 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         private double tol;
         private double exp;
 
+        private double step;
+
         private bool loging;
 
 
         public OptomizerTests()
         {
-            max = 256;
-            tol = 1.0e-10;
-            exp = 1.0e-07;
+            max = 1024;  //256;
+            tol = 1.0e-12;
+            exp = 1.0e-05;
+
+            step = 1.0;
 
             loging = true;
         }
@@ -44,7 +49,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             return opt;
         }
 
-        public void LogResults(int f, Result<Double> res)
+        public void LogResults<T>(int f, Result<T> res)
         {
             if (loging) Console.WriteLine
                 ("function:{0} error:{1} ittr:{2}", f, res.Error, res.NumSteps);
@@ -101,7 +106,142 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         }
 
 
+        public MFunc GetMFunc(int index)
+        {
+            switch (index)
+            {
+                //min = [-1/sqrt(2), 0]
+                case 1: return delegate(Vector x)
+                    {
+                        double x0_2 = x[0] * x[0];
+                        double x1_2 = x[1] * x[1];
+                        return x[0] * Math.Exp(-x0_2 - x1_2);
+                    };
 
+                //min = [7, 2]
+                case 2: return delegate(Vector x)
+                    {
+                        double a = x[0] - 7.0;
+                        double b = x[1] - 2.0;
+                        return (a * a) + (b * b);
+                    };
+
+                //min = [3, 4]
+                case 3: return delegate(Vector x)
+                    {
+                        double x0 = x[0] - 3.0;
+                        double x1 = x[1] - 4.0;
+                        return (4.0 * x0 * x0) + (x1 * x1) - (2.0 * x0 * x1);
+                    };
+
+                //min = [1, 1]
+                case 4: return delegate(Vector x)
+                    {
+                        double a = 1.0 - x[0];
+                        double b = x[1] - (x[0] * x[0]);
+                        return (100.0 * b * b) + (a * a);
+                    };
+
+                //min = [-2, -1]
+                case 5: return delegate(Vector x)
+                    {
+                        double fx = (1.0 / 4.0);
+                        fx = (fx * x[0]) - (4.0 / 3.0);
+                        fx = (fx * x[0]) - 2.0;
+                        fx = (fx * x[0]) + 16.0;
+                        fx = (fx * x[0]) + 0.0;
+
+                        double fy = (1.0 / 4.0);
+                        fy = (fy * x[1]) - (2.0 / 3.0);
+                        fy = (fy * x[1]) - (1.0 / 2.0);
+                        fy = (fy * x[1]) + 2.0;
+                        fy = (fy * x[1]) + 0.0;
+
+                        return fx + fy;
+                    };
+
+                //BAD CASE:
+                //min = [-2, 1] or [2, -1] or [4, 2]
+                case 6: return delegate(Vector x)
+                    {
+                        double fx = (1.0 / 4.0);
+                        fx = (fx * x[0]) - (4.0 / 3.0);
+                        fx = (fx * x[0]) - 2.0;
+                        fx = (fx * x[0]) + 16.0;
+                        fx = (fx * x[0]) + 0.0;
+
+                        double fy = (1.0 / 4.0);
+                        fy = (fy * x[1]) - (2.0 / 3.0);
+                        fy = (fy * x[1]) - (1.0 / 2.0);
+                        fy = (fy * x[1]) + 2.0;
+                        fy = (fy * x[1]) + 0.0;
+
+                        return fx * fy;
+                    };
+
+                //min = [0, 1] and [0, -1]
+                case 7: return delegate(Vector x)
+                    {
+                        Cmplx z = (Cmplx)x;
+                        Cmplx z2 = z * z;
+
+                        z = (z2 + 1.0) / (z2 - 1.0);
+                        return z.Abs;
+                    };
+
+                //min = [1, 0]
+                case 8: return delegate(Vector x)
+                    {
+                        Cmplx z = (Cmplx)x;
+                        z = Cmplx.Log(z);
+                        return z.Abs;
+                    };
+            }
+
+            Assert.Inconclusive("INVALID INDEX GIVEN!!");
+            throw new InvalidOperationException();
+        }
+
+
+        public Vector GetMResult(int index)
+        {
+            switch (index)
+            {
+                case 1: return new Vector(-0.70710678118654752440, 0.0);
+                case 2: return new Vector(7.0, 2.0);
+                case 3: return new Vector(3.0, 4.0);
+                case 4: return new Vector(1.0, 1.0);
+                case 5: return new Vector(-2.0, -1.0);
+                case 6: return new Vector(4.0, 2.0);
+                case 7: return new Vector(0.0, -1.0);
+                case 8: return new Vector(1.0, 0.0);
+            }
+
+            Assert.Inconclusive("INVALID INDEX GIVEN!!");
+            throw new InvalidOperationException();
+        }
+
+
+        public Vector GetMStart(int index)
+        {
+            switch (index)
+            {
+                case 1: return new Vector(0.5, -0.5);
+                case 2: return new Vector(3.0, 3.0);
+                case 3: return new Vector(1.0, 1.0);
+                case 4: return new Vector(-1.0, 1.0);
+                case 5: return new Vector(0.0, -2.0);
+                case 6: return new Vector(3.0, 1.0);
+                case 7: return new Vector(0.5, -0.5);
+                case 8: return new Vector(-1.0, 0.5);
+            }
+
+            Assert.Inconclusive("INVALID INDEX GIVEN!!");
+            throw new InvalidOperationException();
+        }
+
+
+        #region One-Dimentional Optimization
 
 
         [TestCase(1, -2.0, 8.0, 1.0)]
@@ -142,5 +282,147 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
+
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void ExGradinetMin_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.ExGradinetMin(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void BtGradientMin_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.BtGradientMin(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void ExGradinetMin2_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.ExGradinetMin2(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void BtGradientMin2_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.BtGradientMin2(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void ExGradinetMin3_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.ExGradinetMin3(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        [TestCase(8)]
+        public void BtGradientMin3_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.BtGradientMin3(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+
     }
 }

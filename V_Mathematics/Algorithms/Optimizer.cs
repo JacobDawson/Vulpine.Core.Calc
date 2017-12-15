@@ -72,20 +72,25 @@ namespace Vulpine.Core.Calc.Algorithms
 
             Initialise();
 
-            //tracks the values as they change
-            double last = low;
-            double curr = high;
+            ////tracks the values as they change
+            //double last = low;
+            //double curr = high;
 
             while (true)
             {
-                //checks the midpoint for termination
-                curr = (low + high) / 2.0;
-                if (Step(last, curr)) break;
+                ////checks the midpoint for termination
+                //curr = (low + high) / 2.0;
+                //if (Step(last, curr)) break;
 
                 //selects two points inside the bracket
                 c = (high - low) / 3.0;
                 m1 = low + c;
                 m2 = high - c;
+
+                //computes the error and determins if we should stop
+                double error = Math.Abs(m2) + Math.Abs(m1);
+                error = Math.Abs(high - low) / error;
+                if (Step(error)) break;
 
                 //evaluates the funciton at those points
                 f1 = f(m1);
@@ -97,11 +102,15 @@ namespace Vulpine.Core.Calc.Algorithms
                 if (f1 > f2) low = m1;
                 else high = m2;
 
-                last = curr;
+                //last = curr;
             }
 
-            //returns the minimum argument found
-            return Finish(curr);
+            ////returns the minimum argument found
+            //return Finish(curr);
+
+            //takes the midpoint to be our best value
+            double best = (low + high) / 2.0;
+            return Finish(best);
         }
 
 
@@ -129,15 +138,20 @@ namespace Vulpine.Core.Calc.Algorithms
             double f1 = f(m1);
             double f2 = f(m2);
 
-            //tracks the values as they change
-            double last = a;
-            double curr = b;
+            ////tracks the values as they change
+            //double last = a;
+            //double curr = b;
 
             while (true)
             {
-                //checks the midpoint for termination
-                curr = (a + b) / 2.0;
-                if (Step(last, curr)) break;
+                ////checks the midpoint for termination
+                //curr = (a + b) / 2.0;
+                //if (Step(last, curr)) break;
+
+                //computes the error and determins if we should stop
+                double error = Math.Abs(m2) + Math.Abs(m1);
+                error = Math.Abs(b - a) / error;
+                if (Step(error)) break;
 
                 if (f1 > f2)
                 {
@@ -164,12 +178,15 @@ namespace Vulpine.Core.Calc.Algorithms
                     f1 = f(m1);
                 }
 
-                last = curr;
+                //last = curr;
             }
 
-            //returns the minimum argument found
-            return Finish(curr);
+            ////returns the minimum argument found
+            //return Finish(curr);
 
+            //takes the midpoint to be our best value
+            double best = (a + b) / 2.0;
+            return Finish(best);
         }
 
 
@@ -181,62 +198,61 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
+        #region Gradient Using [h = a(n)]
 
-        public Result<Vector> GradinetMin(MFunc f, Vector x)
+
+        public Result<Vector> ExGradinetMin(MFunc f, Vector x, double step)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x);
             Vector curr = xn;
 
             //we create a second optimizer and initilise our own
-            Optimizer op = new Optimizer();
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
             this.Initialise();
 
             while (true)
             {
                 //determins the optimal step-size using golden search
                 VFunc af = a => f(xn - Gradient(f, xn, a));
-                double an = op.GoldenMin(af, 0.0, 1.0);
+                double an = op.GoldenMin(af, 0.0, step);
 
                 //travels the path of steepest decent
                 curr = xn - Gradient(f, xn, an);
-
-                //determins if we should stop
                 if (Step(xn, curr)) break;
 
                 //maske a copy of the curent vector
                 xn = new Vector(curr);
             }
 
-
+            //returns our local minima point
             return Finish(curr);
-
         }
 
 
-
-        public static Result<Vector> GradientMin(MFunc f, Vector x, double step,
-            double tol = VMath.TOL, int max = 1024)
+        public Result<Vector> BtGradientMin(MFunc f, Vector x, double step)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x);
+            Vector curr = xn;
 
-            //initialises the algorythim
-            double an = step;
-            double d1 = 1.0;
-            double d2 = 0.0;
+            //used in finding the minimum
+            double f_xn, an, d1, d2;
+
+            Initialise();
 
             while (true)
             {
                 //evaluates the funciton at xn
-                double f_xn = f(xn);
+                f_xn = f(xn);
+                an = step;
 
                 //aproximates the gradient at our curent point
                 Vector agn = Gradient(f, xn, an);
 
                 //uses the armijo conditions to check alpha
-                d1 = f(xn - agn);
                 d2 = f_xn - (0.5 * (agn * agn) / an);
+                d1 = f(xn - agn);
 
                 while (d1 > d2)
                 {
@@ -245,17 +261,207 @@ namespace Vulpine.Core.Calc.Algorithms
                     agn = Gradient(f, xn, an);
 
                     //updates the armijo conditions
-                    d1 = f(xn - agn);
                     d2 = f_xn - (0.5 * (agn * agn) / an);
+                    d1 = f(xn - agn);
                 }
 
                 //travels along the steepest decent
-                xn = xn - agn;                               
+                curr = xn - agn;
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
             }
+
+            //returns our local minima point
+            return Finish(curr);
         }
 
-        //IDEA: should I reset alpha to the step size at the begining
-        //of each itteration of the outer loop??
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+        #region Gradient Using [h = a(n-1)]
+
+
+        public Result<Vector> ExGradinetMin2(MFunc f, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //we create a second optimizer and initilise our own
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
+            this.Initialise();
+
+            double a1 = step;
+            double a2 = step;
+
+            while (true)
+            {
+                //aproximates the gradient using the previous step-size
+                Vector g = Gradient2(f, x, a1);
+
+                //determins the optimal step-size using golden search
+                VFunc af = a => f(xn - (a * g));
+                a2 = op.GoldenMin(af, 0.0, step);
+
+                //travels the path of steepest decent
+                curr = xn - (a2 * g);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+                a1 = a2;
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+
+        public Result<Vector> BtGradientMin2(MFunc f, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //used in finding the minimum
+            double f_xn, a1, a2, d1, d2;
+
+            Initialise();
+            a1 = step;
+
+            while (true)
+            {
+                //evaluates the funciton at xn
+                f_xn = f(xn);
+                a2 = step;
+
+                //aproximates the gradient using the previous step-size
+                Vector g = Gradient2(f, x, a1);
+                double dot = g * g;
+
+                //uses the armijo conditions to check alpha
+                d2 = f_xn - (0.5 * a2 * dot);
+                d1 = f(xn - (a2 * g));
+
+                while (d1 > d2)
+                {
+                    //computes the new step-size
+                    a2 = 0.5 * a2;
+
+                    //updates the armijo conditions
+                    d2 = f_xn - (0.5 * a2 * dot);
+                    d1 = f(xn - (a2 * g));
+                }
+
+                //travels along the steepest decent
+                curr = xn - (a2 * g);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+                a1 = a2;
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+
+        #region Gradient Using [h = speical]
+
+
+        public Result<Vector> ExGradinetMin3(MFunc f, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //we create a second optimizer and initilise our own
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
+            this.Initialise();
+
+            while (true)
+            {
+                //aproximates the gradient using the previous step-size
+                Vector g = Gradient2(f, x, 1.0e-08);
+
+                //determins the optimal step-size using golden search
+                VFunc af = a => f(xn - (a * g));
+                double an = op.GoldenMin(af, 0.0, step);
+
+                //travels the path of steepest decent
+                curr = xn - (an * g);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+
+        public Result<Vector> BtGradientMin3(MFunc f, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //used in finding the minimum
+            double f_xn, an, d1, d2;
+
+            Initialise();
+
+            while (true)
+            {
+                //evaluates the funciton at xn
+                f_xn = f(xn);
+                an = step;
+
+                //aproximates the gradient using the previous step-size
+                Vector g = Gradient2(f, x, Tolerance);
+                double dot = g * g;
+
+                //uses the armijo conditions to check alpha
+                d2 = f_xn - (0.5 * an * dot);
+                d1 = f(xn - (an * g));
+
+                while (d1 > d2)
+                {
+                    //computes the new step-size
+                    an = 0.5 * an;
+
+                    //updates the armijo conditions
+                    d2 = f_xn - (0.5 * an * dot);
+                    d1 = f(xn - (an * g));
+                }
+
+                //travels along the steepest decent
+                curr = xn - (an * g);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+
+        //NEXT STEP: Run tests for the three cases above to
+        //determin the best derivitive arpoximation.
+
+
+
+
+
 
 
         /// <summary>
@@ -299,7 +505,63 @@ namespace Vulpine.Core.Calc.Algorithms
                 b[i] = b[i] - step;
 
                 //aproximates the partial derivitive
-                grad[i] = f(a) + f(b);
+                grad[i] = f(a) - f(b);
+            }
+
+            return grad;
+        }
+
+
+        private static Vector Gradient2(MFunc f, Vector x, double h)
+        {
+            //obtains the step size
+            double step = h / 2.0;
+
+            //creates a vector to store the gradient
+            Vector grad = new Vector(x.Length);
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + step;
+                b[i] = b[i] - step;
+
+                //aproximates the partial derivitive
+                grad[i] = (f(a) - f(b)) / h;
+            }
+
+            return grad;
+        }
+
+
+        private static Vector Gradient3(MFunc f, Vector x, double tol)
+        {
+            //creates a vector to store the gradient
+            Vector grad = new Vector(x.Length);
+
+            //computes the step size based on the output
+            double step = tol * Math.Abs(f(x));
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                ////NOTE: This fails if x[i] is zero
+                ////computes the step-size based on tolerance
+                //double step = tol * Math.Abs(x[i]);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + step;
+                b[i] = b[i] - step;
+
+                //aproximates the partial derivitive
+                grad[i] = (f(a) - f(b)) / (2.0 * step);
             }
 
             return grad;
