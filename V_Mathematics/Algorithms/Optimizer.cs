@@ -201,10 +201,10 @@ namespace Vulpine.Core.Calc.Algorithms
         #region Gradient Using [h = a(n)]
 
 
-        public Result<Vector> ExGradinetMin(MFunc f, Vector x, double step)
+        public Result<Vector> ExGradinetMin(MFunc f, Vector x0, double step)
         {
             //makes a copy of our starting point
-            Vector xn = new Vector(x);
+            Vector xn = new Vector(x0);
             Vector curr = xn;
 
             //we create a second optimizer and initilise our own
@@ -230,10 +230,10 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
-        public Result<Vector> BtGradientMin(MFunc f, Vector x, double step)
+        public Result<Vector> BtGradientMin(MFunc f, Vector x0, double step)
         {
             //makes a copy of our starting point
-            Vector xn = new Vector(x);
+            Vector xn = new Vector(x0);
             Vector curr = xn;
 
             //used in finding the minimum
@@ -279,104 +279,13 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
-        #region Gradient Using [h = a(n-1)]
+        #region Gradient Using [h = user]
 
 
-        public Result<Vector> ExGradinetMin2(MFunc f, Vector x, double step)
+        public Result<Vector> ExGradinetMin3(MFunc f, Vector x0, double step)
         {
             //makes a copy of our starting point
-            Vector xn = new Vector(x);
-            Vector curr = xn;
-
-            //we create a second optimizer and initilise our own
-            Optimizer op = new Optimizer(MaxSteps, Tolerance);
-            this.Initialise();
-
-            double a1 = step;
-            double a2 = step;
-
-            while (true)
-            {
-                //aproximates the gradient using the previous step-size
-                Vector g = Gradient2(f, x, a1);
-
-                //determins the optimal step-size using golden search
-                VFunc af = a => f(xn - (a * g));
-                a2 = op.GoldenMin(af, 0.0, step);
-
-                //travels the path of steepest decent
-                curr = xn - (a2 * g);
-                if (Step(xn, curr)) break;
-
-                //maske a copy of the curent vector
-                xn = new Vector(curr);
-                a1 = a2;
-            }
-
-            //returns our local minima point
-            return Finish(curr);
-        }
-
-
-        public Result<Vector> BtGradientMin2(MFunc f, Vector x, double step)
-        {
-            //makes a copy of our starting point
-            Vector xn = new Vector(x);
-            Vector curr = xn;
-
-            //used in finding the minimum
-            double f_xn, a1, a2, d1, d2;
-
-            Initialise();
-            a1 = step;
-
-            while (true)
-            {
-                //evaluates the funciton at xn
-                f_xn = f(xn);
-                a2 = step;
-
-                //aproximates the gradient using the previous step-size
-                Vector g = Gradient2(f, x, a1);
-                double dot = g * g;
-
-                //uses the armijo conditions to check alpha
-                d2 = f_xn - (0.5 * a2 * dot);
-                d1 = f(xn - (a2 * g));
-
-                while (d1 > d2)
-                {
-                    //computes the new step-size
-                    a2 = 0.5 * a2;
-
-                    //updates the armijo conditions
-                    d2 = f_xn - (0.5 * a2 * dot);
-                    d1 = f(xn - (a2 * g));
-                }
-
-                //travels along the steepest decent
-                curr = xn - (a2 * g);
-                if (Step(xn, curr)) break;
-
-                //maske a copy of the curent vector
-                xn = new Vector(curr);
-                a1 = a2;
-            }
-
-            //returns our local minima point
-            return Finish(curr);
-        }
-
-        #endregion /////////////////////////////////////////////////////////////////////////
-
-
-        #region Gradient Using [h = speical]
-
-
-        public Result<Vector> ExGradinetMin3(MFunc f, Vector x, double step)
-        {
-            //makes a copy of our starting point
-            Vector xn = new Vector(x);
+            Vector xn = new Vector(x0);
             Vector curr = xn;
 
             //we create a second optimizer and initilise our own
@@ -386,7 +295,7 @@ namespace Vulpine.Core.Calc.Algorithms
             while (true)
             {
                 //aproximates the gradient using the previous step-size
-                Vector g = Gradient2(f, x, 1.0e-08);
+                Vector g = Gradient2(f, xn, 1.0e-08);
 
                 //determins the optimal step-size using golden search
                 VFunc af = a => f(xn - (a * g));
@@ -405,10 +314,10 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
-        public Result<Vector> BtGradientMin3(MFunc f, Vector x, double step)
+        public Result<Vector> BtGradientMin3(MFunc f, Vector x0, double step)
         {
             //makes a copy of our starting point
-            Vector xn = new Vector(x);
+            Vector xn = new Vector(x0);
             Vector curr = xn;
 
             //used in finding the minimum
@@ -423,7 +332,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 an = step;
 
                 //aproximates the gradient using the previous step-size
-                Vector g = Gradient2(f, x, Tolerance);
+                Vector g = Gradient2(f, xn, 1.0e-08);
                 double dot = g * g;
 
                 //uses the armijo conditions to check alpha
@@ -453,6 +362,92 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////
+
+        #region Gradient Given By User
+
+
+        public Result<Vector> ExGradinetMin(MFunc f, VFunc<Vector> g, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //we create a second optimizer and initilise our own
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
+            this.Initialise();
+
+            while (true)
+            {
+                //aproximates the gradient using the previous step-size
+                Vector grad = g(xn);
+
+                //determins the optimal step-size using golden search
+                VFunc af = a => f(xn - (a * grad));
+                double an = op.GoldenMin(af, 0.0, step);
+
+                //travels the path of steepest decent
+                curr = xn - (an * grad);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+
+        public Result<Vector> BtGradientMin(MFunc f, VFunc<Vector> g, Vector x, double step)
+        {
+            //makes a copy of our starting point
+            Vector xn = new Vector(x);
+            Vector curr = xn;
+
+            //used in finding the minimum
+            double f_xn, an, d1, d2;
+
+            Initialise();
+
+            while (true)
+            {
+                //evaluates the funciton at xn
+                f_xn = f(xn);
+                an = step;
+
+                //aproximates the gradient using the previous step-size
+                Vector grad = g(xn);
+                double dot = grad * grad;
+
+                //uses the armijo conditions to check alpha
+                d2 = f_xn - (0.5 * an * dot);
+                d1 = f(xn - (an * grad));
+
+                while (d1 > d2)
+                {
+                    //computes the new step-size
+                    an = 0.5 * an;
+
+                    //updates the armijo conditions
+                    d2 = f_xn - (0.5 * an * dot);
+                    d1 = f(xn - (an * grad));
+                }
+
+                //travels along the steepest decent
+                curr = xn - (an * grad);
+                if (Step(xn, curr)) break;
+
+                //maske a copy of the curent vector
+                xn = new Vector(curr);
+            }
+
+            //returns our local minima point
+            return Finish(curr);
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+
 
 
         //NEXT STEP: Run tests for the three cases above to
