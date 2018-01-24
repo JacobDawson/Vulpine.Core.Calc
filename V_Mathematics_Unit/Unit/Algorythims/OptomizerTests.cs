@@ -30,7 +30,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             max = 1024;  //256;
             tol = 1.0e-12;
-            exp = 1.0e-7; //1.0e-07;
+            exp = 1.0e-07; //1.0e-07;
 
             step = 1.0;
 
@@ -181,6 +181,24 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     z = Cmplx.Log(z);
                     return z.Abs;
                 };
+
+                //f(x, y) = e^(x + y - 1) + e^(x - y - 1) + e^(-x - 1)
+                //min = [-ln(2)/2, 0]
+                case 10: return delegate(Vector x)
+                {
+                    double e1 = Math.Exp(x[0] + x[1] - 1.0);
+                    double e2 = Math.Exp(x[0] - x[1] - 1.0);
+                    double e3 = Math.Exp(-x[0] - 1.0);
+
+                    return e1 + e2 + e3;
+                };
+
+                //f(x, y) = x^2 - 3xy + 4y^2 + x - y
+                //min = [-5/7, -1/7]
+                case 11: return delegate(Vector x)
+                {
+                    return (x[0] * x[0]) - (3.0 * x[0] * x[1]) + (4.0 * x[1] * x[1]) + x[0] - x[1];
+                };
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -242,6 +260,30 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
                     return new Vector(dx, dy);
                 };
+
+                //   d/dx = e^(x + y - 1) + e^(x - y - 1) - e^(-x - 1)
+                //   d/dy = e^(x + y - 1) - e^(x - y - 1)
+                case 10: return delegate(Vector x)
+                {
+                    double e1 = Math.Exp(x[0] + x[1] - 1.0);
+                    double e2 = Math.Exp(x[0] - x[1] - 1.0);
+                    double e3 = Math.Exp(-x[0] - 1.0);
+
+                    double dx = e1 + e2 - e3;
+                    double dy = e1 - e2;
+
+                    return new Vector(dx, dy);
+                };
+
+                //  d/dx = 2 x - 3 y + 1
+                //  d/dy = -3 x + 8 y - 1
+                case 11: return delegate(Vector x)
+                {
+                    double dx = 2.0 * x[0] - 3.0 * x[1] + 1.0;
+                    double dy = 8.0 * x[1] - 3.0 * x[0] - 1.0;
+
+                    return new Vector(dx, dy);
+                };
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -260,6 +302,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                 case 5: return new Vector(-2.0, -1.0);
                 case 7: return new Vector(0.0, -1.0);
                 case 8: return new Vector(1.0, 0.0);
+                case 10: return new Vector(-0.34657359027997265471, 0.0);
+                case 11: return new Vector(-5.0 / 7.0, -1.0 / 7.0);
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -278,6 +322,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                 case 5: return new Vector(0.0, -2.0);
                 case 7: return new Vector(0.5, -0.5);
                 case 8: return new Vector(-1.0, 0.5);
+                case 10: return new Vector(1.0, 2.0);
+                case 11: return new Vector(2.0, 2.0);
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
@@ -337,6 +383,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(7)]
         [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
         public void BtGradientMin_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
@@ -358,6 +406,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(7)]
         [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
         public void ExGradinetMin_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
@@ -380,6 +430,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(7)]
         [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
         public void ExGradinetMin3_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
@@ -401,6 +453,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(7)]
         [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
         public void BtGradientMin3_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
@@ -410,6 +464,53 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var act = GetMResult(fx);
 
             var res = opt.BtGradientMin3(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void ExGradinetMin_GradGiven_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+            var g = GetGraident(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.ExGradinetMin(f, g, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void BtGradientMin_GradGiven_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+            var g = GetGraident(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.BtGradientMin(f, g, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));

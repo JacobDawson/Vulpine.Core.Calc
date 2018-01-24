@@ -450,12 +450,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
 
 
-        //NEXT STEP: Run tests for the three cases above to
-        //determin the best derivitive arpoximation.
-
-
-
-
 
 
 
