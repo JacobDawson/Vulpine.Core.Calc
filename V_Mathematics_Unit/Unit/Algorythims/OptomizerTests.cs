@@ -28,11 +28,11 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         public OptomizerTests()
         {
-            max = 1024;  //256;
-            tol = 1.0e-12;
-            exp = 1.0e-07; //1.0e-07;
+            max = 1000000;   //256;
+            tol = 1.0e-12;   //1.0e-12;
+            exp = 1.0e-07;   //1.0e-07;
 
-            step = 1.0;
+            step = 0.1;      //1.0;
 
             loging = true;
         }
@@ -385,7 +385,30 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(8)]
         [TestCase(10)]
         [TestCase(11)]
-        public void BtGradientMin_ExpectedValue(int fx)
+        public void ExGradinetMin_FiniteDiff_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.ExGradinetMin2(f, input, step);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(7)]
+        [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void BtGradientMin_FiniteDiff_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
             MFunc f = GetMFunc(fx);
@@ -394,76 +417,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var act = GetMResult(fx);
 
             var res = opt.BtGradientMin(f, input, step);
-
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
-
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void ExGradinetMin_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
-
-            var res = opt.ExGradinetMin(f, input, step);
-
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
-
-
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void ExGradinetMin3_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
-
-            var res = opt.ExGradinetMin3(f, input, step);
-
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
-
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void BtGradientMin3_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
-
-            var res = opt.BtGradientMin3(f, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -488,7 +441,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            var res = opt.ExGradinetMin(f, g, input, step);
+            //Check This:
+            var res = opt.ExGradinetMin2(f, g, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
