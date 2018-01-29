@@ -47,8 +47,8 @@ namespace Vulpine.Core.Calc.Algorithms
         private bool rel;
 
         //represents the ending conditions
-        private int max;
-        private double tol;
+        protected int max;
+        protected double tol;
 
         //tracks the curent state of the algorythim
         protected int count;
@@ -271,7 +271,13 @@ namespace Vulpine.Core.Calc.Algorithms
             return (count >= max);
         }
 
-
+        /// <summary>
+        /// Increments the algorythim controler by one step, using the provided
+        /// error. This is useful for algorythims which run there own error
+        /// calculations, which may be more effecent than the built in calculations. 
+        /// </summary>
+        /// <param name="error">Calculated error in the current step</param>
+        /// <returns>True if the algorythim should stop</returns>
         protected bool Step(double error)
         {
             //updates the count and the error

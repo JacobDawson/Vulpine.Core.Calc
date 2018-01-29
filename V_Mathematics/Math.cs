@@ -380,6 +380,44 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Computes the real-valued cubed root as a continious function. In particular
+        /// it allows for the computation of negative values, returning real values in
+        /// sutch cases. The result is an S-shaped curve, or a rotation of the graph of
+        /// x cubed by 90 degrees.
+        /// </summary>
+        /// <param name="x">Input to the cubed root funciton</param>
+        /// <returns>The real valued cubed root</returns>
+        public static double Curt(double x)
+        {
+            //seperates the input into sign and magnitude
+            double s = VMath.Sign(x);
+            double m = Math.Abs(x);
+
+            //computes the real valued cube root
+            return s * Math.Pow(m, 1.0 / 3.0);
+        }
+
+        /// <summary>
+        /// Computes the principle branch of the complex cubed root. Note that this is
+        /// inherently diffrent from the real valued cube root, in that negative real
+        /// values result in complex output. The result is continious in the complex
+        /// plane, except for the negative real axis. 
+        /// </summary>
+        /// <param name="z">Input to the complex cubed root</param>
+        /// <returns>The complex cubed root</returns>
+        public static Cmplx Curt(Cmplx z)
+        {
+            //calculates the result storing temporary values
+            double rad = Math.Pow(z.Abs, 1.0 / 3.0);
+            double arg = z.Arg / 3.0;
+            double outR = rad * Math.Cos(arg);
+            double outI = rad * Math.Sin(arg);
+
+            //returns the constructed number
+            return new Cmplx(outR, outI);
+        }
+
+        /// <summary>
         /// Computes the standard sinc function, which is defined as sin(x) / x,
         /// except when x is zero where it is equal to one.
         /// </summary>

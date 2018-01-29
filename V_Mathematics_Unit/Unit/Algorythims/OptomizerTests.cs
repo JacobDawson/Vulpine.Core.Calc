@@ -342,12 +342,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(6, -4.0, 2.0, -1.8155218370325029661)]
         [TestCase(7, 0.0, 8.0, 4.4934094579090641753)]
         [TestCase(8, 0.0, 3.0, 1.4616321449683623413)]
-        public void TernaryMin_NormalFunction_ExpectedValue(int fx, double a, double b, double act)
+        public void MinTernary_NormalFunction_ExpectedValue(int fx, double a, double b, double act)
         {
             Optimizer opt = GetOptomizer();
             VFunc f = GetFunc(fx);
 
-            var res = opt.TernaryMin(f, a, b);
+            var res = opt.MinTernary(f, a, b);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -362,12 +362,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(6, -4.0, 2.0, -1.8155218370325029661)]
         [TestCase(7, 0.0, 8.0, 4.4934094579090641753)]
         [TestCase(8, 0.0, 3.0, 1.4616321449683623413)]
-        public void GoldenMin_NormalFunction_ExpectedValue(int fx, double a, double b, double act)
+        public void MinGolden_NormalFunction_ExpectedValue(int fx, double a, double b, double act)
         {
             Optimizer opt = GetOptomizer();
             VFunc f = GetFunc(fx);
 
-            var res = opt.GoldenMin(f, a, b);
+            var res = opt.MinGolden(f, a, b);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -385,7 +385,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(8)]
         [TestCase(10)]
         [TestCase(11)]
-        public void ExGradinetMin_FiniteDiff_ExpectedValue(int fx)
+        public void GradientEx_FiniteDiff_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
             MFunc f = GetMFunc(fx);
@@ -393,7 +393,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            var res = opt.ExGradinetMin2(f, input, step);
+            var res = opt.GradientEx(f, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -408,7 +408,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(8)]
         [TestCase(10)]
         [TestCase(11)]
-        public void BtGradientMin_FiniteDiff_ExpectedValue(int fx)
+        public void GradientBt_FiniteDiff_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
             MFunc f = GetMFunc(fx);
@@ -416,7 +416,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            var res = opt.BtGradientMin(f, input, step);
+            var res = opt.GradientBt(f, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -432,7 +432,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(10)]
         [TestCase(11)]
-        public void ExGradinetMin_GradGiven_ExpectedValue(int fx)
+        public void GradientEx_GradGiven_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
             MFunc f = GetMFunc(fx);
@@ -441,8 +441,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            //Check This:
-            var res = opt.ExGradinetMin2(f, g, input, step);
+            var res = opt.GradientEx(f, g, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -455,7 +454,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5)]
         [TestCase(10)]
         [TestCase(11)]
-        public void BtGradientMin_GradGiven_ExpectedValue(int fx)
+        public void GradientBt_GradGiven_ExpectedValue(int fx)
         {
             Optimizer opt = GetOptomizer();
             MFunc f = GetMFunc(fx);
@@ -464,7 +463,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            var res = opt.BtGradientMin(f, g, input, step);
+            var res = opt.GradientBt(f, g, input, step);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));

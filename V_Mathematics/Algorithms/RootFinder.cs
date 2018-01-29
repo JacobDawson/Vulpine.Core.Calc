@@ -629,13 +629,6 @@ namespace Vulpine.Core.Calc.Algorithms
             //checks that we contain atleast one zero
             if (y1 * y2 > 0.0) return Finish(x1);
 
-            //makes shure y1 is less in magnitude than y2
-            if (Math.Abs(y1) < Math.Abs(y2))
-            {
-                Swap(ref y1, ref y2);
-                Swap(ref x1, ref x2);       
-            }
-
             //used in the main loop
             double x3 = x1;
             double y3 = y1;
@@ -645,6 +638,14 @@ namespace Vulpine.Core.Calc.Algorithms
 
             while (true)
             {
+                //makes shure y1 is less in magnitude than y2
+                if (Math.Abs(y1) < Math.Abs(y2))
+                {
+                    Swap(ref y1, ref y2);
+                    Swap(ref x1, ref x2);
+                }
+
+                //determins what type of interpolation to use
                 bool nequ = Math.Abs(y1 - y3) > VMath.TOL;
                 nequ = nequ & Math.Abs(y2 - y3) > VMath.TOL;
 
@@ -695,13 +696,6 @@ namespace Vulpine.Core.Calc.Algorithms
                 {
                     x1 = s;
                     y1 = fs;
-                }
-
-                //makes shure y1 is less in magnitude than y2
-                if (Math.Abs(y1) < Math.Abs(y2))
-                {
-                    Swap(ref y1, ref y2);
-                    Swap(ref x1, ref x2);
                 }
             }
         }

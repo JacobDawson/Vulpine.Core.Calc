@@ -374,7 +374,8 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Calculates the Norm of the current vector. The Norm is equivlent 
-        /// to the distance from the origin or zero vector.
+        /// to the distance from the origin or zero vector. It's also defined
+        /// as the square root of the vector's dot product with itself. 
         /// </summary>
         /// <returns>The magnitude of the vector</returns>
         public double Norm()
