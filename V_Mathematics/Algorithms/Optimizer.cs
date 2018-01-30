@@ -41,6 +41,7 @@ namespace Vulpine.Core.Calc.Algorithms
     /// </summary>
     public class Optimizer : Algorithm
     {
+        #region Class Definitions...
 
         //Factors Used in Backtracking Line Search
         private const double C0 = 0.3;
@@ -49,12 +50,18 @@ namespace Vulpine.Core.Calc.Algorithms
         //Degree of Seperation for Finite Diffrences
         private const double H0 = 1.0e-06;
 
-        #region Class Definitions...
+        //stores the step-size for multivariable optimization
+        private double step;
 
         /// <summary>
         /// Creates a new Optimizer with default stoping criteria.
         /// </summary>
-        public Optimizer() : base() { }
+        public Optimizer()
+        {
+            base.max = 4096;
+            base.tol = VMath.TOL;        
+            this.step = 1.0;
+        }
 
         /// <summary>
         /// Creates a new Optimizer with the given maximum number of
@@ -62,23 +69,43 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial accepted error</param>
-        public Optimizer(int max, double tol) : base(max, tol) { }
+        public Optimizer(int max, double tol)
+        {
+            base.max = (max > 2) ? max : 2;
+            base.tol = Math.Abs(tol);
+            this.step = 1.0;
+        }
 
         /// <summary>
         /// Creates a new Optimizer with the given maximum number of
-        /// itterations and the minimal error allowed. Set the flag to false
-        /// to use exact error instead of relative error.
+        /// itterations and the minimal relitive error allowed, and 
+        /// the maximum step size to be used in gradient based methods.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial accepted error</param>
-        /// <param name="rel">Flag to use relitive error</param>
-        public Optimizer(int max, double toll, bool rel) 
-            : base(max, toll, rel) { }
+        /// <param name="step">Maximum step size during search</param>
+        public Optimizer(int max, double tol, double step) 
+        {
+            base.max = (max > 2) ? max : 2;
+            base.tol = Math.Abs(tol);
+            this.step = Math.Abs(step);
+        }
 
-        #endregion //////////////////////////////////////////////////////////////
+        #endregion /////////////////////////////////////////////////////////////////////////
 
         #region Ternary Search...
 
+        /// <summary>
+        /// Finds the value that minimises a one-dimentinal objective function,
+        /// by means of Ternary Search. This is similar to how Bisection works
+        /// in root finding, except here the search space is split into thirds
+        /// at each itteration, hence the name. Convergence is only garenteed
+        /// if the objective funciton is unimodal on the search inverval.
+        /// </summary>
+        /// <param name="f">Objective Funciton</param>
+        /// <param name="low">Lower end of the search bracket</param>
+        /// <param name="high">Upper end of the search bracket</param>
+        /// <returns>The mimimum argument</returns>
         public Result<Double> MinTernary(VFunc f, double low, double high)
         {
             //makes shure a valid bracket is given
@@ -117,18 +144,38 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(best);
         }
 
+        /// <summary>
+        /// Finds the value that maximises a one-dimentinal objective function,
+        /// by means of Ternary Search. This is similar to how Bisection works
+        /// in root finding, except here the search space is split into thirds
+        /// at each itteration, hence the name. Convergence is only garenteed
+        /// if the objective funciton is unimodal on the search inverval.
+        /// </summary>
+        /// <param name="f">Objective Funciton</param>
+        /// <param name="low">Lower end of the search bracket</param>
+        /// <param name="high">Upper end of the search bracket</param>
+        /// <returns>The maximum argument</returns>
         public Result<Double> MaxTernary(VFunc f, double low, double high)
         {
             //uses the negative function to compute the maximum
             return MinTernary(x => -f(x), low, high);
         }
 
-
         #endregion /////////////////////////////////////////////////////////////////////////
 
         #region Golden Section Search...
 
-
+        /// <summary>
+        /// Finds the value that minimises a one-dimentinal objective function,
+        /// by means of Golden Section Search. This is similar to Ternary Search, 
+        /// but uses an improved subdividing ruteen to allow the reuse of previously 
+        /// computed values, thus saving on function evaluations. It is named after 
+        /// the Golden Ratio, which is used in computing the subdivisions.
+        /// </summary>
+        /// <param name="f">Objective Funciton</param>
+        /// <param name="low">Lower end of the search bracket</param>
+        /// <param name="high">Upper end of the search bracket</param>
+        /// <returns>The mimimum argument</returns>
         public Result<Double> MinGolden(VFunc f, double low, double high)
         {
             //makes shure a valid bracket is given
@@ -186,19 +233,55 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(best);
         }
 
+        /// <summary>
+        /// Finds the value that maximises a one-dimentinal objective function,
+        /// by means of Golden Section Search. This is similar to Ternary Search, 
+        /// but uses an improved subdividing ruteen to allow the reuse of previously 
+        /// computed values, thus saving on function evaluations. It is named after 
+        /// the Golden Ratio, which is used in computing the subdivisions.
+        /// </summary>
+        /// <param name="f">Objective Funciton</param>
+        /// <param name="low">Lower end of the search bracket</param>
+        /// <param name="high">Upper end of the search bracket</param>
+        /// <returns>The maximum argument</returns>
         public Result<Double> MaxGolden(VFunc f, double low, double high)
         {
             //uses the negative function to compute the maximum
             return MinGolden(x => -f(x), low, high);
         }
 
-
         #endregion /////////////////////////////////////////////////////////////////////////
 
         #region Gradient Descent Methods...
 
+        /// <summary>
+        /// Uses Gradient Dessent, with Backtracking Line Search, to find the 
+        /// Minimum of the given objective function. It simply uses the inverse
+        /// gradient as a dessent direction, and tries multiple step sizes till
+        /// it finds one that is maximal, and satisfies the armijo conditions
+        /// for convergence. 
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> GradientBt(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return GradientBt(f, g, x0);
+        }
 
-        public Result<Vector> GradientBt(MFunc f, VFunc<Vector> g, Vector x0, double step)
+        /// <summary>
+        /// Uses Gradient Dessent, with Backtracking Line Search, to find the 
+        /// Minimum of the given objective function. It simply uses the inverse
+        /// gradient as a dessent direction, and tries multiple step sizes till
+        /// it finds one that is maximal, and satisfies the armijo conditions
+        /// for convergence. 
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="g">Gradient of the Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> GradientBt(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x0);
@@ -247,17 +330,34 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(curr);
         }
 
-
-        public Result<Vector> GradientBt(MFunc f, Vector x0, double step)
+        /// <summary>
+        /// Uses Gradient Decent, with Exact Line Search, to find the Mimimum
+        /// of the given objective function. It uses the inverse gradient as
+        /// a desent direction, and then tries to find the optimal step-size
+        /// by means of a one-dimentional optimization function. This results
+        /// in more effort per step, but fewer steps overall.
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> GradientEx(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return GradientBt(f, g, x0, step);
+            return GradientEx(f, g, x0);
         }
 
-
-
-
-        public Result<Vector> GradientEx(MFunc f, VFunc<Vector> g, Vector x0, double step)
+        /// <summary>
+        /// Uses Gradient Decent, with Exact Line Search, to find the Mimimum
+        /// of the given objective function. It uses the inverse gradient as
+        /// a desent direction, and then tries to find the optimal step-size
+        /// by means of a one-dimentional optimization function. This results
+        /// in more effort per step, but fewer steps overall.
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="g">Gradient of the Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> GradientEx(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x0);
@@ -303,12 +403,6 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(curr);
         }
 
-        public Result<Vector> GradientEx(MFunc f, Vector x0, double step)
-        {
-            VFunc<Vector> g = x => Grad(f, x, H0);
-            return GradientEx(f, g, x0, step);
-        }
-
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
@@ -327,41 +421,15 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Helper method to aproximate the gradient of a multi-dimentional
-        /// funciton at a given point. This method actualy calculates the
-        /// gradient times the step size (h), in order to get the actual 
-        /// gradient one must divide through by (h).
+        /// Helper method used to aproximate the gradient of a given function
+        /// at a given point. It uses fininte diffrences to comptue the partial
+        /// derivitives that comprise the gradient. Note that sutch aproximations
+        /// can be numericaly unstable, due to cancelation errors.
         /// </summary>
         /// <param name="f">Function to be evaluated</param>
         /// <param name="x">Point of intrest</param>
         /// <param name="h">Step size</param>
         /// <returns>The gradient of the funciton at the point of intrest</returns>
-        private static Vector Gradient(MFunc f, Vector x, double h)
-        {
-            //obtains the step size
-            double step = h / 2.0;
-
-            //creates a vector to store the gradient
-            Vector grad = new Vector(x.Length);
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + step;
-                b[i] = b[i] - step;
-
-                //aproximates the partial derivitive
-                grad[i] = f(a) - f(b);
-            }
-
-            return grad;
-        }
-
-
         private static Vector Grad(MFunc f, Vector x, double h)
         {
             //obtains the step size
@@ -386,36 +454,5 @@ namespace Vulpine.Core.Calc.Algorithms
 
             return grad;
         }
-
-
-        private static Vector Grad3(MFunc f, Vector x, double tol)
-        {
-            //creates a vector to store the gradient
-            Vector grad = new Vector(x.Length);
-
-            //computes the step size based on the output
-            double step = tol * Math.Abs(f(x));
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                ////NOTE: This fails if x[i] is zero
-                ////computes the step-size based on tolerance
-                //double step = tol * Math.Abs(x[i]);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + step;
-                b[i] = b[i] - step;
-
-                //aproximates the partial derivitive
-                grad[i] = (f(a) - f(b)) / (2.0 * step);
-            }
-
-            return grad;
-        }
-
     }
 }

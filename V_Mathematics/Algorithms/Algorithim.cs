@@ -43,9 +43,6 @@ namespace Vulpine.Core.Calc.Algorithms
     {
         #region Class Definitions...
 
-        //flag indicating the use of relative error
-        private bool rel;
-
         //represents the ending conditions
         protected int max;
         protected double tol;
@@ -66,7 +63,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         public Algorithm()
         {
-            this.rel = true;
             this.max = 1024;
             this.tol = VMath.TOL;
 
@@ -81,24 +77,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="tol">Minimial accepted error</param>
         public Algorithm(int max, double tol)
         {
-            this.rel = true;
-            this.max = (max > 2) ? max : 2;
-            this.tol = Math.Abs(tol);
-
-            Initialise();
-        }
-
-        /// <summary>
-        /// Creates a new Algorithim object with the given maximum number of
-        /// itterations and the minimal error allowed. Set the flag to false
-        /// to use exact error instead of relative error.
-        /// </summary>
-        /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial accepted error</param>
-        /// <param name="rel">Flag to use relitive error</param>
-        public Algorithm(int max, double tol, bool rel)
-        {
-            this.rel = rel;
             this.max = (max > 2) ? max : 2;
             this.tol = Math.Abs(tol);
 
@@ -141,7 +119,6 @@ namespace Vulpine.Core.Calc.Algorithms
             bool test = t1.Equals(t2);
             test &= (this.max == other.max);
             test &= (this.tol == other.tol);
-            test &= (this.rel == other.rel);
 
             return test;
         }
@@ -156,15 +133,8 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             int h = max.GetHashCode();
             int a1 = tol.GetHashCode();
-            int a2 = rel.GetHashCode();
 
-            unchecked
-            {
-                h = (h * 2243) ^ a1;
-                h = (h * 5581) ^ a2;
-            }
-
-            return h;
+            return unchecked((h * 2243) ^ a1);
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -189,15 +159,6 @@ namespace Vulpine.Core.Calc.Algorithms
         public double Tolerance
         {
             get { return tol; }
-        }
-
-        /// <summary>
-        /// Determins what type of error should be used as a stoping criteria.
-        /// Returns true to use releative error, and false for absolute error.
-        /// </summary>
-        public bool IsRelative
-        {
-            get { return rel; }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -310,7 +271,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //computes the error value
             double dist = curr - last;
-            if (rel) dist = dist / curr;
+            dist = dist / curr;
             error = Math.Abs(dist);
 
             //informs the listeners & checks for halting
@@ -339,7 +300,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //computes the error value
             double dist = curr.Dist(last);
-            if (rel) dist = dist / curr.Norm();
+            dist = dist / curr.Norm();
             error = Math.Abs(dist);
 
             //informs the listeners & checks for halting

@@ -17,8 +17,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
     //defined within the Algorythim class, from which it ihnerits
     public class TestableAlgorythim : Algorithm
     {
-        public TestableAlgorythim(int max, double toll, bool rel) 
-            : base(max, toll, rel) { }
+        public TestableAlgorythim(int max, double toll) 
+            : base(max, toll) { }
 
         public int Count 
         { 
@@ -89,7 +89,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Initialise_NewInstance_CountIsZero()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
             alg.Call_Initialise();
             Assert.That(alg.Count, Is.EqualTo(0));
         }
@@ -97,7 +97,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Initialise_NewInstance_ErrorIsInf()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
             alg.Call_Initialise();
             Assert.That(alg.Error, Is.EqualTo(Double.PositiveInfinity));
         }
@@ -109,7 +109,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(200)]
         public void Increment_NewInstance_CountIncreases(int steps)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             int prev = alg.Count;
             alg.Call_Increment(steps);
@@ -125,7 +125,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(200)]
         public void Increment_NewInstance_ExpectedDiffrence(int steps)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             int prev = alg.Count;
             alg.Call_Increment(steps);
@@ -139,7 +139,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(150)]
         public void Step_NewInstance_CountIncrements(int count)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
             alg.Count = count;
 
             alg.Call_Step(0.5, 1.0);
@@ -155,41 +155,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(1.91267, 1.91471, 0.001065435496759300)]
         public void Step_RelativeError_ExptectedError(double last, double curr, double exp)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             alg.Call_Step(last, curr);
             double error = alg.Error;
 
             Assert.That(error, Ist.WithinTolOf(exp, tol));
-        }
-
-        [TestCase(4.71625,  4.89465, 0.17840)]
-        [TestCase(-6.44849, -6.44899, 0.00050)]
-        [TestCase(8.31302, 8.03130, 0.28172)]
-        [TestCase(2.32036, 2.33113, 0.01077)]
-        [TestCase(-1.46531, -1.47657, 0.01126)]
-        public void Step_ExactError_ExpectedError(double last, double curr, double exp)
-        {
-            var alg = new TestableAlgorythim(100, 0.001, false);
-
-            alg.Call_Step(last, curr);
-            double error = alg.Error;
-
-            Assert.That(error, Ist.WithinTolOf(exp, tol));
-        }
-
-        [TestCase(-1.24478, -1.24475)]
-        [TestCase(2.63844, 2.63859)]
-        [TestCase(-5.73579, -5.73581)]
-        [TestCase(-7.85452, -7.85472)]
-        [TestCase(8.41182, 8.41182)]
-        public void Step_ExactError_TollerenceMet(double last, double curr)
-        {
-            var alg = new TestableAlgorythim(100, 0.001, false);
-
-            bool stop = alg.Call_Step(last, curr);
-
-            Assert.That(stop, Is.True, "The step funciton did not stop, even though tollerence was met.");
         }
 
         [TestCase(2.01882, 2.01883)]
@@ -199,7 +170,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(-1.22068, -1.22068)]
         public void Step_RelativeError_TollerenceMet(double last, double curr)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             bool stop = alg.Call_Step(last, curr);
 
@@ -209,7 +180,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Step_NewInstance_HandlerCalled()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             bool called = false;
             alg.StepEvent += delegate(Object o, StepEventArgs args)
@@ -223,7 +194,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Step_NewInstance_HaltUpponRequest()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             alg.StepEvent += delegate(Object o, StepEventArgs args)
             { args.Halt = true; };
@@ -238,7 +209,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(150)]
         public void Step_VectorsGiven_CountIncrements(int count)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
             alg.Count = count;
 
             Vector v1 = GetVector(1);
@@ -249,22 +220,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(after, Is.EqualTo(count + 1));
         }
 
-        [TestCase(1, 2, 11.901075534333023)]
-        [TestCase(2, 3, 14.272939919743234)]
-        [TestCase(3, 4, 8.492595322002575)]
-        [TestCase(4, 5, 5.889929028986683)]
-        [TestCase(5, 6, 12.674629535907549)]
-        public void Step_ExactVectors_ExpectedError(int n1, int n2, double exp)
-        {
-            var alg = new TestableAlgorythim(100, 0.001, false);
-
-            Vector v1 = GetVector(n1);
-            Vector v2 = GetVector(n2);
-            alg.Call_Step(v1, v2);
-
-            Assert.That(alg.Error, Ist.WithinTolOf(exp, tol));       
-        }
-
         [TestCase(1, 2, 1.166168829071337)]
         [TestCase(2, 3, 1.851829251395661)]
         [TestCase(3, 4, 1.373775015742662)]
@@ -272,29 +227,13 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5, 6, 1.440851214338866)]
         public void Step_RelativeVectors_ExpectedError(int n1, int n2, double exp)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             Vector v1 = GetVector(n1);
             Vector v2 = GetVector(n2);
             alg.Call_Step(v1, v2);
 
             Assert.That(alg.Error, Ist.WithinTolOf(exp, tol));
-        }
-
-        [TestCase(1, 1.00004300)]
-        [TestCase(2, 0.99995449)]
-        [TestCase(3, 0.99997218)]
-        [TestCase(4, 0.99994830)]
-        [TestCase(5, 1.00006730)]
-        public void Step_ExactVectors_TollerenceMet(int last, double delta)
-        {
-            var alg = new TestableAlgorythim(100, 0.001, false);
-
-            Vector v1 = GetVector(last);
-            Vector v2 = v1 * delta;
-            bool stop = alg.Call_Step(v1, v2);
-
-            Assert.That(stop, Is.True, "The step funciton did not stop, even though tollerence was met.");
         }
 
         [TestCase(1, 0.99982018)]
@@ -304,7 +243,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [TestCase(5, 1.00086580)]
         public void Step_RelativeVectors_TollerenceMet(int last, double delta)
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             Vector v1 = GetVector(last);
             Vector v2 = v1 * delta;
@@ -316,7 +255,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Step_VectorsGiven_HandlerCalled()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             bool called = false;
             alg.StepEvent += delegate(Object o, StepEventArgs args)
@@ -332,7 +271,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         [Test]
         public void Step_VectorsGiven_HaltUpponRequest()
         {
-            var alg = new TestableAlgorythim(100, 0.001, true);
+            var alg = new TestableAlgorythim(100, 0.001);
 
             alg.StepEvent += delegate(Object o, StepEventArgs args)
             { args.Halt = true; };

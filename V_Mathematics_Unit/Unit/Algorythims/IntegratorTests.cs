@@ -27,7 +27,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         public IntegratorTests()
         {
-            max = 28; //1048576;
+            max = 32; //28;
             tol = 1.0e-10;
             exp = 1.0e-09;
 

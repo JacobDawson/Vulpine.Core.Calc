@@ -46,6 +46,10 @@ namespace Vulpine.Core.Calc.Algorithms
         //Multi-varient Intergration
 
 
+        //NOTE: Consider making the itterator count report the number
+        //of function invocations for each method. 
+
+
         #region Class Definitions...
 
         //used in 3-point Gausian intergration
@@ -89,7 +93,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <summary>
         /// Creates a new Integrator with default stoping criteria.
         /// </summary>
-        public Integrator() : base() { }
+        public Integrator()
+        {
+            base.max = 32;
+            base.tol = 1.0e-10;
+        }
 
         /// <summary>
         /// Creates a new Integrator with the given maximum number of
@@ -97,18 +105,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial accepted error</param>
-        public Integrator(int max, double tol) : base(max, tol) { }
-
-        /// <summary>
-        /// Creates a new Integrator with the given maximum number of
-        /// itterations and the minimal error allowed. Set the flag to false
-        /// to use exact error instead of relative error.
-        /// </summary>
-        /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial accepted error</param>
-        /// <param name="rel">Flag to use relitive error</param>
-        public Integrator(int max, double toll, bool rel) 
-            : base(max, toll, rel) { }
+        public Integrator(int max, double tol)
+        {
+            base.max = (max > 2) ? max : 2;
+            base.tol = Math.Abs(tol);
+        }
 
         #endregion //////////////////////////////////////////////////////////////////
 
@@ -247,7 +248,6 @@ namespace Vulpine.Core.Calc.Algorithms
                     //checks for validation
                     rombn = prev[level];
                     rombl = curr[level - 1];
-                    if (Step(rombl, rombn)) break;
                 }
                 else
                 {
@@ -258,8 +258,10 @@ namespace Vulpine.Core.Calc.Algorithms
                     //checks for validation
                     rombn = curr[level];
                     rombl = prev[level - 1];
-                    if (Step(rombl, rombn)) break;
                 }
+
+                //determins if we should continue
+                if (Step(rombl, rombn)) break;
 
                 //updates counters
                 level = level + 1;

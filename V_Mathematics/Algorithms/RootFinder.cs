@@ -43,7 +43,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <summary>
         /// Creates a new Root Finder with default stoping criteria.
         /// </summary>
-        public RootFinder() : base() { }
+        public RootFinder()
+        {
+            base.max = 256;
+            base.tol = VMath.TOL;
+        }
 
         /// <summary>
         /// Creates a new Root Finder with the given maximum number of
@@ -51,18 +55,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial accepted error</param>
-        public RootFinder(int max, double tol) : base(max, tol) { }
-
-        /// <summary>
-        /// Creates a new Root Finder with the given maximum number of
-        /// itterations and the minimal error allowed. Set the flag to false
-        /// to use exact error instead of relative error.
-        /// </summary>
-        /// <param name="max">Maximum number of itterations</param>
-        /// <param name="tol">Minimial accepted error</param>
-        /// <param name="rel">Flag to use relitive error</param>
-        public RootFinder(int max, double toll, bool rel) 
-            : base(max, toll, rel) { }
+        public RootFinder(int max, double tol)
+        {
+            base.max = (max > 2) ? max : 2;
+            base.tol = Math.Abs(tol);
+        }
 
         #endregion //////////////////////////////////////////////////////////////
 
