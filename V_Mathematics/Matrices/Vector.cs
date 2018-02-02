@@ -368,6 +368,36 @@ namespace Vulpine.Core.Calc.Matrices
             return output;
         }
 
+        /// <summary>
+        /// Computes the outer product of the curent vector and a second
+        /// given vector. This results in a matrix who's elements are the
+        /// pairwise products of the elements of each vector. Note that unlike
+        /// the inner product, the vectors can be of differing length.
+        /// </summary>
+        /// <param name="v">The second vector</param>
+        /// <returns>The outer product of the two vectors</returns>
+        /// <remarks>It overloads the (%) opperator</remarks>
+        public Matrix Outer(Vector v)
+        {
+            //constructs an array to hold the matrix
+            int rows = this.vector.Length;
+            int cols = v.vector.Length;
+            double[] result = new double[rows * cols];
+
+            //multiplies each pair of elements
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    int index = j + (i * cols);
+                    result[index] = vector[i] * v.vector[j];
+                }
+            }
+
+            //generates the resultant matrix
+            return new Matrix(rows, cols, result);
+        }
+
         #endregion /////////////////////////////////////////////////////////////
 
         #region Special Methods...
@@ -577,6 +607,10 @@ namespace Vulpine.Core.Calc.Matrices
         //references the Mult(s) function
         public static Vector operator /(Vector v, Double s)
         { return v.Mult(1.0 / s); }
+
+        //references the Outer(v) function
+        public static Matrix operator %(Vector v, Vector w)
+        { return v.Outer(w); }
 
         //refrences the Unit(v) function
         public static Vector operator ~(Vector v)

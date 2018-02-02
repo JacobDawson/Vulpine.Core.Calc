@@ -41,6 +41,18 @@ namespace Vulpine.Core.Calc.Algorithms
     /// </summary>
     public class Optimizer : Algorithm
     {
+        //THINGS TO IMPLEMENT:
+
+        //Rank One Quasi-Newton (SR1)
+        //either BFGS or DFP
+        //[Nonlinear] Conjugate Gradient
+        //[Inverse] Column Updating Method
+        //Quasi-Newton [Inverse] Least Squares
+        //Broyden's Method
+        //Simplex (Nelder-Meed) Method
+
+
+
         #region Class Definitions...
 
         //Factors Used in Backtracking Line Search
@@ -406,6 +418,253 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
+        #region Rank One Quasi-Newton Methods...
+
+
+        //NOTE: Try using Wolfe conditions on BackTrack
+
+
+
+        public Result<Vector> RankOneBt(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //stores our aproximate inverse hessian
+            Matrix bk = Matrix.Ident(x0.Length);
+
+            //vectors used during our computaiton
+            Vector x1, x2, g1, g2, rn, cn;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            g1 = g(x1);
+
+
+            while (true)
+            {
+                //computes our dessent direction
+                Vector dess = bk.Mult(g1);
+
+                double f_x1 = f(x1);
+                double dot = dess * dess;  //dess * g1; ??
+                double an = step;
+
+                //uses the armijo conditions to check alpha
+                double d2 = f_x1 - (C1 * an * dot);
+                double d1 = f(x1 - (an * dess));
+
+                while (d1 > d2)
+                {
+                    //computes the new step-size
+                    an = C0 * an;
+
+                    //updates the armijo conditions
+                    d2 = f_x1 - (C1 * an * dot);
+                    d1 = f(x1 - (an * dess));
+
+                    Increment(1);
+                }
+
+                //travels the path of steepest decent
+                x2 = x1 - (an * dess);
+                if (Step(x1, x2)) break;
+
+                //computes the intermediat values
+                g2 = g(x2);
+                rn = g2 - g1;
+                cn = (x2 - x1) - (bk * rn);
+
+                double t1 = Math.Abs(cn * rn);
+                double t2 = rn.Norm() * cn.Norm();
+
+                if (t1 > VMath.TOL * t2)
+                {
+                    //updates our aproximate inverse hessian
+                    bk += cn.Outer(cn) / (cn * rn);
+
+                    //Console.WriteLine(cn * rn);
+                }
+
+                //copies the curent vector and gradient
+                x1 = new Vector(x2);
+                g1 = new Vector(g2);
+            }
+
+
+            //returns our local minima point
+            return Finish(x2);
+        }
+
+
+        //This uses Wolfe Conditons:
+        public Result<Vector> RankOneBt2(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //stores our aproximate inverse hessian
+            Matrix bk = Matrix.Ident(x0.Length);
+
+            //vectors used during our computaiton
+            Vector x1, x2, g1, g2, rn, cn;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            g1 = g(x1);
+
+
+            while (true)
+            {
+                //computes our dessent direction
+                Vector dess = bk.Mult(g1);
+
+                double an = 1.0;  //step;
+                double C2 = 0.8;
+
+                double f_x1 = f(x1);
+                double dot = dess * g1;  //dess * g1; ??
+
+                ////uses the armijo conditions to check alpha
+                //double d2 = f_x1 - (C1 * an * dot);
+                //double d1 = f(x1 - (an * dess));
+
+                ////uses the wolfe conditions to also check alpha
+                //double w2 = dess * g(x1 - an * dess);
+                //double w1 = C2 * dess * g1;
+
+
+                bool found = false;
+                double b1 = 0;
+                double b2 = -1;
+
+
+                while (!found)
+                {
+                    //uses the armijo conditions to check alpha
+                    double d2 = f_x1 - (C1 * an * dot);
+                    double d1 = f(x1 - (an * dess));
+
+                    //uses the wolfe conditions to also check alpha
+                    double w2 = dess * g(x1 - an * dess);
+                    double w1 = -C2 * dess * g1;
+
+                    Increment(1);
+
+                    if (d1 > d2)
+                    {
+                        b2 = an;
+                        an = (b1 + b2) * 0.5;
+                    }
+                    //else if (w1 > w2)   //w2 < w1
+                    //{
+                    //    b1 = an;
+                    //    an = (b2 < 0) ? b1 * 2.0 : (b1 + b2) * 0.5;
+
+                    //    //Console.WriteLine(w2);
+                    //}
+                    else
+                    {
+                        found = true;
+                    }
+                }
+
+
+                //travels the path of steepest decent
+                x2 = x1 - (an * dess);
+                if (Step(x1, x2)) break;
+
+                //computes the intermediat values
+                g2 = g(x2);
+                rn = g2 - g1;
+                cn = (x2 - x1) - (bk * rn);
+
+                double t1 = Math.Abs(cn * rn);
+                double t2 = rn.Norm() * cn.Norm();
+
+                if (t1 > VMath.TOL * t2)
+                {
+                    //updates our aproximate inverse hessian
+                    bk += cn.Outer(cn) / (cn * rn);
+
+                    //Console.WriteLine(cn * rn);
+                }
+
+                //copies the curent vector and gradient
+                x1 = new Vector(x2);
+                g1 = new Vector(g2);
+            }
+
+
+            //returns our local minima point
+            return Finish(x2);
+        }
+
+
+
+        public Result<Vector> RankOneEx(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //we create a second optimizer and initilise our own
+            RootFinder rf = new RootFinder(MaxSteps, Tolerance);
+            this.Initialise();
+
+            //stores our aproximate inverse hessian
+            Matrix bk = Matrix.Ident(x0.Length);
+
+            //vectors used during our computaiton
+            Vector x1, x2, g1, g2, rn, cn;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            g1 = g(x1);
+
+
+            while (true)
+            {
+                //computes our dessent direction
+                Vector dess = bk.Mult(g1);
+
+                //initilises the values used to find the optimal step-size
+                VFunc af = a => -dess * g(x1 - (a * dess)); //???
+                double f1 = af(0.0);
+                double f2 = af(step);
+                double an = step;
+
+                //finds the optimal step-size with root-finding methods
+                if (f1 * f2 < 0)
+                {
+                    var res = rf.Brent(af, 0.0, step);
+                    Increment(res.NumSteps);
+
+                    an = res.Value;
+                }
+
+                //travels the path of steepest decent
+                x2 = x1 - (an * dess);
+                if (Step(x1, x2)) break;
+
+                //computes the intermediat values
+                g2 = g(x2);
+                rn = g2 - g1;
+                cn = (x2 - x1) - (bk * rn);
+
+                double t1 = Math.Abs(cn * rn);
+                double t2 = rn.Norm() * cn.Norm();
+
+                if (t1 > VMath.TOL * t2)
+                {
+                    //updates our aproximate inverse hessian
+                    bk += cn.Outer(cn) / (cn * rn);
+
+                    //Console.WriteLine(cn * rn);
+                }
+
+                //copies the curent vector and gradient
+                x1 = new Vector(x2);
+                g1 = new Vector(g2);
+            }
+
+
+            //returns our local minima point
+            return Finish(x2);
+        }
+
+
+        #endregion /////////////////////////////////////////////////////////////////////////
 
 
         /// <summary>
@@ -453,6 +712,27 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             return grad;
+        }
+
+
+        private double ExactSearch(RootFinder rf, VFunc<Vector> g, Vector gn, Vector xn)
+        {
+            //initilises the values used to find the optimal step-size
+            VFunc af = a => -gn * g(xn - (a * gn));
+            double f1 = af(0.0);
+            double f2 = af(step);
+            double an = step;
+
+            //finds the optimal step-size with root-finding methods
+            if (f1 * f2 < 0)
+            {
+                var res = rf.Brent(af, 0.0, step);
+                Increment(res.NumSteps);
+
+                an = res.Value;
+            }
+
+            return an;
         }
     }
 }

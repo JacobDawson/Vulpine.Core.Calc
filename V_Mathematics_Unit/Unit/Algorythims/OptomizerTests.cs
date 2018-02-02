@@ -315,10 +315,10 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             switch (index)
             {
-                case 1: return new Vector(0.5, -0.5);
+                case 1: return new Vector(-1.0, 0.5);   //(0.5, -0.5);
                 case 2: return new Vector(3.0, 3.0);
                 case 3: return new Vector(1.0, 1.0);
-                case 4: return new Vector(-1.0, 1.0);
+                case 4: return new Vector(-1.0, 1.0);   //(-1.0, 1.0);
                 case 5: return new Vector(0.0, -2.0);
                 case 7: return new Vector(0.5, -0.5);
                 case 8: return new Vector(-1.0, 0.5);
@@ -470,6 +470,54 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var act = GetMResult(fx);
 
             var res = opt.GradientBt(f, g, input);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+
+        /*********************************************************************************/
+
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void RankOneEx_GradGiven_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+            var g = GetGraident(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.RankOneEx(f, g, input);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void RankOneBt_GradGiven_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+            var g = GetGraident(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.RankOneBt2(f, g, input);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
