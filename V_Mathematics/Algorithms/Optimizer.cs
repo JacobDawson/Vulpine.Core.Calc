@@ -45,10 +45,10 @@ namespace Vulpine.Core.Calc.Algorithms
 
         //Rank One Quasi-Newton (SR1)
         //either BFGS or DFP
-        //[Nonlinear] Conjugate Gradient
+        //[Nonlinear] Conjugate Gradient ***
         //[Inverse] Column Updating Method
-        //Quasi-Newton [Inverse] Least Squares
-        //Broyden's Method
+        //Quasi-Newton [Inverse] Least Squares ?
+        //Broyden's Method ***
         //Simplex (Nelder-Meed) Method
 
 
@@ -423,12 +423,18 @@ namespace Vulpine.Core.Calc.Algorithms
 
         //NOTE: Try using Wolfe conditions on BackTrack
 
-
+        public Result<Vector> RankOneBt(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return RankOneBt(f, g, x0);
+        }
 
         public Result<Vector> RankOneBt(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
+
+            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
 
             //vectors used during our computaiton
             Vector x1, x2, g1, g2, rn, cn;
@@ -543,7 +549,7 @@ namespace Vulpine.Core.Calc.Algorithms
                     double w2 = dess * g(x1 - an * dess);
                     double w1 = -C2 * dess * g1;
 
-                    Increment(1);
+                    found = Increment(1);
 
                     if (d1 > d2)
                     {
@@ -596,6 +602,15 @@ namespace Vulpine.Core.Calc.Algorithms
 
 
 
+
+
+        public Result<Vector> RankOneEx(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return RankOneEx(f, g, x0);
+        }
+
+
         public Result<Vector> RankOneEx(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //we create a second optimizer and initilise our own
@@ -604,6 +619,8 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
+
+            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
 
             //vectors used during our computaiton
             Vector x1, x2, g1, g2, rn, cn;
@@ -687,7 +704,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="f">Function to be evaluated</param>
         /// <param name="x">Point of intrest</param>
-        /// <param name="h">Step size</param>
+        /// <param name="h">Degree of seperation</param>
         /// <returns>The gradient of the funciton at the point of intrest</returns>
         private static Vector Grad(MFunc f, Vector x, double h)
         {
@@ -713,6 +730,251 @@ namespace Vulpine.Core.Calc.Algorithms
 
             return grad;
         }
+
+
+        private static Matrix Hessian(VFunc<Vector> g, Vector x, double h)
+        {
+            int len = x.Length;
+            Matrix hess = new Matrix(len, len);
+
+            Vector dx;
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + h;
+                b[i] = b[i] - h;
+
+                dx = (g(a) - g(b)) / (2.0 * h);
+
+                hess.SetRow(i, dx);
+            }
+
+            return hess;
+        }
+
+
+        private static Matrix Hessian(MFunc f, Vector x, double h)
+        {
+            int len = x.Length;
+            Matrix hess = new Matrix(len, len);
+
+            Vector dx;
+            //double ddx = 0.0;
+
+            //VFunc<Vector> g = gx => Grad(f, x, h);
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + h;
+                b[i] = b[i] - h;
+
+                //dx = (g(a) - g(b)) / (2.0 * h);
+
+
+                //creates a vector to store the gradient
+                Vector grad = new Vector(x.Length);
+
+                for (int j = 0; j < x.Length; j++)
+                {
+                    //creates copies of the input vectur
+                    Vector c = new Vector(a);
+                    Vector d = new Vector(a);
+
+                    //permutes the input along a given axis
+                    c[j] = c[j] + h;
+                    d[j] = d[j] - h;
+
+                    //aproximates the partial derivitive
+                    grad[j] = (f(c) - f(d)) / (2.0 * h);
+                }
+
+                dx = grad;
+
+                for (int j = 0; j < x.Length; j++)
+                {
+                    //creates copies of the input vectur
+                    Vector c = new Vector(b);
+                    Vector d = new Vector(b);
+
+                    //permutes the input along a given axis
+                    c[j] = c[j] + h;
+                    d[j] = d[j] - h;
+
+                    //aproximates the partial derivitive
+                    grad[j] = (f(c) - f(d)) / (2.0 * h);
+                }
+
+                dx = (dx - grad) / (2.0 * h);
+
+
+                hess.SetRow(i, dx);
+            }
+
+
+            throw new NotImplementedException();
+        }
+
+
+        private static Matrix Hessian2(MFunc f, Vector x, double h)
+        {
+            int len = x.Length;
+            Matrix hess = new Matrix(len, len);
+
+            double ddx = 0.0;
+
+
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + h;
+                b[i] = b[i] - h;
+
+                for (int j = i; j < len; j++)
+                {
+                    Vector a1 = new Vector(a);
+                    Vector a2 = new Vector(a);
+
+                    Vector b1 = new Vector(b);
+                    Vector b2 = new Vector(b);
+
+                    a1[j] = a1[j] + h;
+                    a2[j] = a2[j] - h;
+
+                    b1[j] = b1[j] + h;
+                    b2[j] = b2[j] - h;
+
+                    double dx1 = (f(a1) - f(b1)) / (2.0 * h);
+                    double dx2 = (f(a2) - f(b2)) / (2.0 * h);
+
+                    ddx = (dx1 - dx2) / (2.0 * h);
+
+                    hess[i, j] = ddx;
+                    hess[j, i] = ddx;
+                }
+            }
+
+            return hess;
+        }
+
+
+        private static Matrix Hessian3(MFunc f, Vector x, double h)
+        {
+            int len = x.Length;
+            Matrix hess = new Matrix(len, len);
+
+            double ddx = 0.0;
+
+
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + h;
+                b[i] = b[i] - h;
+
+                double f_a = f(a);
+                double f_b = f(b);
+
+                for (int j = i; j < len; j++)
+                {                   
+                    Vector c = new Vector(x);
+                    Vector d = new Vector(x);
+
+                    c[j] = c[j] + h;
+                    d[j] = d[j] - h;
+
+                    double dx1 = (f(c) - f_a) / (h * VMath.R2);
+                    double dx2 = (f_b - f(d)) / (h * VMath.R2);
+
+                    ddx = (dx1 - dx2) / (h * VMath.R2);
+
+                    hess[i, j] = ddx;
+                    hess[j, i] = ddx;
+                }
+            }
+
+            return hess;
+        }
+
+
+
+        private static Matrix Hessian4(MFunc f, Vector x, double h)
+        {
+            int len = x.Length;
+            Matrix hess = new Matrix(len, len);
+
+            double f_x = f(x);
+            double ddx = 0.0;
+
+
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + h;
+
+                double f_a = f(a);
+
+                for (int j = i; j < len; j++)
+                {
+                    
+
+                    //Vector b1 = new Vector(b);
+                    //Vector b2 = new Vector(b);
+
+                    //a1[j] = a1[j] + h;
+                    //a2[j] = a2[j] - h;
+
+                    //b1[j] = b1[j] + h;
+                    //b2[j] = b2[j] - h;
+
+                    //double dx1 = (f(a1) - f(b1)) / (2.0 * h);
+                    //double dx2 = (f(a2) - f(b2)) / (2.0 * h);
+
+
+                    Vector b = new Vector(x);
+                    Vector c = new Vector(a);
+
+
+                    b[j] = b[j] + h;
+                    c[j] = c[j] + h;
+
+                    double dx1 = (f_x - f_a) / h;
+                    double dx2 = (f_x - f(b)) / h;
+
+
+                    ddx = (dx1 - dx2) / h;
+
+                    hess[i, j] = ddx;
+                    hess[j, i] = ddx;
+                }
+            }
+
+            return hess;
+        }
+        
 
 
         private double ExactSearch(RootFinder rf, VFunc<Vector> g, Vector gn, Vector xn)

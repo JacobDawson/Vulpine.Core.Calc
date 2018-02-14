@@ -32,7 +32,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             tol = 1.0e-12;   //1.0e-12;
             exp = 1.0e-07;   //1.0e-07;
 
-            step = 0.1;      //1.0;
+            step = 1.0;      //1.0;
 
             loging = true;
         }
@@ -478,7 +478,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         /*********************************************************************************/
 
-
+        [Ignore]
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
@@ -501,6 +501,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
+        [Ignore]
         [TestCase(1)]
         [TestCase(2)]
         [TestCase(3)]
@@ -517,7 +518,55 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var input = GetMStart(fx);
             var act = GetMResult(fx);
 
-            var res = opt.RankOneBt2(f, g, input);
+            var res = opt.RankOneBt(f, g, input);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [Ignore]
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(7)]
+        [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void RankOneEx_FiniteDiff_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.RankOneEx(f, input);
+
+            LogResults(fx, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [Ignore]
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(7)]
+        [TestCase(8)]
+        [TestCase(10)]
+        [TestCase(11)]
+        public void RankOneBt_FiniteDiff_ExpectedValue(int fx)
+        {
+            Optimizer opt = GetOptomizer();
+            MFunc f = GetMFunc(fx);
+
+            var input = GetMStart(fx);
+            var act = GetMResult(fx);
+
+            var res = opt.RankOneBt(f, input);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
