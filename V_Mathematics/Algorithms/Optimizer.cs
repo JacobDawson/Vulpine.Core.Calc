@@ -137,7 +137,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //computes the error and determins if we should stop
                 double error = Math.Abs(m2) + Math.Abs(m1);
-                error = Math.Abs(high - low) / error;
+                error = Math.Abs(high - low) / (error + 1.0);
                 if (Step(error)) break;
 
                 //evaluates the funciton at those points
@@ -211,7 +211,7 @@ namespace Vulpine.Core.Calc.Algorithms
             {
                 //computes the error and determins if we should stop
                 double error = Math.Abs(m2) + Math.Abs(m1);
-                error = Math.Abs(b - a) / error;
+                error = Math.Abs(b - a) / (error + 1.0);
                 if (Step(error)) break;
 
                 if (f1 > f2)
@@ -398,7 +398,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 if (f1 * f2 < 0)
                 {
                     var res = rf.Brent(af, 0.0, step);
-                    Increment(res.NumSteps);
+                    Increment(res.Count);
 
                     an = res.Value;
                 }
@@ -645,7 +645,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 if (f1 * f2 < 0)
                 {
                     var res = rf.Brent(af, 0.0, step);
-                    Increment(res.NumSteps);
+                    Increment(res.Count);
 
                     an = res.Value;
                 }
@@ -989,7 +989,7 @@ namespace Vulpine.Core.Calc.Algorithms
             if (f1 * f2 < 0)
             {
                 var res = rf.Brent(af, 0.0, step);
-                Increment(res.NumSteps);
+                Increment(res.Count);
 
                 an = res.Value;
             }

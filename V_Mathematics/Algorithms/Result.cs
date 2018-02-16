@@ -25,11 +25,13 @@ using System.Text;
 namespace Vulpine.Core.Calc.Algorithms
 {
     /// <summary>
-    /// When dealing with numerical methods, particulary itterative methods, values 
-    /// are seldom exact. Practaily every value reported has some inherent error 
-    /// associated with it, no mater how small. This struct provides a way to report 
-    /// the error allong with a given value. It also reports the number of itterations
-    /// it took to compute the result when using iterative numerical methods.
+    /// This class allows for the presentation of values which are inprecise, usualy
+    /// the result of some numerical procedure. Every result contains an error term
+    /// which can be considered a mesurement of precision. Note however, that precision
+    /// should never be construed for accuracy. A Result can be very precise, but
+    /// highly inacurate! Results also contain a count paramater, which is indicitive
+    /// of how long it took to compute the result. The count paramater is not used
+    /// by every method, and it's exact interpritation can vary.
     /// </summary>
     /// <typeparam name="T">Type of result</typeparam>
     /// <remarks>Last Update: 2017-01-26</remarks>
@@ -47,20 +49,25 @@ namespace Vulpine.Core.Calc.Algorithms
         private int count;
 
         /// <summary>
-        /// Constructs a new result with the given error value and iteration
-        /// count. These values should be computed by the Algorithm class. 
+        /// Constructs a new result with the given error value 
+        /// and iteration count.
         /// </summary>
         /// <param name="val">Value of the result</param>
         /// <param name="err">Amount of error in the result</param>
         /// <param name="count">Number of interations used</param>
-        internal Result(T val, double err, int count)
+        public Result(T val, double err, int count)
         {
             this.result = val;
             this.error = Math.Abs(err);
-            this.count = count;
+            this.count = Math.Abs(count);
         }
 
-        internal Result(T val)
+        /// <summary>
+        /// constructs a new result which is concluded to have infinite
+        /// error, and has taken no time to compute.
+        /// </summary>
+        /// <param name="val">Value of the result</param>
+        public Result(T val)
         {
             this.result = val;
             this.error = Double.PositiveInfinity;
@@ -68,9 +75,9 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Reports the computed value plus or minius the associated absolute
-        /// error, indicating a range of values where the true value is
-        /// expected to lie.
+        /// Reports the computed value along with it's error. Tipicaly the
+        /// error is reletive when the value is large, and absolute when the
+        /// value is small, although the exact interpritaiton can varry.
         /// </summary>
         /// <returns>The result as a string</returns>
         public override string ToString()
@@ -80,10 +87,10 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Reports the computed value plus or minius the associated absolute
-        /// error, indicating a range of values where the true value is
-        /// expected to lie. It passes on the formating information to the
-        /// corisponding vlaue if it is able.
+        /// Reports the computed value along with it's error. Tipicaly the
+        /// error is reletive when the value is large, and absolute when the
+        /// value is small, although the exact interpritaiton can varry.
+        /// It passes on the formating information if it is able.
         /// </summary>
         /// <param name="format">A numeric format string</param>
         /// <param name="provider">An object that suplies formating information</param>
@@ -165,8 +172,8 @@ namespace Vulpine.Core.Calc.Algorithms
 
         /// <summary>
         /// The amount error between the generated value and the previous value.
-        /// Wheather the error indicated is the reletive error or absolute error,
-        /// is dependent upon the generating algorythim.
+        /// Tipicaly the error is reletive when the value is large, and absolute 
+        /// when the value is small, although the exact interpritaiton can varry.
         /// </summary>
         public double Error
         {
@@ -174,11 +181,11 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// The number of itterations used to compute the given result. What
-        /// qualifies as an iteration is determined by the spesific algroythim
-        /// that generated the result.
+        /// The count indicates how long it took to compute the given result.
+        /// Usualy count is prepottional to the number of funciton invocations
+        /// involved, although the exact interpritation can varry.
         /// </summary>
-        public int NumSteps
+        public int Count
         {
             get { return count; }
         }

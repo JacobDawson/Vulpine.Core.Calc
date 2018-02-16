@@ -148,11 +148,11 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(after, Is.EqualTo(count + 1));
         }
 
-        [TestCase(2.70611, 2.70705, 0.0003472414621081990)]
-        [TestCase(-3.29341, -3.29939, 0.001812456241911383)]
-        [TestCase(7.22920, 7.22919, 0.000001383280837825538)]
-        [TestCase(-3.05114, -3.03836, 0.004206216511539120)]
-        [TestCase(1.91267, 1.91471, 0.001065435496759300)]
+        [TestCase(2.70611, 2.70705, 0.000253570898693135)]
+        [TestCase(-3.29341, -3.29939, 0.00139089498742837)]
+        [TestCase(7.22920, 7.22919, 0.00000121518642777982)]
+        [TestCase(-3.05114, -3.03836, 0.00316465099693941)]
+        [TestCase(1.91267, 1.91471, 0.000699898103070227)]
         public void Step_RelativeError_ExptectedError(double last, double curr, double exp)
         {
             var alg = new TestableAlgorythim(100, 0.001);
@@ -220,11 +220,11 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(after, Is.EqualTo(count + 1));
         }
 
-        [TestCase(1, 2, 1.166168829071337)]
-        [TestCase(2, 3, 1.851829251395661)]
-        [TestCase(3, 4, 1.373775015742662)]
-        [TestCase(4, 5, 0.855945707842585)]
-        [TestCase(5, 6, 1.440851214338866)]
+        [TestCase(1, 2, 1.0620956442377968803)]
+        [TestCase(2, 3, 1.6391582022830615345)]
+        [TestCase(3, 4, 1.1824931431518093376)]
+        [TestCase(4, 5, 0.7473396214036743215)]
+        [TestCase(5, 6, 1.2937749468992645691)]
         public void Step_RelativeVectors_ExpectedError(int n1, int n2, double exp)
         {
             var alg = new TestableAlgorythim(100, 0.001);

@@ -33,10 +33,10 @@ namespace Vulpine.Core.Calc.Algorithms
     /// use an iterative process to compute their output. This class serves as
     /// a meta-class for all these operations. It provides stoping criteria for
     /// the iterative methods, cuting down on the number of paramaters that must
-    /// be specified at invocation. By default, an iterative process will
-    /// terminate whenever the resulting error drops below a set tollerance,
-    /// or it exausts the maximum number of itterations. In paticular, no such
-    /// method is gaurenteed to find a solution.
+    /// be specified at invocation. An iterative process will terminate whenever 
+    /// the resulting error drops below a set tollerance, or it exausts the 
+    /// maximum number of itterations. By defalut, reletive error is used when
+    /// the result is large, and absolute error is used when the result is small. 
     /// </summary>
     /// <remarks>Last Update: 2017-01-26</remarks>
     public abstract class Algorithm
@@ -152,9 +152,9 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Represents the amount of error tolerance in the output. All iterative
-        /// methods will return a solution once the computed error in the output
-        /// drops below this threshold.
+        /// Represents the amount of error tolerance in the output. By defalut
+        /// reletive error is used when the result is large, and absolute error
+        /// is used when the result is small. 
         /// </summary>
         public double Tolerance
         {
@@ -270,9 +270,8 @@ namespace Vulpine.Core.Calc.Algorithms
             count = count + 1;
 
             //computes the error value
-            double dist = curr - last;
-            dist = dist / curr;
-            error = Math.Abs(dist);
+            double dist = Math.Abs(curr - last);
+            error = dist / (Math.Abs(curr) + 1.0);
 
             //informs the listeners & checks for halting
             if (OnStep(count, error)) return true;
@@ -300,7 +299,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //computes the error value
             double dist = curr.Dist(last);
-            dist = dist / curr.Norm();
+            dist = dist / (curr.Norm() + 1.0);
             error = Math.Abs(dist);
 
             //informs the listeners & checks for halting

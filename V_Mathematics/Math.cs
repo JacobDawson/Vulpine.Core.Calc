@@ -92,9 +92,7 @@ namespace Vulpine.Core.Calc
         /// <summary>
         /// The default error tollarence used within the mathamatics library.
         /// It is desined to be greater that the precision of a single floating
-        /// point value, but less than the presision of a double. Note this value
-        /// is only sutable for comparing releative error, for absolute error
-        /// a diffrent tollerence value should be used.
+        /// point value, but less than the presision of a double. 
         /// </summary>
         public const double TOL = 1e-12;
 
@@ -142,11 +140,11 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
-        /// Determins if the given value should be treated as zero, for all intents and
-        /// purpouses. One should tipicaly avoid directly comparing two floating point
-        /// numbers, due to possable round-off error. However, in many instances in code,
-        /// it is usefull to compare a floating point value to zero. This method helps
-        /// to alieviate this problem.
+        /// Determins if the given value should be considered equal to zero, for all intents 
+        /// and purpouses. It works by determing if the number is invertable. Basicly, this
+        /// method should be used if you need to be as precice as possable while avoiding
+        /// division by zero. Otherwise, it should be sufficent to determin if the magnitude
+        /// is less than some tollerence.
         /// </summary>
         /// <param name="x">Vlaue to test</param>
         /// <returns>True if the value should be considered zero</returns>
@@ -282,20 +280,62 @@ namespace Vulpine.Core.Calc
 
         #region Floating Point Comparison...
 
-        public static double Error(double actual, double expected)
+        /// <summary>
+        /// Computes the reletive error between some estimated value and
+        /// an actual known value. Not to be confused with the error function
+        /// denoted Erf(). Care must be taken if the actual known value
+        /// is close to zero. 
+        /// </summary>
+        /// <param name="est">The estimated value</param>
+        /// <param name="act">The known value</param>
+        /// <returns>The absolute error in the estimate</returns>
+        public static double Error(double est, double act)
         {
-            double error = actual - expected;
-            error = error / expected;
+            double error = est - act;
+            error = error / act;
 
             return Math.Abs(error);
         }
 
-        public static double Error(Cmplx actual, Cmplx expected)
+        /// <summary>
+        /// Computes the reletive error between some estimated value and
+        /// an actual known value. Not to be confused with the error function
+        /// denoted Erf(). Care must be taken if the actual known value
+        /// is close to zero. 
+        /// </summary>
+        /// <param name="est">The estimated value</param>
+        /// <param name="act">The known value</param>
+        /// <returns>The absolute error in the estimate</returns>
+        public static double Error(Cmplx est, Cmplx act)
         {
-            double error = actual.Dist(expected);
-            error = error / expected.Abs;
+            Cmplx error = act - est;
+            error = error / est;
 
-            return error;
+            return error.Abs;
+        }
+
+        #endregion //////////////////////////////////////////////////////////////////
+
+        #region Conversion Methods...
+
+        /// <summary>
+        /// Converts from radians to degrees.
+        /// </summary>
+        /// <param name="rad">Input in radians</param>
+        /// <returns>The equivlent value in degrees</returns>
+        public static double ToDeg(double rad)
+        {
+            return (rad * (180.0 / Math.PI));
+        }
+
+        /// <summary>
+        /// Converts from degrees to radians.
+        /// </summary>
+        /// <param name="deg">Input in degrees</param>
+        /// <returns>The equivlent value in radians</returns>
+        public static double ToRad(double deg)
+        {
+            return (deg * (Math.PI / 180.0));
         }
 
         #endregion //////////////////////////////////////////////////////////////////
@@ -346,7 +386,7 @@ namespace Vulpine.Core.Calc
             return min;
         }
 
-        #endregion //////////////////////////////////////////////////////////////////
+        #endregion //////////////////////////////////////////////////////////////////      
 
         #region Special Functions...
 
@@ -649,29 +689,20 @@ namespace Vulpine.Core.Calc
 
             //values used in the itteration below
             double pow = Math.Pow(x, a) * Math.Exp(-x);
-            double error = Double.PositiveInfinity;
-            int k = 0;
 
             double p = 1.0;
             double q = 1.0;
-            double sum1 = 0.0;
-            double sum2 = 0.0;
+            double sum = 0.0;
 
-            //uses the power series expansion
-            while (error > VMath.TOL && k < 64)
+            for (int k = 0; k < 32; k++)
             {
-                sum1 = sum2;
-
                 q = q * (a + k);
-                sum2 += (pow * p) / q;
+                sum += (pow * p) / q;
                 p = p * x;
-
-                error = Math.Abs(sum1 - sum2) / Math.Abs(sum1);
-                k++;
             }
 
             //returns the upper incomplete gamma
-            return VMath.Gamma(a) - sum2;
+            return VMath.Gamma(a) - sum;
         }
 
         /// <summary>
@@ -687,29 +718,20 @@ namespace Vulpine.Core.Calc
         {
             //values used in the itteration below
             Cmplx pow = Cmplx.Pow(z, a) * Cmplx.Exp(-z);
-            double error = Double.PositiveInfinity;
-            int k = 0;
 
             Cmplx p = 1.0;
             Cmplx q = 1.0;
-            Cmplx sum1 = 0.0;
-            Cmplx sum2 = 0.0;
+            Cmplx sum = 0.0;
 
-            //uses the power series expansion
-            while (error > VMath.TOL && k < 64)
+            for (int k = 0; k < 32; k++)
             {
-                sum1 = sum2;
-
                 q = q * (a + k);
-                sum2 += (pow * p) / q;
+                sum += (pow * p) / q;
                 p = p * z;
-
-                error = (sum1 - sum2).Abs / sum1.Abs;
-                k++;
             }
 
             //returns the upper incomplete gamma
-            return VMath.Gamma(a) - sum2;
+            return VMath.Gamma(a) - sum;
         }
 
         /// <summary>
@@ -823,6 +845,9 @@ namespace Vulpine.Core.Calc
         /// <returns>The result of the complex error funciton</returns>
         public static Cmplx Erf(Cmplx z)
         {
+            //NOTE: It should be possable to re-write this method without
+            //the while loop, and get greator accuracy!
+
             //Uses the talor series for the complex error function
             double error = Double.PositiveInfinity;
             int n = 0;
@@ -831,7 +856,7 @@ namespace Vulpine.Core.Calc
             Cmplx sum2 = 0.0;
             Cmplx prod = 1.0;
 
-            while (error > VMath.TOL && n < 128)
+            while (error > VMath.TOL && n < 128) //128
             {
                 //updates the sum and calculates the relitive error
                 sum2 += (z / (2.0 * n + 1.0)) * prod;
@@ -880,31 +905,7 @@ namespace Vulpine.Core.Calc
             return phi * 0.5;
         }
 
-        #endregion //////////////////////////////////////////////////////////////////
-
-        #region Conversion Methods...
-
-        /// <summary>
-        /// Converts from radians to degrees.
-        /// </summary>
-        /// <param name="rad">Input in radians</param>
-        /// <returns>The equivlent value in degrees</returns>
-        public static double ToDeg(double rad)
-        {
-            return (rad * (180.0 / Math.PI));
-        }
-
-        /// <summary>
-        /// Converts from degrees to radians.
-        /// </summary>
-        /// <param name="deg">Input in degrees</param>
-        /// <returns>The equivlent value in radians</returns>
-        public static double ToRad(double deg)
-        {
-            return (deg * (Math.PI / 180.0));
-        }
-
-        #endregion //////////////////////////////////////////////////////////////////
+        #endregion //////////////////////////////////////////////////////////////////       
 
     }
 }

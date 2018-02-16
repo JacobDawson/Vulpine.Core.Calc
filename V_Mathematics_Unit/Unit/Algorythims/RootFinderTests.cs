@@ -38,7 +38,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var rf = new RootFinder(max, tol);
 
-            //rf.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            //rf.StepEvent += delegate(Object o, StepEventArgs args)
             //{
             //    Console.WriteLine("Step{0}: {1}", args.Step, args.Error);
             //};
@@ -50,7 +50,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         public void LogResults(int f, Result<Double> res)
         {
             if (loging) Console.WriteLine
-                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.NumSteps);
+                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.Count);
         }
 
 
@@ -384,7 +384,21 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(res.Value, Ist.WithinTolOf(t, exp));
         }
 
+        /*******************************************************************************/
 
+        //[Test]
+        //public void Bisection_RootIsZero_FindsRoot()
+        //{
+        //    RootFinder rf = GetFinder();
+        //    //VFunc f = GetFunciton(findex);
+
+        //    var res = rf.Secant(x => -x, -1.0, 2.0);
+
+        //    //var res = rf.Newton(x => -x, dx => -1, 2.0);
+
+        //    //LogResults(findex, res);
+        //    Assert.That(res.Value, Ist.Zero());
+        //}
 
     }
 }

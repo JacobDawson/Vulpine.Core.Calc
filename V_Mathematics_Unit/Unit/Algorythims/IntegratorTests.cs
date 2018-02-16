@@ -27,7 +27,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         public IntegratorTests()
         {
-            max = 32; //28;
+            max = 28; //28;
             tol = 1.0e-10;
             exp = 1.0e-09;
 
@@ -39,7 +39,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var ing = new Integrator(max, tol);
 
-            //ing.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            //ing.StepEvent += delegate(Object o, StepEventArgs args)
             //{
             //    Console.WriteLine("Step{0}: {1}", args.Step, args.Error);
             //};
@@ -51,7 +51,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         public void LogResults(int f, Result<Double> res)
         {
             if (loging) Console.WriteLine
-                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.NumSteps);
+                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.Count);
         }
 
 
@@ -217,7 +217,19 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         }
 
 
+        /*************************************************************************/
 
+        //[Test]
+        //public void Trapizoid_ZeroIntergral_ReturnsZero()
+        //{
+        //    Integrator ing = GetIntegrator();
+        //    //VFunc f = GetFunc(fx);
+
+        //    var res = ing.Gauss(x => Math.Sin(x), 0.0, VMath.TAU);
+
+        //    //LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.Zero());
+        //}
 
 
     }

@@ -28,7 +28,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         public OptomizerTests()
         {
-            max = 1000000;   //256;
+            max = 100000;    //256;
             tol = 1.0e-12;   //1.0e-12;
             exp = 1.0e-07;   //1.0e-07;
 
@@ -41,7 +41,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             var opt = new Optimizer(max, tol, step);
 
-            //rf.StepEvent += delegate(Object o, NumericStepEventArgs args)
+            //opt.StepEvent += delegate(Object o, StepEventArgs args)
             //{
             //    Console.WriteLine("Step{0}: {1}", args.Step, args.Error);
             //};
@@ -52,7 +52,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         public void LogResults<T>(int f, Result<T> res)
         {
             if (loging) Console.WriteLine
-                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.NumSteps);
+                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.Count);
         }
 
 
@@ -478,99 +478,144 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         /*********************************************************************************/
 
-        [Ignore]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void RankOneEx_GradGiven_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-            var g = GetGraident(fx);
+        //[TestCase(1)]
+        //[TestCase(2)]
+        //[TestCase(3)]
+        //[TestCase(4)]
+        //[TestCase(5)]
+        //[TestCase(10)]
+        //[TestCase(11)]
+        //public void RankOneEx_GradGiven_ExpectedValue(int fx)
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    MFunc f = GetMFunc(fx);
+        //    var g = GetGraident(fx);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+        //    var input = GetMStart(fx);
+        //    var act = GetMResult(fx);
 
-            var res = opt.RankOneEx(f, g, input);
+        //    var res = opt.RankOneEx(f, g, input);
 
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
 
-        [Ignore]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void RankOneBt_GradGiven_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-            var g = GetGraident(fx);
+        //[TestCase(1)]
+        //[TestCase(2)]
+        //[TestCase(3)]
+        //[TestCase(4)]
+        //[TestCase(5)]
+        //[TestCase(10)]
+        //[TestCase(11)]
+        //public void RankOneBt_GradGiven_ExpectedValue(int fx)
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    MFunc f = GetMFunc(fx);
+        //    var g = GetGraident(fx);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+        //    var input = GetMStart(fx);
+        //    var act = GetMResult(fx);
 
-            var res = opt.RankOneBt(f, g, input);
+        //    var res = opt.RankOneBt(f, g, input);
 
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
 
-        [Ignore]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void RankOneEx_FiniteDiff_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
+        //[TestCase(1)]
+        //[TestCase(2)]
+        //[TestCase(3)]
+        //[TestCase(4)]
+        //[TestCase(5)]
+        //[TestCase(7)]
+        //[TestCase(8)]
+        //[TestCase(10)]
+        //[TestCase(11)]
+        //public void RankOneEx_FiniteDiff_ExpectedValue(int fx)
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    MFunc f = GetMFunc(fx);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+        //    var input = GetMStart(fx);
+        //    var act = GetMResult(fx);
 
-            var res = opt.RankOneEx(f, input);
+        //    var res = opt.RankOneEx(f, input);
 
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
 
-        [Ignore]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void RankOneBt_FiniteDiff_ExpectedValue(int fx)
-        {
-            Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
+        //[TestCase(1)]
+        //[TestCase(2)]
+        //[TestCase(3)]
+        //[TestCase(4)]
+        //[TestCase(5)]
+        //[TestCase(7)]
+        //[TestCase(8)]
+        //[TestCase(10)]
+        //[TestCase(11)]
+        //public void RankOneBt_FiniteDiff_ExpectedValue(int fx)
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    MFunc f = GetMFunc(fx);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+        //    var input = GetMStart(fx);
+        //    var act = GetMResult(fx);
 
-            var res = opt.RankOneBt(f, input);
+        //    var res = opt.RankOneBt(f, input);
 
-            LogResults(fx, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
+
+
+        /*********************************************************************************/
+
+        //[Test]
+        //public void MinTernary_MinZero_ExpectedValue()
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    //VFunc f = GetFunc(fx);
+
+        //    var res = opt.MinGolden(x => x * x, -1.0, 2.0);
+
+        //    //LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.Zero());
+        //}
+
+
+
+        //[Test]
+        //public void GradientEx_GradGiven_ZeroValue()
+        //{
+        //    Optimizer opt = GetOptomizer();
+        //    //MFunc f = GetMFunc(fx);
+        //    //var g = GetGraident(fx);
+
+        //    //var input = GetMStart(fx);
+        //    //var act = GetMResult(fx);
+
+        //    MFunc f = delegate(Vector x)
+        //    {
+        //        return (4.0 * x[0] * x[0]) + (x[1] * x[1]) - (2.0 * x[0] * x[1]);
+        //    };
+
+        //    VFunc<Vector> g = delegate(Vector x)
+        //    {
+        //        double dx = 8.0 * x[0] - 2.0 * x[1];
+        //        double dy = 2.0 * x[1] - 2.0 * x[0];
+
+        //        return new Vector(dx, dy);
+        //    };
+
+        //    Vector input = new Vector(-1.0, -2.0);
+
+        //    var res = opt.RankOneEx(f, g, input);
+
+        //    //LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.Zero());
+        //}
+
 
 
     }

@@ -43,8 +43,8 @@ namespace Vulpine_Core_Calc_Tests.AddOns
                 double e = (double)expected;
 
                 //computes the error value
-                double dist = (a - e) / e;
-                error = Math.Abs(dist);
+                double dist = Math.Abs(a - e);
+                error = dist / Math.Abs(e);
             }
             else if (actual is float)
             {
@@ -52,8 +52,8 @@ namespace Vulpine_Core_Calc_Tests.AddOns
                 double e = (float)expected;
 
                 //computes the error value
-                double dist = (a - e) / e;
-                error = Math.Abs(dist);
+                double dist = Math.Abs(a - e);
+                error = dist / Math.Abs(e);
             }
             else
             {
@@ -61,7 +61,8 @@ namespace Vulpine_Core_Calc_Tests.AddOns
                 dynamic e = expected;
 
                 //computes the error value
-                double dist = a.Dist(e) / e.Norm();
+                double dist = a.Dist(e);
+                dist = dist / e.Norm();
                 error = Math.Abs(dist);
             }
 
