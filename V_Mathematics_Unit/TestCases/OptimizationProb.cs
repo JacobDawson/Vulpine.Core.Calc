@@ -36,10 +36,10 @@ namespace Vulpine_Core_Calc_Tests.TestCases
             this.start = new Vector[start.Length];
 
             for (int i = 0; i < targ.Length; i++)
-            {
                 this.targ[i] = new Vector(targ[i]);
+
+            for (int i = 0; i < start.Length; i++)
                 this.start[i] = new Vector(start[i]);
-            }
         }
 
         /// <summary>

@@ -141,7 +141,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     new Vector[]
                     {
                         new Vector(7.0, 2.0),
-                        new Vector(7.0, 2.0),
                     },
                     new Vector[]
                     {
@@ -175,7 +174,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
-                        new Vector(3.0, 4.0),
                         new Vector(3.0, 4.0),
                     },
                     new Vector[]
@@ -212,7 +210,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     new Vector[]
                     {
                         new Vector(-5.0/7.0, -1.0/7.0),
-                        new Vector(-5.0/7.0, -1.0/7.0),
                     },
                     new Vector[]
                     {
@@ -248,7 +245,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     new Vector[]
                     {
                         new Vector(1.0, 1.0),
-                        new Vector(1.0, 1.0),
                     },
                     new Vector[]
                     {
@@ -282,7 +278,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
-                        new Vector(-0.707106781186548, 0.0),
                         new Vector(-0.707106781186548, 0.0),
                     },
                     new Vector[]
@@ -322,7 +317,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
-                        new Vector(-0.346573590279973, 0.0),
                         new Vector(-0.346573590279973, 0.0),
                     },
                     new Vector[]
@@ -398,8 +392,12 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
+                        new Vector(-1.70360671496998, 0.796083568672625),
+                        new Vector(-1.60710475292020, -0.568651454884131),
                         new Vector(-0.0898420131003181, 0.712656403020740),
                         new Vector(0.0898420131003181, -0.712656403020740),
+                        new Vector(1.60710475292020, 0.568651454884131),
+                        new Vector(1.70360671496998, -0.796083568672625),
                     },
                     new Vector[]
                     {
@@ -433,7 +431,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
-                        new Vector(0.0, 1.28077640640442),
                         new Vector(0.0, 1.28077640640442),
                     },
                     new Vector[]
@@ -509,7 +506,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     new Vector[]
                     {
                         new Vector(-0.450183611294874, -0.514933264661129),
-                        new Vector(-0.450183611294874, -0.514933264661129),
                     },
                     new Vector[]
                     {
@@ -570,73 +566,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         #endregion ////////////////////////////////////////////////////////////////////////
 
-
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientEx_FiniteDiff_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientEx_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientEx(p.Objective, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientEx_FiniteDiff_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientEx_FiniteDiff_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientEx(p.Objective, input);
             var grad = p.Gradient(res.Value);
 
@@ -644,72 +599,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientBt_FiniteDiff_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientBt_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientBt(p.Objective, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientBt_FiniteDiff_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientBt_FiniteDiff_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientBt(p.Objective, input);
             var grad = p.Gradient(res.Value);
 
@@ -717,72 +632,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientEx_GradGiven_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientEx_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientEx(p.Objective, p.Gradient, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientEx_GradGiven_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientEx_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientEx(p.Objective, p.Gradient, input);
             var grad = p.Gradient(res.Value);
 
@@ -790,72 +665,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientBt_GradGiven_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientBt_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientBt(p.Objective, p.Gradient, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void GradientBt_GradGiven_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void GradientBt_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.GradientBt(p.Objective, p.Gradient, input);
             var grad = p.Gradient(res.Value);
 
@@ -866,218 +701,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
         /*********************************************************************************/
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneEx_GradGiven_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void RankOneEx_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
-            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
-
-            LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
-
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneEx_GradGiven_GradZero(int prob, int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
-            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneBt_GradGiven_ExpectedValue(int prob, int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
-            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
-
-            LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        }
-
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneBt_GradGiven_GradZero(int prob, int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
-            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneEx_FiniteDiff_ExpectedValue(int prob, int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.RankOneEx(p.Objective, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneEx_FiniteDiff_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void RankOneEx_FiniteDiff_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.RankOneEx(p.Objective, input);
             var grad = p.Gradient(res.Value);
 
@@ -1085,73 +734,99 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneBt_FiniteDiff_ExpectedValue(int prob, int start)
+        [Test, Combinatorial]
+        public void RankOneBt_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.RankOneBt(p.Objective, input);
-
             LogResults(prob, res);
-            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(1, 2)]
-        [TestCase(2, 1)]
-        [TestCase(2, 2)]
-        [TestCase(3, 1)]
-        [TestCase(3, 2)]
-        [TestCase(4, 1)]
-        [TestCase(4, 2)]
-        [TestCase(5, 1)]
-        [TestCase(5, 2)]
-        [TestCase(6, 1)]
-        [TestCase(6, 2)]
-        [TestCase(7, 1)]
-        [TestCase(7, 2)]
-        [TestCase(8, 1)]
-        [TestCase(8, 2)]
-        [TestCase(9, 1)]
-        [TestCase(9, 2)]
-        [TestCase(10, 1)]
-        [TestCase(10, 2)]
-        [TestCase(11, 1)]
-        [TestCase(11, 2)]
-        public void RankOneBt_FiniteDiff_GradZero(int prob, int start)
+        [Test, Combinatorial]
+        public void RankOneBt_FiniteDiff_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var act = p.GetTarget(start);
-
             var res = opt.RankOneBt(p.Objective, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [Test, Combinatorial]
+        public void RankOneBt_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
+        }
+
+        [Test, Combinatorial]
+        public void RankOneBt_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
             var grad = p.Gradient(res.Value);
 
             Assert.That(grad.Norm(), Is.Not.NaN);
