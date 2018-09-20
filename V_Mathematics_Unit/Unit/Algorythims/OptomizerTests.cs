@@ -12,6 +12,8 @@ using Vulpine.Core.Calc.Algorithms;
 using Vulpine.Core.Calc.Numbers;
 using Vulpine.Core.Calc.Matrices;
 
+using Vulpine_Core_Calc_Tests.TestCases;
+
 namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 {
     [TestFixture]
@@ -20,6 +22,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         private int max;
         private double tol;
         private double exp;
+        private double cut;
 
         private double step;
 
@@ -31,6 +34,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             max = 100000;    //256;
             tol = 1.0e-12;   //1.0e-12;
             exp = 1.0e-07;   //1.0e-07;
+            cut = 1.0e-07;   //1.0e-08;
 
             step = 1.0;      //1.0;
 
@@ -106,230 +110,420 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         }
 
 
-        public MFunc GetMFunc(int index)
+        public OptimizationProb GetOppProb(int index)
         {
             switch (index)
             {
-                //f(x) = x1 * e^(-x1^2 - x2^2)
-                //min = [-1/sqrt(2), 0]
-                case 1: return delegate(Vector x)
-                {
-                    double x0_2 = x[0] * x[0];
-                    double x1_2 = x[1] * x[1];
-                    return x[0] * Math.Exp(-x0_2 - x1_2);
-                };
+                /**
+                 *  Circular Contures around [7, 2]
+                 * 
+                 *  f(x, y) = (x - 7)^2 + (y - 2)^2
+                 *  
+                 *  d/dx = 2 (x - 7)
+                 *  d/dy = 2 (y - 2)
+                 *  
+                 *  [5, 3] -> [7, 2]
+                 *  [9, 4] -> [7, 2]
+                 */
+                case 01: return new OptimizationProb(
+                    delegate(Vector x) 
+                    {
+                        double a = x[0] - 7.0;
+                        double b = x[1] - 2.0;
+                        return (a * a) + (b * b);
+                    },
+                    delegate(Vector x)
+                    {
+                        double a = 2 * (x[0] - 7.0);
+                        double b = 2 * (x[1] - 2.0);
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(7.0, 2.0),
+                        new Vector(7.0, 2.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(5.0, 3.0),
+                        new Vector(9.0, 4.0),
+                    });
 
-                //f(x) = (x1 - 7)^2 + (x2 - 2)^2
-                //min = [7, 2]
-                case 2: return delegate(Vector x)
-                {
-                    double a = x[0] - 7.0;
-                    double b = x[1] - 2.0;
-                    return (a * a) + (b * b);
-                };
+                /**
+                 *  Eleptical Contours around [3, 4]
+                 * 
+                 *  f(x, y) = y (-2 x + y - 2) + x (4 x - 16) + 28
+                 *  
+                 *  d/dx = 8 x - 2 y - 16
+                 *  d/dy = -2 x + 2 y - 2
+                 *  
+                 *  [2, 2] -> [3, 4]
+                 *  [4, 4] -> [3, 4]
+                 */
+                case 02: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double a = x[1] * (-2.0 * x[0] + x[1] - 2.0);
+                        double b = x[0] * (4.0 * x[0] - 16.0);
+                        return a + b + 28.0;
+                    },
+                    delegate(Vector x)
+                    {
+                        double a = 8.0 * x[0] - 2.0 * x[1] - 16.0;
+                        double b = 2.0 * x[1] - 2.0 * x[0] - 2.0;
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(3.0, 4.0),
+                        new Vector(3.0, 4.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(2.0, 2.0),
+                        new Vector(4.0, 4.0),
+                    });
 
-                //f(x) = 4 * (x - 3)^2 + (y - 4)^2 - 2 * (x - 3) * (y - 4)
-                //min = [3, 4]
-                case 3: return delegate(Vector x)
-                {
-                    double x0 = x[0] - 3.0;
-                    double x1 = x[1] - 4.0;
-                    return (4.0 * x0 * x0) + (x1 * x1) - (2.0 * x0 * x1);
-                };
+                /**
+                 *  More Eliptical Contours
+                 *  
+                 *  f(x, y) = x^2 - 3 x y + 4 y^2 + x - y
+                 *  
+                 *  d/dx =  2 x - 3 y + 1
+                 *  d/dy = -3 x + 8 y - 1
+                 *  
+                 *  [2,  2] -> [-5/7, -1/7]
+                 *  [5, -1] -> [-5/7, -1/7]
+                 */
+                case 03: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double temp = x[0] * x[0];
+                        temp = temp - 3.0 * x[0] * x[1];
+                        temp = temp + 4.0 * x[1] * x[1];
+                        return temp + x[0] - x[1];
+                    },
+                    delegate(Vector x)
+                    {
+                        double a = 2.0 * x[0] - 3.0 * x[1] + 1.0;
+                        double b = 8.0 * x[1] - 3.0 * x[0] - 1.0;
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-5.0/7.0, -1.0/7.0),
+                        new Vector(-5.0/7.0, -1.0/7.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(2.0, 2.0),
+                        new Vector(5.0, -1.0),
+                    });
 
-                //f(x) = 100 * (x2 - x1^2)^2 + (1 - x1)^2
-                //min = [1, 1]
-                case 4: return delegate(Vector x)
-                {
-                    double a = 1.0 - x[0];
-                    double b = x[1] - (x[0] * x[0]);
-                    return (100.0 * b * b) + (a * a);
-                };
+                /**
+                 *  A Gentler Version of Rosenbroch
+                 *  
+                 *  f(x, y) = 25 (y - x^2)^2 + (1 - x)^2
+                 *  
+                 *  d/dx = x (100 x^2 - 100 y + 2) - 2
+                 *  d/dy = 50 (y - x^2)
+                 *  
+                 *  [-1, 1] -> [1, 1]
+                 *  [ 0, 0] -> [1, 1]
+                 */
+                case 04: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double a = x[1] - x[0] * x[0];
+                        double b = 1.0 - x[0];
+                        return 25.0 * a * a + b * b;
+                    },
+                    delegate(Vector x)
+                    {
+                        double xx = x[0] * x[0];
+                        double a = x[0] * (100.0 * xx - 100.0 * x[1] + 2.0) - 2.0;
+                        double b = 50.0 * (x[1] - xx);
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(1.0, 1.0),
+                        new Vector(1.0, 1.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-1.0, 1.0),
+                        new Vector(0.0, 0.0),
+                    });
 
-                //min = [-2, -1]
-                case 5: return delegate(Vector x)
-                {
-                    double fx = (1.0 / 4.0);
-                    fx = (fx * x[0]) - (4.0 / 3.0);
-                    fx = (fx * x[0]) - 2.0;
-                    fx = (fx * x[0]) + 16.0;
-                    fx = (fx * x[0]) + 0.0;
+                /**
+                 *  Has one Maximum and one Minimum
+                 *  
+                 *  f(x, y) = x * e^(-x^2 - y^2)
+                 *  
+                 *  d/dx = (1 - 2 x^2) e^(-x^2 - y^2)
+                 *  d/dy = -2 x y e^(-x^2 - y^2)
+                 *  
+                 *  [-1.2, 0.4]  -> [-1 / sqrt(2), 0]
+                 *  [ 0.4, 0.2]  -> [-1 / sqrt(2), 0]
+                 */
+                case 05: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double temp = -(x[0] * x[0]) - (x[1] * x[1]);
+                        return x[0] * Math.Exp(temp);
+                    },
+                    delegate(Vector x)
+                    {
+                        double temp = Math.Exp(-(x[0] * x[0]) - (x[1] * x[1]));
+                        double a = (1.0 - 2.0 * x[0] * x[0]) * temp;
+                        double b = -2.0 * x[0] * x[1] * temp;
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-0.707106781186548, 0.0),
+                        new Vector(-0.707106781186548, 0.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-1.2, 0.4),
+                        new Vector(0.4, 0.2),
+                    });
 
-                    double fy = (1.0 / 4.0);
-                    fy = (fy * x[1]) - (2.0 / 3.0);
-                    fy = (fy * x[1]) - (1.0 / 2.0);
-                    fy = (fy * x[1]) + 2.0;
-                    fy = (fy * x[1]) + 0.0;
+                /**
+                 *  Triangle Shaped Valley
+                 *  
+                 *  f(x, y) = e^(x + y - 1) + e^(x - y - 1) + e^(-x - 1)
+                 *  
+                 *  d/dx = e^(x + y - 1) + e^(x - y - 1) - e^(-x - 1)
+                 *  d/dy = e^(x + y - 1) - e^(x - y - 1)
+                 *  
+                 *  [ 1, 2] -> [-log(2) / 2, 0]
+                 *  [-2, 3] -> [-log(2) / 2, 0]
+                 */
+                case 06: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double a = x[0] + x[1] - 1.0;
+                        double b = x[0] - x[1] - 1.0;
+                        double c = -x[0] - 1.0;
+                        return Math.Exp(a) + Math.Exp(b) + Math.Exp(c);
+                    },
+                    delegate(Vector x)
+                    {
+                        double a = Math.Exp(x[0] + x[1] - 1.0);
+                        double b = Math.Exp(x[0] - x[1] - 1.0);
+                        double c = Math.Exp(-x[0] - 1.0);
 
-                    return fx + fy;
-                };
+                        double g0 = a + b - c;
+                        double g1 = a - b;
+                        return new Vector(g0, g1);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-0.346573590279973, 0.0),
+                        new Vector(-0.346573590279973, 0.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(1.0, 2.0),
+                        new Vector(-2.0, 3.0),
+                    });
 
-                //min = [0, 1] and [0, -1]
-                case 7: return delegate(Vector x)
-                {
-                    Cmplx z = (Cmplx)x;
-                    Cmplx z2 = z * z;
+                /**
+                 *  Bannana Shaped Curve With Two Minima
+                 *  
+                 *  f(x, y) = 2 (2 y^2 - x)^2 + (x - 1)^2
+                 *  
+                 *  d/dx = 6 x - 8 y^2 - 2
+                 *  d/dy = y (32 y^2 - 16 x)
+                 *  
+                 *  [-1, 1] ->  [1,  1 / sqrt(2)]
+                 *  [2, -1] ->  [1, -1 / sqrt(2)]
+                 */
+                case 07: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double a = 2.0 * x[1] * x[1] - x[0];
+                        double b = x[0] - 1.0;
+                        return 2.0 * a * a + b * b;
+                    },
+                    delegate(Vector x)
+                    {
+                        double yy = x[1] * x[1];
+                        double a = 6.0 * x[0] - 8.0 * yy - 2.0;
+                        double b = x[1] * (32.0 * yy - 16.0 * x[0]);
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(1.0, 0.707106781186548),
+                        new Vector(1.0, -0.707106781186548),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-1.0, 1.0),
+                        new Vector(2.0, -1.0),
+                    });
 
-                    z = (z2 + 1.0) / (z2 - 1.0);
-                    return z.Abs;
-                };
+                /**
+                 *  Polynomial With Many Local Minima
+                 *  
+                 *  f(x, y) = ((x^2/3 - 21/10) x^2 + 4) x^2 + y (x + y (4 y^2 - 4))
+                 *  
+                 *  d/dx = x ((2 x^2 - 42/5) x^2 + 8) + y
+                 *  d/dy = x + y (16 y^2 - 8)
+                 *  
+                 *  x* = +/- 0.08984201310031806242249056062
+                 *  y* = +/- 0.7126564030207396333972658142
+                 *  
+                 *  [0.8,  0.8] -> [x-, y+]
+                 *  [0.8, -0.4] -> [x+, y-]
+                 */
+                case 08: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double xx = x[0] * x[0];
+                        double yy = x[1] * x[1];
+                        double temp = ((xx / 3.0 - 21.0 / 10.0) * xx + 4.0) * xx;
+                        return temp + x[1] * (x[0] + x[1] * (4.0 * yy - 4.0));
+                    },
+                    delegate(Vector x)
+                    {
+                        double xx = x[0] * x[0];
+                        double a = x[0] * ((2.0 * xx - 42.0 / 5.0) * xx + 8.0) + x[1];
+                        double b = x[0] + x[1] * (16 * x[1] * x[1] - 8.0);
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-0.0898420131003181, 0.712656403020740),
+                        new Vector(0.0898420131003181, -0.712656403020740),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(0.8, 0.8),
+                        new Vector(0.8, -0.4),
+                    });
 
-                //min = [1, 0]
-                case 8: return delegate(Vector x)
-                {
-                    Cmplx z = (Cmplx)x;
-                    z = Cmplx.Log(z);
-                    return z.Abs;
-                };
+                /**
+                 *   Slope With A Hole In It
+                 *   
+                 *   f(x, y) = x^2 + y^2 - ln(x^2 + y^2) - y
+                 *   
+                 *   d/dx = x (2 - 2/(x^2 + y^2))
+                 *   d/dy = y (2 - 2/(x^2 + y^2)) - 1
+                 *   
+                 *   [1.0,  0.0] -> [0, 1/4 + sqrt(17)/4]
+                 *   [0.0, -1.5] -> [0, 1/4 + sqrt(17)/4]
+                 */
+                case 09: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double temp = x[0] * x[0] + x[1] * x[1];
+                        return temp - Math.Log(temp) - x[1];
+                    },
+                    delegate(Vector x)
+                    {
+                        double temp = 2.0 - 2.0 / (x[0] * x[0] + x[1] * x[1]);
+                        double a = x[0] * temp;
+                        double b = x[1] * temp - 1.0;
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(0.0, 1.28077640640442),
+                        new Vector(0.0, 1.28077640640442),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(1.0, 0.0),
+                        new Vector(0.0, -1.5),
+                    });
 
-                //f(x, y) = e^(x + y - 1) + e^(x - y - 1) + e^(-x - 1)
-                //min = [-ln(2)/2, 0]
-                case 10: return delegate(Vector x)
-                {
-                    double e1 = Math.Exp(x[0] + x[1] - 1.0);
-                    double e2 = Math.Exp(x[0] - x[1] - 1.0);
-                    double e3 = Math.Exp(-x[0] - 1.0);
+                /**
+                 *  Two Humps and Two Valleys
+                 *  
+                 *  f(x, y) = x * y * e^(-x^2 - y^2)
+                 *  
+                 *  d/dx = y (2 x^2 - 1) (-e^(-x^2 - y^2))
+                 *  d/dy = x (2 y^2 - 1) (-e^(-x^2 - y^2))
+                 *  
+                 *  [-1.5, 0.5] -> [-1/sqrt(2), 1/sqrt(2)]
+                 *  [0.1, -0.1] -> [1/sqrt(2), -1/sqrt(2)]
+                 */
+                case 10: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double temp = -(x[0] * x[0]) - (x[1] * x[1]);
+                        return x[0] * x[1] * Math.Exp(temp);
+                    },
+                    delegate(Vector x)
+                    {
+                        double xx = x[0] * x[0];
+                        double yy = x[1] * x[1];
+                        double temp = -Math.Exp(-xx - yy);
 
-                    return e1 + e2 + e3;
-                };
+                        double a = x[1] * (2.0 * xx - 1.0) * temp;
+                        double b = x[0] * (2.0 * yy - 1.0) * temp;
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-0.707106781186548, 0.707106781186548),
+                        new Vector(0.707106781186548, -0.707106781186548),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-1.5, 0.5),
+                        new Vector(0.1, -0.1),
+                    });
 
-                //f(x, y) = x^2 - 3xy + 4y^2 + x - y
-                //min = [-5/7, -1/7]
-                case 11: return delegate(Vector x)
-                {
-                    return (x[0] * x[0]) - (3.0 * x[0] * x[1]) + (4.0 * x[1] * x[1]) + x[0] - x[1];
-                };
+                /**
+                 *  A Wavy Valley
+                 *  
+                 *  f(x, y) = sin(x) + sin(2 y) + x^2 + y^2
+                 *  
+                 *  d/dx = 2 x + cos(x)
+                 *  d/dy = 2 y + 2 cos(2 y)
+                 *  
+                 *  x* = -0.4501836112948735730365386968
+                 *  y* = -0.5149332646611294138010592584
+                 *
+                 *  [-5, 5] -> [x*, y*]
+                 *  [ 8, 0] -> [x*, y*]
+                 */
+                case 11: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double temp = (x[0] * x[0]) + (x[1] * x[1]);
+                        return Math.Sin(x[0]) + Math.Sin(2.0 * x[1]) + temp;
+                    },
+                    delegate(Vector x)
+                    {
+                        double a = 2.0 * x[0] + Math.Cos(x[0]);
+                        double b = 2.0 * x[1] + 2.0 * Math.Cos(2.0 * x[1]);
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-0.450183611294874, -0.514933264661129),
+                        new Vector(-0.450183611294874, -0.514933264661129),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(-5.0, 5.0),
+                        new Vector(8.0, 0.0),
+                    });
+
+
+                        
             }
 
             Assert.Inconclusive("INVALID INDEX GIVEN!!");
             throw new InvalidOperationException();
         }
-
-
-        public VFunc<Vector> GetGraident(int index)
-        {
-            switch (index)
-            {
-                //  d/dx = (1 - 2 x^2) e^(-x^2 - y^2)
-                //  d/dy = -2 x y e^(-x^2 - y^2)
-                case 1: return delegate(Vector x)
-                {
-                    double e_xy = Math.Exp(-x[0] * x[0] - x[1] * x[1]);
-                    double dx = (1.0 - 2.0 * x[0] * x[0]) * e_xy;
-                    double dy = -2.0 * x[0] * x[1] * e_xy;
-
-                    return new Vector(dx, dy);
-                };
-
-                //  d/dx = 2 (x - 7)
-                //  d/dy = 2 (y - 2)
-                case 2: return delegate(Vector x)
-                {
-                    double dx = 2.0 * (x[0] - 7.0);
-                    double dy = 2.0 * (x[1] - 2.0);
-
-                    return new Vector(dx, dy);
-                };
-
-                //   d/dx = 2 (4 x - y - 8)
-                //   d/dy = -2 (1 + x - y)
-                case 3: return delegate(Vector x)
-                {
-                    double dx = 2.0 * (4.0 * x[0] - x[1] - 8.0);
-                    double dy = -2.0 * (1.0 + x[0] - x[1]);
-
-                    return new Vector(dx, dy);
-                };
-
-                //   d/dx = x (400 x^2 - 400 y + 2) - 2
-                //   d/dy = 200 (y - x^2)
-                case 4: return delegate(Vector x)
-                {
-                    double dx = x[0] * (400.0 * x[0] * x[0] - 400.0 * x[1] + 2.0) - 2.0;
-                    double dy = 200.0 * (x[1] - x[0] * x[0]);
-
-                    return new Vector(dx, dy);
-                };
-
-                //   d/dx = (x - 2)(x - 4)(x + 2)
-                //   d/dy = (y - 2)(y - 1)(y + 1)
-                case 5: return delegate(Vector x)
-                {
-                    double dx = (x[0] - 2.0) * (x[0] - 4.0) * (x[0] + 2.0);
-                    double dy = (x[1] - 2.0) * (x[1] - 1.0) * (x[1] + 1.0);
-
-                    return new Vector(dx, dy);
-                };
-
-                //   d/dx = e^(x + y - 1) + e^(x - y - 1) - e^(-x - 1)
-                //   d/dy = e^(x + y - 1) - e^(x - y - 1)
-                case 10: return delegate(Vector x)
-                {
-                    double e1 = Math.Exp(x[0] + x[1] - 1.0);
-                    double e2 = Math.Exp(x[0] - x[1] - 1.0);
-                    double e3 = Math.Exp(-x[0] - 1.0);
-
-                    double dx = e1 + e2 - e3;
-                    double dy = e1 - e2;
-
-                    return new Vector(dx, dy);
-                };
-
-                //  d/dx = 2 x - 3 y + 1
-                //  d/dy = -3 x + 8 y - 1
-                case 11: return delegate(Vector x)
-                {
-                    double dx = 2.0 * x[0] - 3.0 * x[1] + 1.0;
-                    double dy = 8.0 * x[1] - 3.0 * x[0] - 1.0;
-
-                    return new Vector(dx, dy);
-                };
-            }
-
-            Assert.Inconclusive("INVALID INDEX GIVEN!!");
-            throw new InvalidOperationException();
-        }
-
-
-        public Vector GetMResult(int index)
-        {
-            switch (index)
-            {
-                case 1: return new Vector(-0.70710678118654752440, 0.0);
-                case 2: return new Vector(7.0, 2.0);
-                case 3: return new Vector(3.0, 4.0);
-                case 4: return new Vector(1.0, 1.0);
-                case 5: return new Vector(-2.0, -1.0);
-                case 7: return new Vector(0.0, -1.0);
-                case 8: return new Vector(1.0, 0.0);
-                case 10: return new Vector(-0.34657359027997265471, 0.0);
-                case 11: return new Vector(-5.0 / 7.0, -1.0 / 7.0);
-            }
-
-            Assert.Inconclusive("INVALID INDEX GIVEN!!");
-            throw new InvalidOperationException();
-        }
-
-
-        public Vector GetMStart(int index)
-        {
-            switch (index)
-            {
-                case 1: return new Vector(-1.0, 0.5);   //(0.5, -0.5);
-                case 2: return new Vector(3.0, 3.0);
-                case 3: return new Vector(1.0, 1.0);
-                case 4: return new Vector(-1.0, 1.0);   //(-1.0, 1.0);
-                case 5: return new Vector(0.0, -2.0);
-                case 7: return new Vector(0.5, -0.5);
-                case 8: return new Vector(-1.0, 0.5);
-                case 10: return new Vector(1.0, 2.0);
-                case 11: return new Vector(2.0, 2.0);
-            }
-
-            Assert.Inconclusive("INVALID INDEX GIVEN!!");
-            throw new InvalidOperationException();
-        }
-
 
         #region One-Dimentional Optimization
 
@@ -377,196 +571,592 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         #endregion ////////////////////////////////////////////////////////////////////////
 
 
-
-        //NOTE: Problems 4 and 5 can sometimes generate NaN values, pending on
-        //the hyper peramaters. This is believed to be caused by the limitations
-        //inherent in the finite diffrence calculations. 
-
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        //[TestCase(4)]
-        //[TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void GradientEx_FiniteDiff_ExpectedValue(int fx)
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientEx_FiniteDiff_ExpectedValue(int prob, int start)
         {
             Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
+            OptimizationProb p = GetOppProb(prob);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-            var res = opt.GradientEx(f, input);
+            var res = opt.GradientEx(p.Objective, input);
 
-            LogResults(fx, res);
+            LogResults(prob, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(7)]
-        [TestCase(8)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void GradientBt_FiniteDiff_ExpectedValue(int fx)
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientEx_FiniteDiff_GradZero(int prob, int start)
         {
             Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
+            OptimizationProb p = GetOppProb(prob);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-            var res = opt.GradientBt(f, input);
+            var res = opt.GradientEx(p.Objective, input);
+            var grad = p.Gradient(res.Value);
 
-            LogResults(fx, res);
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientBt_FiniteDiff_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.GradientBt(p.Objective, input);
+
+            LogResults(prob, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
-
-
-
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void GradientEx_GradGiven_ExpectedValue(int fx)
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientBt_FiniteDiff_GradZero(int prob, int start)
         {
             Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-            var g = GetGraident(fx);
+            OptimizationProb p = GetOppProb(prob);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-            var res = opt.GradientEx(f, g, input);
+            var res = opt.GradientBt(p.Objective, input);
+            var grad = p.Gradient(res.Value);
 
-            LogResults(fx, res);
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientEx_GradGiven_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.GradientEx(p.Objective, p.Gradient, input);
+
+            LogResults(prob, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        [TestCase(4)]
-        [TestCase(5)]
-        [TestCase(10)]
-        [TestCase(11)]
-        public void GradientBt_GradGiven_ExpectedValue(int fx)
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientEx_GradGiven_GradZero(int prob, int start)
         {
             Optimizer opt = GetOptomizer();
-            MFunc f = GetMFunc(fx);
-            var g = GetGraident(fx);
+            OptimizationProb p = GetOppProb(prob);
 
-            var input = GetMStart(fx);
-            var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-            var res = opt.GradientBt(f, g, input);
+            var res = opt.GradientEx(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
 
-            LogResults(fx, res);
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientBt_GradGiven_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.GradientBt(p.Objective, p.Gradient, input);
+
+            LogResults(prob, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void GradientBt_GradGiven_GradZero(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.GradientBt(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
 
         /*********************************************************************************/
 
-        //[TestCase(1)]
-        //[TestCase(2)]
-        //[TestCase(3)]
-        //[TestCase(4)]
-        //[TestCase(5)]
-        //[TestCase(10)]
-        //[TestCase(11)]
-        //public void RankOneEx_GradGiven_ExpectedValue(int fx)
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    MFunc f = GetMFunc(fx);
-        //    var g = GetGraident(fx);
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneEx_GradGiven_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
 
-        //    var input = GetMStart(fx);
-        //    var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-        //    var res = opt.RankOneEx(f, g, input);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
 
-        //    LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        //}
+            LogResults(prob, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
 
-        //[TestCase(1)]
-        //[TestCase(2)]
-        //[TestCase(3)]
-        //[TestCase(4)]
-        //[TestCase(5)]
-        //[TestCase(10)]
-        //[TestCase(11)]
-        //public void RankOneBt_GradGiven_ExpectedValue(int fx)
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    MFunc f = GetMFunc(fx);
-        //    var g = GetGraident(fx);
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneEx_GradGiven_GradZero(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
 
-        //    var input = GetMStart(fx);
-        //    var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-        //    var res = opt.RankOneBt(f, g, input);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
 
-        //    LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        //}
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
 
-        //[TestCase(1)]
-        //[TestCase(2)]
-        //[TestCase(3)]
-        //[TestCase(4)]
-        //[TestCase(5)]
-        //[TestCase(7)]
-        //[TestCase(8)]
-        //[TestCase(10)]
-        //[TestCase(11)]
-        //public void RankOneEx_FiniteDiff_ExpectedValue(int fx)
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    MFunc f = GetMFunc(fx);
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneBt_GradGiven_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
 
-        //    var input = GetMStart(fx);
-        //    var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-        //    var res = opt.RankOneEx(f, input);
+            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
 
-        //    LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        //}
+            LogResults(prob, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
 
-        //[TestCase(1)]
-        //[TestCase(2)]
-        //[TestCase(3)]
-        //[TestCase(4)]
-        //[TestCase(5)]
-        //[TestCase(7)]
-        //[TestCase(8)]
-        //[TestCase(10)]
-        //[TestCase(11)]
-        //public void RankOneBt_FiniteDiff_ExpectedValue(int fx)
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    MFunc f = GetMFunc(fx);
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneBt_GradGiven_GradZero(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
 
-        //    var input = GetMStart(fx);
-        //    var act = GetMResult(fx);
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
 
-        //    var res = opt.RankOneBt(f, input);
+            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
 
-        //    LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
-        //}
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneEx_FiniteDiff_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.RankOneEx(p.Objective, input);
+
+            LogResults(prob, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneEx_FiniteDiff_GradZero(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.RankOneEx(p.Objective, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneBt_FiniteDiff_ExpectedValue(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.RankOneBt(p.Objective, input);
+
+            LogResults(prob, res);
+            Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 2)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(5, 1)]
+        [TestCase(5, 2)]
+        [TestCase(6, 1)]
+        [TestCase(6, 2)]
+        [TestCase(7, 1)]
+        [TestCase(7, 2)]
+        [TestCase(8, 1)]
+        [TestCase(8, 2)]
+        [TestCase(9, 1)]
+        [TestCase(9, 2)]
+        [TestCase(10, 1)]
+        [TestCase(10, 2)]
+        [TestCase(11, 1)]
+        [TestCase(11, 2)]
+        public void RankOneBt_FiniteDiff_GradZero(int prob, int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var act = p.GetTarget(start);
+
+            var res = opt.RankOneBt(p.Objective, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
 
 
         /*********************************************************************************/

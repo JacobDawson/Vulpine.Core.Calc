@@ -454,7 +454,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 Vector dess = bk.Mult(g1);
 
                 double f_x1 = f(x1);
-                double dot = dess * dess;  //dess * g1; ??
+                double dot = dess * g1;  //dess * dess; ??
                 double an = step;
 
                 //uses the armijo conditions to check alpha
@@ -527,7 +527,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 double C2 = 0.8;
 
                 double f_x1 = f(x1);
-                double dot = dess * g1;  //dess * g1; ??
+                double dot = dess * g1;  //dess * dess; ??
 
                 ////uses the armijo conditions to check alpha
                 //double d2 = f_x1 - (C1 * an * dot);
