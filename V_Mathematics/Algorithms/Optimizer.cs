@@ -303,38 +303,14 @@ namespace Vulpine.Core.Calc.Algorithms
             Vector xn = new Vector(x0);
             Vector curr = xn;
 
-            //used in finding the minimum
-            double f_xn, an, d1, d2;
-
             Initialise();
 
             while (true)
             {
-                //evaluates the funciton at xn
-                f_xn = f(xn);
-                an = step;
-
-                //computes the gradient and it's dot product
+                //computes the gradient and uses backtracking
                 Vector grad = g(xn);
-                double dot = grad * grad;
-
-                //uses the armijo conditions to check alpha
-                d2 = f_xn - (C1 * an * dot);
-                d1 = f(xn - (an * grad));
-
-                Increment(1);
-
-                while (d1 > d2)
-                {
-                    //computes the new step-size
-                    an = C0 * an;
-
-                    //updates the armijo conditions
-                    d2 = f_xn - (C1 * an * dot);
-                    d1 = f(xn - (an * grad));
-
-                    Increment(1);
-                }
+                double an = Backtrack(f, grad, xn);
+                //double an = Backtrack(f, g, grad, grad, xn);
 
                 //travels along the steepest decent
                 curr = xn - (an * grad);
@@ -383,6 +359,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
             this.Initialise();
 
             while (true)
@@ -392,7 +369,9 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 ////determins the optimal step-size using golden search
                 //VFunc af = a => f(xn - (a * grad));
-                //var an = op.GoldenMin(af, 0.0, step);
+                //var res = op.MinGolden(af, 0.0, step);
+                //double an = res.Value;
+                //Increment(res.Count);
 
                 //initilises the values used to find the optimal step-size
                 VFunc af = a => -grad * g(xn - (a * grad));
@@ -424,12 +403,10 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
+
         #endregion /////////////////////////////////////////////////////////////////////////
 
         #region Rank One Quasi-Newton Methods...
-
-
-        //NOTE: Try using Wolfe conditions on BackTrack
 
         public Result<Vector> RankOneBt(MFunc f, Vector x0)
         {
@@ -460,8 +437,6 @@ namespace Vulpine.Core.Calc.Algorithms
             {
                 //computes our dessent direction
                 Vector dess = bk.Mult(g1);
-                double an = step;
-                double f_x1 = f(x1);
 
                 //tests for positive-definitness
                 if (dess * g1 < 0)
@@ -475,29 +450,10 @@ namespace Vulpine.Core.Calc.Algorithms
                 {
                     valid++;
                 }
-                
-                ////assures that we have a decent direction
-                //double f_x2 = f(x1 - (an * dess));
-                //if (f_x2 > f_x1) dess = -dess;
 
-                //uses the armijo conditions to check alpha
-                double dot = dess * dess;  //dess * g1; ??
-                double d2 = f_x1 - (C1 * an * dot);
-                double d1 = f(x1 - (an * dess));
-
-                Increment(1);
-
-                while (d1 > d2)
-                {
-                    //computes the new step-size
-                    an = C0 * an;
-
-                    //updates the armijo conditions
-                    d2 = f_x1 - (C1 * an * dot);
-                    d1 = f(x1 - (an * dess));
-
-                    Increment(1);
-                }
+                //uses backtracking to refine our search
+                double an = Backtrack(f, dess, x1);
+                //double an = Backtrack(f, g, dess, g1, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -511,13 +467,9 @@ namespace Vulpine.Core.Calc.Algorithms
                 double t1 = Math.Abs(cn * rn);
                 double t2 = rn.Norm() * cn.Norm();
 
+                //updates our aproximate inverse hessian
                 if (t1 > VMath.TOL * t2)
-                {
-                    //updates our aproximate inverse hessian
                     bk += cn.Outer(cn) / (cn * rn);
-
-                    //Console.WriteLine(cn * rn);
-                }
 
                 //copies the curent vector and gradient
                 x1 = new Vector(x2);
@@ -530,113 +482,6 @@ namespace Vulpine.Core.Calc.Algorithms
             //returns our local minima point
             return Finish(x2);
         }
-
-
-        ////This uses Wolfe Conditons:
-        //public Result<Vector> RankOneBt2(MFunc f, VFunc<Vector> g, Vector x0)
-        //{
-        //    //stores our aproximate inverse hessian
-        //    Matrix bk = Matrix.Ident(x0.Length);
-
-        //    //vectors used during our computaiton
-        //    Vector x1, x2, g1, g2, rn, cn;
-
-        //    //initialises the starting paramaters
-        //    x1 = new Vector(x0);
-        //    g1 = g(x1);
-
-
-        //    while (true)
-        //    {
-        //        //computes our dessent direction
-        //        Vector dess = bk.Mult(g1);
-
-        //        double an = 1.0;  //step;
-        //        double C2 = 0.8;
-
-        //        double f_x1 = f(x1);
-        //        double dot = dess * dess;  //dess * g1; ??
-
-        //        ////uses the armijo conditions to check alpha
-        //        //double d2 = f_x1 - (C1 * an * dot);
-        //        //double d1 = f(x1 - (an * dess));
-
-        //        ////uses the wolfe conditions to also check alpha
-        //        //double w2 = dess * g(x1 - an * dess);
-        //        //double w1 = C2 * dess * g1;
-
-
-        //        //bool found = false;
-        //        //double b1 = 0;
-        //        //double b2 = -1;
-
-
-        //        while (true)
-        //        {
-        //            //uses the armijo conditions to check alpha
-        //            double d2 = f_x1 - (C1 * an * dot);
-        //            double d1 = f(x1 - (an * dess));
-
-        //            //uses the wolfe conditions to also check alpha
-        //            double w2 = -dess * g(x1 - (an * dess));
-        //            double w1 = -C2 * dess * g1;
-
-        //            if ((d1 <= d2) && (w1 <= w2)) break;
-
-        //            if (Increment(1)) break;
-
-        //            //computes the new step-size
-        //            an = C0 * an;
-
-
-        //            //if (d1 > d2)
-        //            //{
-        //            //    b2 = an;
-        //            //    an = (b1 + b2) * 0.5;
-        //            //}
-        //            ////else if (w1 > w2)   //w2 < w1
-        //            ////{
-        //            ////    b1 = an;
-        //            ////    an = (b2 < 0) ? b1 * 2.0 : (b1 + b2) * 0.5;
-
-        //            ////    //Console.WriteLine(w2);
-        //            ////}
-        //            //else
-        //            //{
-        //            //    found = true;
-        //            //}
-        //        }
-
-
-        //        //travels the path of steepest decent
-        //        x2 = x1 - (an * dess);
-        //        if (Step(x1, x2)) break;
-
-        //        //computes the intermediat values
-        //        g2 = g(x2);
-        //        rn = g2 - g1;
-        //        cn = (x2 - x1) - (bk * rn);
-
-        //        double t1 = Math.Abs(cn * rn);
-        //        double t2 = rn.Norm() * cn.Norm();
-
-        //        if (t1 > VMath.TOL * t2)
-        //        {
-        //            //updates our aproximate inverse hessian
-        //            bk += cn.Outer(cn) / (cn * rn);
-
-        //            //Console.WriteLine(cn * rn);
-        //        }
-
-        //        //copies the curent vector and gradient
-        //        x1 = new Vector(x2);
-        //        g1 = new Vector(g2);
-        //    }
-
-        //    //returns our local minima point
-        //    return Finish(x2);
-        //}
-
 
 
 
@@ -652,6 +497,7 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
+            Optimizer op = new Optimizer(MaxSteps, Tolerance);
             this.Initialise();
 
             //stores our aproximate inverse hessian
@@ -668,7 +514,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
             int reset = 0;
             int valid = 0;
-            int used = 0;
 
             while (true)
             {
@@ -696,21 +541,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 Increment(2);
 
-                //while (f1 * f2 > 0)
-                //{
-                //    an = an / 2.0;
-                //    f1 = af(-an);
-                //    f2 = af(an);
-                //}
-
-                //if (f1 * f2 > 0)
-                //{
-                //    dess = g1;
-                //    af = a => -dess * g(x1 - (a * dess));
-                //    f1 = af(-step); //0.0
-                //    f2 = af(step);
-                //}
-
                 //finds the optimal step-size with root-finding methods
                 if (f1 * f2 < 0)
                 {
@@ -718,8 +548,13 @@ namespace Vulpine.Core.Calc.Algorithms
                     Increment(res.Count);
 
                     an = res.Value;
-                    used++;
                 }
+
+                ////determins the optimal step-size using golden search
+                //VFunc af = a => f(x1 - (a * dess));
+                //var res = op.MinGolden(af, 0.0, step);
+                //double an = res.Value;
+                //Increment(res.Count);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -747,7 +582,6 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             Console.WriteLine("Valid: {0}; Reset: {1};", valid, reset);
-            //Console.WriteLine("Used: {0};", used);
 
             //returns our local minima point
             return Finish(x2);
@@ -804,252 +638,6 @@ namespace Vulpine.Core.Calc.Algorithms
             return grad;
         }
 
-
-        private static Matrix Hessian(VFunc<Vector> g, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix hess = new Matrix(len, len);
-
-            Vector dx;
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-                b[i] = b[i] - h;
-
-                dx = (g(a) - g(b)) / (2.0 * h);
-
-                hess.SetRow(i, dx);
-            }
-
-            return hess;
-        }
-
-
-        private static Matrix Hessian(MFunc f, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix hess = new Matrix(len, len);
-
-            Vector dx;
-            //double ddx = 0.0;
-
-            //VFunc<Vector> g = gx => Grad(f, x, h);
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-                b[i] = b[i] - h;
-
-                //dx = (g(a) - g(b)) / (2.0 * h);
-
-
-                //creates a vector to store the gradient
-                Vector grad = new Vector(x.Length);
-
-                for (int j = 0; j < x.Length; j++)
-                {
-                    //creates copies of the input vectur
-                    Vector c = new Vector(a);
-                    Vector d = new Vector(a);
-
-                    //permutes the input along a given axis
-                    c[j] = c[j] + h;
-                    d[j] = d[j] - h;
-
-                    //aproximates the partial derivitive
-                    grad[j] = (f(c) - f(d)) / (2.0 * h);
-                }
-
-                dx = grad;
-
-                for (int j = 0; j < x.Length; j++)
-                {
-                    //creates copies of the input vectur
-                    Vector c = new Vector(b);
-                    Vector d = new Vector(b);
-
-                    //permutes the input along a given axis
-                    c[j] = c[j] + h;
-                    d[j] = d[j] - h;
-
-                    //aproximates the partial derivitive
-                    grad[j] = (f(c) - f(d)) / (2.0 * h);
-                }
-
-                dx = (dx - grad) / (2.0 * h);
-
-
-                hess.SetRow(i, dx);
-            }
-
-
-            throw new NotImplementedException();
-        }
-
-
-        private static Matrix Hessian2(MFunc f, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix hess = new Matrix(len, len);
-
-            double ddx = 0.0;
-
-
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-                b[i] = b[i] - h;
-
-                for (int j = i; j < len; j++)
-                {
-                    Vector a1 = new Vector(a);
-                    Vector a2 = new Vector(a);
-
-                    Vector b1 = new Vector(b);
-                    Vector b2 = new Vector(b);
-
-                    a1[j] = a1[j] + h;
-                    a2[j] = a2[j] - h;
-
-                    b1[j] = b1[j] + h;
-                    b2[j] = b2[j] - h;
-
-                    double dx1 = (f(a1) - f(b1)) / (2.0 * h);
-                    double dx2 = (f(a2) - f(b2)) / (2.0 * h);
-
-                    ddx = (dx1 - dx2) / (2.0 * h);
-
-                    hess[i, j] = ddx;
-                    hess[j, i] = ddx;
-                }
-            }
-
-            return hess;
-        }
-
-
-        private static Matrix Hessian3(MFunc f, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix hess = new Matrix(len, len);
-
-            double ddx = 0.0;
-
-
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-                b[i] = b[i] - h;
-
-                double f_a = f(a);
-                double f_b = f(b);
-
-                for (int j = i; j < len; j++)
-                {                   
-                    Vector c = new Vector(x);
-                    Vector d = new Vector(x);
-
-                    c[j] = c[j] + h;
-                    d[j] = d[j] - h;
-
-                    double dx1 = (f(c) - f_a) / (h * VMath.R2);
-                    double dx2 = (f_b - f(d)) / (h * VMath.R2);
-
-                    ddx = (dx1 - dx2) / (h * VMath.R2);
-
-                    hess[i, j] = ddx;
-                    hess[j, i] = ddx;
-                }
-            }
-
-            return hess;
-        }
-
-
-
-        private static Matrix Hessian4(MFunc f, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix hess = new Matrix(len, len);
-
-            double f_x = f(x);
-            double ddx = 0.0;
-
-
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-
-                double f_a = f(a);
-
-                for (int j = i; j < len; j++)
-                {
-                    
-
-                    //Vector b1 = new Vector(b);
-                    //Vector b2 = new Vector(b);
-
-                    //a1[j] = a1[j] + h;
-                    //a2[j] = a2[j] - h;
-
-                    //b1[j] = b1[j] + h;
-                    //b2[j] = b2[j] - h;
-
-                    //double dx1 = (f(a1) - f(b1)) / (2.0 * h);
-                    //double dx2 = (f(a2) - f(b2)) / (2.0 * h);
-
-
-                    Vector b = new Vector(x);
-                    Vector c = new Vector(a);
-
-
-                    b[j] = b[j] + h;
-                    c[j] = c[j] + h;
-
-                    double dx1 = (f_x - f_a) / h;
-                    double dx2 = (f_x - f(b)) / h;
-
-
-                    ddx = (dx1 - dx2) / h;
-
-                    hess[i, j] = ddx;
-                    hess[j, i] = ddx;
-                }
-            }
-
-            return hess;
-        }
-        
-
-
         private double ExactSearch(RootFinder rf, VFunc<Vector> g, Vector gn, Vector xn)
         {
             //initilises the values used to find the optimal step-size
@@ -1065,6 +653,78 @@ namespace Vulpine.Core.Calc.Algorithms
                 Increment(res.Count);
 
                 an = res.Value;
+            }
+
+            return an;
+        }
+
+        private double Backtrack(MFunc f, Vector dess, Vector x1)
+        {
+            //intiialises the armijo paramaters
+            double an = step;
+            double f_x1 = f(x1);
+            double dot = dess * dess;
+
+            while (true)
+            {
+                //uses the armijo conditions to check alpha
+                double d2 = f_x1 - (C1 * an * dot);
+                double d1 = f(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+                if (d1 <= d2) break;
+                
+                //computes the new step-size
+                an = C0 * an;
+            }
+
+            //returns the stepsize
+            return an;
+        }
+
+        private double Backtrack(MFunc f, VFunc<Vector> g, Vector dess, Vector g1, Vector x1)
+        {
+            double C2 = 0.8;
+
+            //intiialises the armijo-wolfe paramaters
+            double an = step;
+            double f_x1 = f(x1);
+            double dot = dess * g1;
+            double w1 = -C2 * dess * g1;
+
+            while (true)
+            {
+                //uses the armijo conditions to check alpha
+                double d2 = f_x1 - (C1 * an * dot);
+                double d1 = f(x1 - (an * dess));
+
+                //uses the wolfe conditions to also check alpha
+                double w2 = -dess * g(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+                if ((d1 <= d2) && (w1 <= w2)) break;
+
+                //computes the new step-size
+                an = C0 * an;
+
+                //if (d1 > d2)
+                //{
+                //    b2 = an;
+                //    an = (b1 + b2) * 0.5;
+                //}
+                ////else if (w1 > w2)   //w2 < w1
+                ////{
+                ////    b1 = an;
+                ////    an = (b2 < 0) ? b1 * 2.0 : (b1 + b2) * 0.5;
+
+                ////    //Console.WriteLine(w2);
+                ////}
+                //else
+                //{
+                //    found = true;
+                //}
             }
 
             return an;

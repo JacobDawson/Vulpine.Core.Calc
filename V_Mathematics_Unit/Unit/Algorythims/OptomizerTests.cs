@@ -33,7 +33,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         {
             max = 100000;    //256;
             tol = 1.0e-12;   //1.0e-12;
-            exp = 1.0e-07;   //1.0e-07;
+            exp = 1.0e-06;   //1.0e-07;
             cut = 1.0e-06;   //1.0e-06;
 
             step = 1.0;      //1.0;
@@ -567,39 +567,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         #endregion ////////////////////////////////////////////////////////////////////////
 
         [Test, Combinatorial]
-        public void GradientEx_FiniteDiff_ExpectedValue
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, input);
-            LogResults(prob, res);
-
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_FiniteDiff_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
-        [Test, Combinatorial]
         public void GradientBt_FiniteDiff_ExpectedValue
             ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
@@ -626,39 +593,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var input = p.GetStart(start);
             var res = opt.GradientBt(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_GradGiven_ExpectedValue
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_GradGiven_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, p.Gradient, input);
             var grad = p.Gradient(res.Value);
 
             Assert.That(grad.Norm(), Is.Not.NaN);
@@ -698,18 +632,15 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
 
-
-        /*********************************************************************************/
-
         [Test, Combinatorial]
-        public void RankOneEx_FiniteDiff_ExpectedValue
+        public void GradientEx_FiniteDiff_ExpectedValue
             ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, input);
+            var res = opt.GradientEx(p.Objective, input);
             LogResults(prob, res);
 
             Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
@@ -720,19 +651,55 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         }
 
         [Test, Combinatorial]
-        public void RankOneEx_FiniteDiff_GradZero
+        public void GradientEx_FiniteDiff_GradZero
             ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, input);
+            var res = opt.GradientEx(p.Objective, input);
             var grad = p.Gradient(res.Value);
 
             Assert.That(grad.Norm(), Is.Not.NaN);
             Assert.That(grad.Norm(), Is.LessThan(cut));
         }
+
+        [Test, Combinatorial]
+        public void GradientEx_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.GradientEx(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
+        }
+
+        [Test, Combinatorial]
+        public void GradientEx_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.GradientEx(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+
+        /*********************************************************************************/
 
         [Test, Combinatorial]
         public void RankOneBt_FiniteDiff_ExpectedValue
@@ -768,39 +735,6 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         }
 
         [Test, Combinatorial]
-        public void RankOneEx_GradGiven_ExpectedValue
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneEx_GradGiven_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
-        [Test, Combinatorial]
         public void RankOneBt_GradGiven_ExpectedValue
             ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
@@ -827,6 +761,72 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
             var input = p.GetStart(start);
             var res = opt.RankOneBt(p.Objective, p.Gradient, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, input);
+            LogResults(prob, res);
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_FiniteDiff_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, input);
+            var grad = p.Gradient(res.Value);
+
+            Assert.That(grad.Norm(), Is.Not.NaN);
+            Assert.That(grad.Norm(), Is.LessThan(cut));
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c);
+        }
+
+        [Test, Combinatorial]
+        public void RankOneEx_GradGiven_GradZero
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
             var grad = p.Gradient(res.Value);
 
             Assert.That(grad.Norm(), Is.Not.NaN);
