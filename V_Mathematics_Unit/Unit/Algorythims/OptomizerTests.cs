@@ -34,7 +34,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             max = 100000;    //256;
             tol = 1.0e-12;   //1.0e-12;
             exp = 1.0e-07;   //1.0e-07;
-            cut = 1.0e-07;   //1.0e-08;
+            cut = 1.0e-06;   //1.0e-06;
 
             step = 1.0;      //1.0;
 
@@ -402,7 +402,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     new Vector[]
                     {
                         new Vector(0.8, 0.8),
-                        new Vector(0.8, -0.4),
+                        new Vector(0.6, -0.4),
                     });
 
                 /**
@@ -435,7 +435,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
                     },
                     new Vector[]
                     {
-                        new Vector(1.0, 0.0),
+                        new Vector(1.0, -0.5),
                         new Vector(0.0, -1.5),
                     });
 
