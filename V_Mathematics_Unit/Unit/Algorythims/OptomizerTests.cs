@@ -521,8 +521,30 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             throw new InvalidOperationException();
         }
 
-        #region One-Dimentional Optimization
+        /// <summary>
+        /// This should only be called inside optimisaiton unit tests. It makes
+        /// assertions that aim to verify that the result is indeed a minimum
+        /// value of the objective funciton.
+        /// </summary>
+        /// <param name="p">Optimisaiton Problem under test</param>
+        /// <param name="res">The output result</param>
+        private void TestMinimum(OptimizationProb p, Result<Vector> res)
+        {
+            //asserts that the gradient is not NaN and is near zero
+            Vector grad = p.Gradient(res.Value);
 
+            Assert.That(grad.Norm(), Is.Not.NaN, "Gradient Failed");
+            Assert.That(grad.Norm(), Is.LessThan(cut), "Gradient Failed");
+
+            //asserts that the solution is near a minimum pont
+            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
+            for (int i = 2; i <= p.TotalMinima; i++)
+                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
+
+            Assert.That(res.Value, c, "Is Not Minimum");
+        }
+
+        #region One-Dimentional Optimization
 
         [TestCase(1, -2.0, 8.0, 1.0)]
         [TestCase(2, -3.0, 1.0, -2.0)]
@@ -563,8 +585,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
-
         #endregion ////////////////////////////////////////////////////////////////////////
+
 
         [Test, Combinatorial]
         public void GradientBt_FiniteDiff_ExpectedValue
@@ -577,26 +599,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.GradientBt(p.Objective, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void GradientBt_FiniteDiff_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientBt(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -610,26 +613,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.GradientBt(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void GradientBt_GradGiven_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientBt(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -643,26 +627,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.GradientEx(p.Objective, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_FiniteDiff_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -676,28 +641,8 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.GradientEx(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
+            TestMinimum(p, res);
         }
-
-        [Test, Combinatorial]
-        public void GradientEx_GradGiven_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientEx(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
-        }
-
 
         /*********************************************************************************/
 
@@ -712,26 +657,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.RankOneBt(p.Objective, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneBt_FiniteDiff_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneBt(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -745,26 +671,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.RankOneBt(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneBt_GradGiven_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneBt(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -778,26 +685,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.RankOneEx(p.Objective, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneEx_FiniteDiff_GradZero
-            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            OptimizationProb p = GetOppProb(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, input);
-            var grad = p.Gradient(res.Value);
-
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
@@ -811,75 +699,68 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             var res = opt.RankOneEx(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
-            Constraint c = Ist.WithinTolOf(p.GetTarget(1), exp);
-            for (int i = 2; i <= p.TotalMinima; i++)
-                c |= Ist.WithinTolOf(p.GetTarget(i), exp);
-
-            Assert.That(res.Value, c);
+            TestMinimum(p, res);
         }
 
+        /*********************************************************************************/
+
         [Test, Combinatorial]
-        public void RankOneEx_GradGiven_GradZero
+        public void BFGSBt_FiniteDiff_ExpectedValue
             ([Range(1, 11)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             OptimizationProb p = GetOppProb(prob);
 
             var input = p.GetStart(start);
-            var res = opt.RankOneEx(p.Objective, p.Gradient, input);
-            var grad = p.Gradient(res.Value);
+            var res = opt.BFGSBt(p.Objective, input);
+            LogResults(prob, res);
 
-            Assert.That(grad.Norm(), Is.Not.NaN);
-            Assert.That(grad.Norm(), Is.LessThan(cut));
+            TestMinimum(p, res);
         }
 
+        [Test, Combinatorial]
+        public void BFGSBt_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.BFGSBt(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            TestMinimum(p, res);
+        }
+
+        [Test, Combinatorial]
+        public void BFGSEx_FiniteDiff_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.BFGSEx(p.Objective, input);
+            LogResults(prob, res);
+
+            TestMinimum(p, res);
+        }
+
+        [Test, Combinatorial]
+        public void BFGSEx_GradGiven_ExpectedValue
+            ([Range(1, 11)] int prob, [Values(1, 2)] int start)
+        {
+            Optimizer opt = GetOptomizer();
+            OptimizationProb p = GetOppProb(prob);
+
+            var input = p.GetStart(start);
+            var res = opt.BFGSEx(p.Objective, p.Gradient, input);
+            LogResults(prob, res);
+
+            TestMinimum(p, res);
+        }
 
         /*********************************************************************************/
-
-        //[Test]
-        //public void MinTernary_MinZero_ExpectedValue()
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    //VFunc f = GetFunc(fx);
-
-        //    var res = opt.MinGolden(x => x * x, -1.0, 2.0);
-
-        //    //LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.Zero());
-        //}
-
-
-
-        //[Test]
-        //public void GradientEx_GradGiven_ZeroValue()
-        //{
-        //    Optimizer opt = GetOptomizer();
-        //    //MFunc f = GetMFunc(fx);
-        //    //var g = GetGraident(fx);
-
-        //    //var input = GetMStart(fx);
-        //    //var act = GetMResult(fx);
-
-        //    MFunc f = delegate(Vector x)
-        //    {
-        //        return (4.0 * x[0] * x[0]) + (x[1] * x[1]) - (2.0 * x[0] * x[1]);
-        //    };
-
-        //    VFunc<Vector> g = delegate(Vector x)
-        //    {
-        //        double dx = 8.0 * x[0] - 2.0 * x[1];
-        //        double dy = 2.0 * x[1] - 2.0 * x[0];
-
-        //        return new Vector(dx, dy);
-        //    };
-
-        //    Vector input = new Vector(-1.0, -2.0);
-
-        //    var res = opt.RankOneEx(f, g, input);
-
-        //    //LogResults(fx, res);
-        //    Assert.That(res.Value, Ist.Zero());
-        //}
 
 
 

@@ -359,7 +359,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
-            Optimizer op = new Optimizer(MaxSteps, Tolerance);
             this.Initialise();
 
             while (true)
@@ -367,28 +366,8 @@ namespace Vulpine.Core.Calc.Algorithms
                 //aproximates the gradient using the previous step-size
                 Vector grad = g(xn);
 
-                ////determins the optimal step-size using golden search
-                //VFunc af = a => f(xn - (a * grad));
-                //var res = op.MinGolden(af, 0.0, step);
-                //double an = res.Value;
-                //Increment(res.Count);
-
-                //initilises the values used to find the optimal step-size
-                VFunc af = a => -grad * g(xn - (a * grad));
-                double f1 = af(0.0);
-                double f2 = af(step);
-                double an = step;
-
-                Increment(2);
-
-                //finds the optimal step-size with root-finding methods
-                if (f1 * f2 < 0)
-                {
-                    var res = rf.Brent(af, 0.0, step);
-                    Increment(res.Count);
-
-                    an = res.Value;
-                }
+                //findes the optimal step-size through exact line search
+                double an = ExactSearch(rf, g, grad, xn);
 
                 //travels the path of steepest decent
                 curr = xn - (an * grad);
@@ -428,10 +407,8 @@ namespace Vulpine.Core.Calc.Algorithms
             x1 = new Vector(x0);
             g1 = g(x1);
 
-
             int valid = 0;
             int reset = 0;
-
 
             while (true)
             {
@@ -478,7 +455,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
             Console.WriteLine("Valid: {0}; Reset: {1};", valid, reset);
 
-
             //returns our local minima point
             return Finish(x2);
         }
@@ -497,7 +473,6 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
-            Optimizer op = new Optimizer(MaxSteps, Tolerance);
             this.Initialise();
 
             //stores our aproximate inverse hessian
@@ -533,28 +508,8 @@ namespace Vulpine.Core.Calc.Algorithms
                     valid++;
                 }
 
-                //initilises the values used to find the optimal step-size
-                VFunc af = a => -dess * g(x1 - (a * dess)); //???
-                double f1 = af(0.0); //0.0
-                double f2 = af(step);
-                double an = step;
-
-                Increment(2);
-
-                //finds the optimal step-size with root-finding methods
-                if (f1 * f2 < 0)
-                {
-                    var res = rf.Brent(af, 0.0, step);
-                    Increment(res.Count);
-
-                    an = res.Value;
-                }
-
-                ////determins the optimal step-size using golden search
-                //VFunc af = a => f(x1 - (a * dess));
-                //var res = op.MinGolden(af, 0.0, step);
-                //double an = res.Value;
-                //Increment(res.Count);
+                //findes the optimal step-size through exact line search
+                double an = ExactSearch(rf, g, dess, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -568,13 +523,9 @@ namespace Vulpine.Core.Calc.Algorithms
                 double t1 = Math.Abs(cn * rn);
                 double t2 = rn.Norm() * cn.Norm();
 
+                //updates our aproximate inverse hessian
                 if (t1 > VMath.TOL * t2)
-                {
-                    //updates our aproximate inverse hessian
                     bk += cn.Outer(cn) / (cn * rn);
-
-                    //Console.WriteLine(cn * rn);
-                }
 
                 //copies the curent vector and gradient
                 x1 = new Vector(x2);
@@ -587,6 +538,156 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(x2);
         }
 
+
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+        #region BFGS Quasi-Newton Methods...
+
+        public Result<Vector> BFGSBt(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return BFGSBt(f, g, x0);
+        }
+
+        public Result<Vector> BFGSBt(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //stores our aproximate inverse hessian
+            Matrix bk = Matrix.Ident(x0.Length);
+
+            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
+
+            //vectors used during our computaiton
+            Vector x1, x2, g1, g2, rn, sn, btr;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            g1 = g(x1);
+
+            int valid = 0;
+            int reset = 0;
+
+            while (true)
+            {
+                //computes our dessent direction
+                Vector dess = bk.Mult(g1);
+
+                ////tests for positive-definitness
+                //if (dess * g1 < 0)
+                //{
+                //    dess = g1;
+                //    bk = Matrix.Ident(x0.Length);
+                //    valid = 0;
+                //    reset++;
+                //}
+                //else
+                //{
+                //    valid++;
+                //}
+
+                //uses backtracking to refine our search
+                double an = Backtrack(f, dess, x1);
+                //double an = Backtrack(f, g, dess, g1, x1);
+
+                //travels the path of steepest decent
+                x2 = x1 - (an * dess);
+                if (Step(x1, x2)) break;
+
+                //computes the intermediate vectors
+                g2 = g(x2);
+                rn = g2 - g1;
+                sn = x2 - x1;
+                btr = bk * rn;
+
+                double dot = sn * rn;
+
+                //updates our aproximate inverse hessian
+                if (dot > VMath.TOL)
+                {
+                    Matrix u = sn.Outer(sn) * (dot + rn * btr) / (dot * dot);
+                    Matrix v = (btr.Outer(sn) + sn.Outer(btr)) / dot;
+
+                    bk += (u - v);
+                }
+
+                //copies the curent vector and gradient
+                x1 = new Vector(x2);
+                g1 = new Vector(g2);
+            }
+
+            Console.WriteLine("Valid: {0}; Reset: {1};", valid, reset);
+
+
+            //returns our local minima point
+            return Finish(x2);
+        }
+
+        public Result<Vector> BFGSEx(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return BFGSEx(f, g, x0);
+        }
+
+
+        public Result<Vector> BFGSEx(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //we create a second optimizer and initilise our own
+            RootFinder rf = new RootFinder(MaxSteps, Tolerance);
+            this.Initialise();
+
+            //stores our aproximate inverse hessian
+            Matrix bk = Matrix.Ident(x0.Length);
+
+            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
+
+            //vectors used during our computaiton
+            Vector x1, x2, g1, g2, rn, sn, btr;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            g1 = g(x1);
+
+            int valid = 0;
+            int reset = 0;
+
+            while (true)
+            {
+                //computes our dessent direction
+                Vector dess = bk.Mult(g1);
+
+                //findes the optimal step-size through exact line search
+                double an = ExactSearch(rf, g, dess, x1);
+
+                //travels the path of steepest decent
+                x2 = x1 - (an * dess);
+                if (Step(x1, x2)) break;
+
+                //computes the intermediate vectors
+                g2 = g(x2);
+                rn = g2 - g1;
+                sn = x2 - x1;
+                btr = bk * rn;
+
+                double dot = sn * rn;
+
+                //updates our aproximate inverse hessian
+                if (dot > VMath.TOL)
+                {
+                    Matrix u = sn.Outer(sn) * (dot + rn * btr) / (dot * dot);
+                    Matrix v = (btr.Outer(sn) + sn.Outer(btr)) / dot;
+
+                    bk += (u - v);
+                }
+
+                //copies the curent vector and gradient
+                x1 = new Vector(x2);
+                g1 = new Vector(g2);
+            }
+
+            Console.WriteLine("Valid: {0}; Reset: {1};", valid, reset);
+
+            //returns our local minima point
+            return Finish(x2);
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
@@ -645,6 +746,8 @@ namespace Vulpine.Core.Calc.Algorithms
             double f1 = af(0.0);
             double f2 = af(step);
             double an = step;
+
+            Increment(1);
 
             //finds the optimal step-size with root-finding methods
             if (f1 * f2 < 0)
