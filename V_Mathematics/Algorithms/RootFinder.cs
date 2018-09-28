@@ -27,6 +27,7 @@ using System.Linq;
 using System.Text;
 
 using Vulpine.Core.Calc.Numbers;
+using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine.Core.Calc.Algorithms
 {
@@ -43,6 +44,9 @@ namespace Vulpine.Core.Calc.Algorithms
     public sealed class RootFinder : Algorithm
     {
         #region Class Definitions...
+
+        //Degree of Seperation for Finite Diffrences
+        private const double H0 = 1.0e-06;
 
         /// <summary>
         /// Creates a new Root Finder with default stoping criteria.
@@ -737,6 +741,76 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion //////////////////////////////////////////////////////////////
 
+        #region Broydens Method...
+
+        /// <summary>
+        /// Uses Broyden's "Bad" method to solve a system of non-liniar equations,
+        /// with n equations and n unknowns, presented as a vector-vlaued funciton.
+        /// Despite the name, the method dose its job quite well, and is ironicly
+        /// more numericaly stable than Broyden's "Good" method. It is superior to
+        /// Newton's method, in that the Jacobian of the system need only be
+        /// computed once at the start.
+        /// </summary>
+        /// <param name="f">System of equations as a vector-valued funciton</param>
+        /// <param name="x0">Starting paramaters to serve as an inital guess</param>
+        /// <returns>The vector of paramaters that solves the system</returns>
+        public Result<Vector> Broyden(VFunc<Vector> f, Vector x0)
+        {
+            //uses the aproximate Jacobian to initiate the method
+            return Broyden(f, x0, Jacobian(f, x0));
+        }
+
+
+        /// <summary>
+        /// Uses Broyden's "Bad" method to solve a system of non-liniar equations,
+        /// with n equations and n unknowns, presented as a vector-vlaued funciton.
+        /// Despite the name, the method dose its job quite well, and is ironicly
+        /// more numericaly stable than Broyden's "Good" method. It is superior to
+        /// Newton's method, in that the Jacobian of the system need only be
+        /// computed once at the start.
+        /// </summary>
+        /// <param name="f">System of equations as a vector-valued funciton</param>
+        /// <param name="x0">Starting paramaters to serve as an inital guess</param>
+        /// <param name="j0">The Jacobian matrix at the starting position</param>
+        /// <returns>The vector of paramaters that solves the system</returns>
+        public Result<Vector> Broyden(VFunc<Vector> f, Vector x0, Matrix j0)
+        {
+            //our starting aproximate inverse jacobian
+            Matrix bn = Matrix.Invert(j0);
+
+            //vectors used during our computaiton
+            Vector f1, f2, x1, x2, df, dx, c1;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            f1 = f(x1);
+
+            while (true)
+            {
+                //computes the next step
+                x2 = x1 - bn * f1;
+                if (Step(x1, x2)) break;
+
+                //computes the divergence in input and output
+                f2 = f(x2);
+                dx = x2 - x1;
+                df = f2 - f1;
+
+                //updates our sudo-jacobian inverse
+                c1 = (dx - (bn * df)) / (df * df);
+                bn += c1.Outer(df);
+
+                //updates the refrences
+                x1 = new Vector(x2);
+                f1 = new Vector(f2);
+            }
+
+            //returns our solution
+            return Finish(x2);
+        }
+
+        #endregion //////////////////////////////////////////////////////////////
+
         #region Helper Methods...
 
         /// <summary>
@@ -749,6 +823,39 @@ namespace Vulpine.Core.Calc.Algorithms
             double temp = a;
             a = b;
             b = temp;
+        }
+
+        /// <summary>
+        /// Computes the aproximate Jacobian matrix for a vector-valued 
+        /// function at a given point, using finite diffrence aproximations 
+        /// for the partial derivitives.
+        /// </summary>
+        /// <param name="f">Vector-valued funciton to evaluate</param>
+        /// <param name="x">Position to evaluate</param>
+        /// <returns>The aproximate Jacobian a the given point</returns>
+        private static Matrix Jacobian(VFunc<Vector> f, Vector x)
+        {
+            int len = x.Length;
+            Matrix jacob = new Matrix(len, len);
+
+            Vector dx;
+
+            for (int i = 0; i < len; i++)
+            {
+                //creates copies of the input vectur
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                //permutes the input along a given axis
+                a[i] = a[i] + H0;
+                b[i] = b[i] - H0;
+
+                dx = (f(a) - f(b)) / (2.0 * H0);
+
+                jacob.SetRow(i, dx);
+            }
+
+            return jacob;
         }
 
         #endregion //////////////////////////////////////////////////////////////

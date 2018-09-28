@@ -47,12 +47,9 @@ namespace Vulpine.Core.Calc.Algorithms
     {
         //THINGS TO IMPLEMENT:
 
-        //Rank One Quasi-Newton (SR1)
-        //either BFGS or DFP
         //[Nonlinear] Conjugate Gradient ***
         //[Inverse] Column Updating Method
         //Quasi-Newton [Inverse] Least Squares ?
-        //Broyden's Method ***
         //Simplex (Nelder-Meed) Method
 
 
@@ -274,30 +271,30 @@ namespace Vulpine.Core.Calc.Algorithms
         /// Uses Gradient Dessent, with Backtracking Line Search, to find the 
         /// Minimum of the given objective function. It simply uses the inverse
         /// gradient as a dessent direction, and tries multiple step sizes till
-        /// it finds one that is maximal, and satisfies the armijo conditions
+        /// it finds one that is maximal, and satisfies the Armijo conditions
         /// for convergence. 
         /// </summary>
         /// <param name="f">Objective Function</param>
         /// <param name="x0">Starting Point</param>
         /// <returns>The point of minimum value</returns>
-        public Result<Vector> GradientBt(MFunc f, Vector x0)
+        public Result<Vector> GradientSearchMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return GradientBt(f, g, x0);
+            return GradientSearchMin(f, g, x0);
         }
 
         /// <summary>
         /// Uses Gradient Dessent, with Backtracking Line Search, to find the 
         /// Minimum of the given objective function. It simply uses the inverse
         /// gradient as a dessent direction, and tries multiple step sizes till
-        /// it finds one that is maximal, and satisfies the armijo conditions
+        /// it finds one that is maximal, and satisfies the Armijo conditions
         /// for convergence. 
         /// </summary>
         /// <param name="f">Objective Function</param>
         /// <param name="g">Gradient of the Objective Function</param>
         /// <param name="x0">Starting Point</param>
         /// <returns>The point of minimum value</returns>
-        public Result<Vector> GradientBt(MFunc f, VFunc<Vector> g, Vector x0)
+        public Result<Vector> GradientSearchMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x0);
@@ -310,7 +307,6 @@ namespace Vulpine.Core.Calc.Algorithms
                 //computes the gradient and uses backtracking
                 Vector grad = g(xn);
                 double an = Backtrack(f, grad, xn);
-                //double an = Backtrack(f, g, grad, grad, xn);
 
                 //travels along the steepest decent
                 curr = xn - (an * grad);
@@ -324,17 +320,6 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(curr);
         }
 
-        public Result<Vector> GradientBtRoot(VFunc<Vector> f, Vector x0)
-        {
-            MFunc obj = delegate(Vector x)
-            {
-                Vector fx = f(x);
-                return fx * fx;
-            };
-
-            return GradientBt(obj, x0);
-        }
-
         /// <summary>
         /// Uses Gradient Decent, with Exact Line Search, to find the Mimimum
         /// of the given objective function. It uses the inverse gradient as
@@ -345,10 +330,10 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="f">Objective Function</param>
         /// <param name="x0">Starting Point</param>
         /// <returns>The point of minimum value</returns>
-        public Result<Vector> GradientEx(MFunc f, Vector x0)
+        public Result<Vector> GradientExactMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return GradientEx(f, g, x0);
+            return GradientExactMin(f, g, x0);
         }
 
         /// <summary>
@@ -362,7 +347,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <param name="g">Gradient of the Objective Function</param>
         /// <param name="x0">Starting Point</param>
         /// <returns>The point of minimum value</returns>
-        public Result<Vector> GradientEx(MFunc f, VFunc<Vector> g, Vector x0)
+        public Result<Vector> GradientExactMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //makes a copy of our starting point
             Vector xn = new Vector(x0);
@@ -392,37 +377,43 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(curr);
         }
 
-        public Result<Vector> GradientExRoot(VFunc<Vector> f, Vector x0)
-        {
-            //MFunc obj = delegate(Vector x)
-            //{
-            //    Vector fx = f(x);
-            //    return fx * fx;
-            //};
-
-            //return GradientEx(obj, x0);
-
-            return GradientEx(null, f, x0);
-        }
-
-
-
         #endregion /////////////////////////////////////////////////////////////////////////
 
         #region Rank One Quasi-Newton Methods...
 
-        public Result<Vector> RankOneBt(MFunc f, Vector x0)
+        /// <summary>
+        /// Finds the minimum of the objective function, by using symetric rank-one
+        /// updates to apriximate the Hessian. This allows the method to converge
+        /// much faster than Gradient Dessent, because it chooses a "smart" search
+        /// direction. However, because the new search direction is not garenteed to
+        /// be a proper dessent direciton, the Hessian must be reset whenever this
+        /// condition fails to hold.
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> RankOneSearchMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return RankOneBt(f, g, x0);
+            return RankOneSearchMin(f, g, x0);
         }
 
-        public Result<Vector> RankOneBt(MFunc f, VFunc<Vector> g, Vector x0)
+        /// <summary>
+        /// Finds the minimum of the objective function, by using symetric rank-one
+        /// updates to apriximate the Hessian. This allows the method to converge
+        /// much faster than Gradient Dessent, because it chooses a "smart" search
+        /// direction. However, because the new search direction is not garenteed to
+        /// be a proper dessent direciton, the Hessian must be reset whenever this
+        /// condition fails to hold.
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="g">Gradient of the Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> RankOneSearchMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
-
-            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
 
             //vectors used during our computaiton
             Vector x1, x2, g1, g2, rn, cn;
@@ -454,7 +445,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //uses backtracking to refine our search
                 double an = Backtrack(f, dess, x1);
-                //double an = Backtrack(f, g, dess, g1, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -483,28 +473,13 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(x2);
         }
 
-        public Result<Vector> RankOneBtRoot(VFunc<Vector> f, Vector x0)
-        {
-            MFunc obj = delegate(Vector x)
-            {
-                Vector fx = f(x);
-                return fx * fx;
-            };
-
-            return RankOneBt(obj, x0);
-        }
-
-
-
-
-        public Result<Vector> RankOneEx(MFunc f, Vector x0)
+        public Result<Vector> RankOneExactMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return RankOneEx(f, g, x0);
+            return RankOneExactMin(f, g, x0);
         }
 
-
-        public Result<Vector> RankOneEx(MFunc f, VFunc<Vector> g, Vector x0)
+        public Result<Vector> RankOneExactMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
@@ -572,37 +547,42 @@ namespace Vulpine.Core.Calc.Algorithms
             //returns our local minima point
             return Finish(x2);
         }
-
-        public Result<Vector> RankOneExRoot(VFunc<Vector> f, Vector x0)
-        {
-            //MFunc obj = delegate(Vector x)
-            //{
-            //    Vector fx = f(x);
-            //    return fx * fx;
-            //};
-
-            //return RankOneEx(obj, x0);
-
-            return RankOneEx(null, f, x0);
-        }
-
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
         #region BFGS Quasi-Newton Methods...
 
-        public Result<Vector> BFGSBt(MFunc f, Vector x0)
+        /// <summary>
+        /// Finds the minimum of the objective function using the BFGS method. In
+        /// this case, the Hessian matrix is updated in such a way that positive
+        /// definitness is garenteed. Thus the search direction is always a dessent
+        /// direciton, so it never needs to reset, unlike the symetric rank-one
+        /// update mehtod. 
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> BFGS_SearchMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return BFGSBt(f, g, x0);
+            return BFGS_SearchMin(f, g, x0);
         }
 
-        public Result<Vector> BFGSBt(MFunc f, VFunc<Vector> g, Vector x0)
+        /// <summary>
+        /// Finds the minimum of the objective function using the BFGS method. In
+        /// this case, the Hessian matrix is updated in such a way that positive
+        /// definitness is garenteed. Thus the search direction is always a dessent
+        /// direciton, so it never needs to reset, unlike the symetric rank-one
+        /// update mehtod. 
+        /// </summary>
+        /// <param name="f">Objective Function</param>
+        /// <param name="g">Gradient of the Objective Function</param>
+        /// <param name="x0">Starting Point</param>
+        /// <returns>The point of minimum value</returns>
+        public Result<Vector> BFGS_SearchMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
-
-            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
 
             //vectors used during our computaiton
             Vector x1, x2, g1, g2, rn, sn, btr;
@@ -619,22 +599,21 @@ namespace Vulpine.Core.Calc.Algorithms
                 //computes our dessent direction
                 Vector dess = bk.Mult(g1);
 
-                ////tests for positive-definitness
-                //if (dess * g1 < 0)
-                //{
-                //    dess = g1;
-                //    bk = Matrix.Ident(x0.Length);
-                //    valid = 0;
-                //    reset++;
-                //}
-                //else
-                //{
-                //    valid++;
-                //}
+                //tests for positive-definitness
+                if (dess * g1 < 0)
+                {
+                    dess = g1;
+                    bk = Matrix.Ident(x0.Length);
+                    valid = 0;
+                    reset++;
+                }
+                else
+                {
+                    valid++;
+                }
 
                 //uses backtracking to refine our search
                 double an = Backtrack(f, dess, x1);
-                //double an = Backtrack(f, g, dess, g1, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -669,29 +648,18 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(x2);
         }
 
-        public Result<Vector> BFGSBtRoot(VFunc<Vector> f, Vector x0)
-        {
-            MFunc obj = delegate(Vector x)
-            {
-                Vector fx = f(x);
-                return fx * fx;
-            };
-
-            return BFGSBt(obj, x0);
-        }
 
 
 
 
-
-        public Result<Vector> BFGSEx(MFunc f, Vector x0)
+        public Result<Vector> BFGS_ExactMin(MFunc f, Vector x0)
         {
             VFunc<Vector> g = x => Grad(f, x, H0);
-            return BFGSEx(f, g, x0);
+            return BFGS_ExactMin(f, g, x0);
         }
 
 
-        public Result<Vector> BFGSEx(MFunc f, VFunc<Vector> g, Vector x0)
+        public Result<Vector> BFGS_ExactMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
             //we create a second optimizer and initilise our own
             RootFinder rf = new RootFinder(MaxSteps, Tolerance);
@@ -699,8 +667,6 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
-
-            //Matrix bk = Matrix.Invert(Hessian(g, x0, 1.0e-06));
 
             //vectors used during our computaiton
             Vector x1, x2, g1, g2, rn, sn, btr;
@@ -749,111 +715,6 @@ namespace Vulpine.Core.Calc.Algorithms
             Console.WriteLine("Valid: {0}; Reset: {1};", valid, reset);
 
             //returns our local minima point
-            return Finish(x2);
-        }
-
-        public Result<Vector> BFGSExRoot(VFunc<Vector> f, Vector x0)
-        {
-            //MFunc obj = delegate(Vector x)
-            //{
-            //    Vector fx = f(x);
-            //    return fx * fx;
-            //};
-
-            //return BFGSEx(obj, x0);
-
-            return BFGSEx(null, f, x0);
-        }
-
-        #endregion /////////////////////////////////////////////////////////////////////////
-
-        #region Broyden Methods...
-
-        public Result<Vector> BroydenBadMin(MFunc f, Vector x0)
-        {
-            VFunc<Vector> g = x => Grad(f, x, H0);
-            return BroydenBad(g, x0);
-        }
-
-        public Result<Vector> BroydenBadMin(MFunc f, VFunc<Vector> g, Vector x0)
-        {
-            return BroydenBad(g, x0);
-        }
-
-        public Result<Vector> BroydenBad(VFunc<Vector> f, Vector x0)
-        {
-            //our starting aproximate inverse jacobian
-            //Matrix jn = Matrix.Ident(x0.Length);
-            Matrix jn = Matrix.Invert(Jacobian(f, x0, H0).Trans());
-
-            //vectors used during our computaiton
-            Vector f1, f2, x1, x2, df, dx, c1;
-
-            //initialises the starting paramaters
-            x1 = new Vector(x0);
-            f1 = f(x1);
-
-            while (true)
-            {
-                //computes the next step
-                x2 = x1 - jn * f1;
-                if (Step(x1, x2)) break;
-
-                //computes the divergence in input and output
-                f2 = f(x2);
-                dx = x2 - x1;
-                df = f2 - f1;
-
-                //updates our sudo-jacobian inverse
-                c1 = (dx - (jn * df)) / (df * df);
-                jn += c1.Outer(df);
-
-                //updates the refrences
-                x1 = new Vector(x2);
-                f1 = new Vector(f2);
-            }
-
-            //returns our solution
-            return Finish(x2);
-        }
-
-        public Result<Vector> BroydenGood(VFunc<Vector> f, Vector x0)
-        {
-            //our starting aproximate inverse jacobian
-            //Matrix jn = Matrix.Ident(x0.Length);
-            Matrix jn = Matrix.Invert(Jacobian(f, x0, H0));
-
-            //vectors used during our computaiton
-            Vector f1, f2, x1, x2, df, dx, c1, c2;
-
-            //initialises the starting paramaters
-            x1 = new Vector(x0);
-            f1 = f(x1);
-
-            while (true)
-            {
-                //computes the next step
-                x2 = x1 - jn * f1;
-                if (Step(x1, x2)) break;
-
-                //computes the divergence in input and output
-                f2 = f(x2);
-                dx = x2 - x1;
-                df = f2 - f1;
-
-                //updates our sudo-jacobian inverse
-                c1 = jn * df;
-                c2 = (dx - c1) / (dx * c1);
-
-                if (Math.Abs(dx * c1) > VMath.TOL)
-                    jn += c2.Outer(jn * dx);
-
-                //updates the refrences
-                x1 = new Vector(x2);
-                f1 = new Vector(f2);
-            }
-
-            //returns our solution
             return Finish(x2);
         }
 
@@ -954,77 +815,5 @@ namespace Vulpine.Core.Calc.Algorithms
             return an;
         }
 
-        private double Backtrack(MFunc f, VFunc<Vector> g, Vector dess, Vector g1, Vector x1)
-        {
-            double C2 = 0.8;
-
-            //intiialises the armijo-wolfe paramaters
-            double an = step;
-            double f_x1 = f(x1);
-            double dot = dess * g1;
-            double w1 = -C2 * dess * g1;
-
-            while (true)
-            {
-                //uses the armijo conditions to check alpha
-                double d2 = f_x1 - (C1 * an * dot);
-                double d1 = f(x1 - (an * dess));
-
-                //uses the wolfe conditions to also check alpha
-                double w2 = -dess * g(x1 - (an * dess));
-
-                //checks for termination
-                if (Increment(1)) break;
-                if ((d1 <= d2) && (w1 <= w2)) break;
-
-                //computes the new step-size
-                an = C0 * an;
-
-                //if (d1 > d2)
-                //{
-                //    b2 = an;
-                //    an = (b1 + b2) * 0.5;
-                //}
-                ////else if (w1 > w2)   //w2 < w1
-                ////{
-                ////    b1 = an;
-                ////    an = (b2 < 0) ? b1 * 2.0 : (b1 + b2) * 0.5;
-
-                ////    //Console.WriteLine(w2);
-                ////}
-                //else
-                //{
-                //    found = true;
-                //}
-            }
-
-            return an;
-        }
-
-
-        private static Matrix Jacobian(VFunc<Vector> f, Vector x, double h)
-        {
-            int len = x.Length;
-            Matrix jacob = new Matrix(len, len);
-
-            Vector dx;
-
-            for (int i = 0; i < len; i++)
-            {
-                //creates copies of the input vectur
-                Vector a = new Vector(x);
-                Vector b = new Vector(x);
-
-                //permutes the input along a given axis
-                a[i] = a[i] + h;
-                b[i] = b[i] - h;
-
-                dx = (f(a) - f(b)) / (2.0 * h);
-
-                jacob.SetRow(i, dx);
-            }
-
-            return jacob;
-        }
     }
 }
