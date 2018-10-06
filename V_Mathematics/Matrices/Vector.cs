@@ -402,6 +402,29 @@ namespace Vulpine.Core.Calc.Matrices
             return new Matrix(rows, cols, result);
         }
 
+        /// <summary>
+        /// Computes the pairwise multiplicaiton of two vectors. This is not
+        /// a standard vector operaiton, however it dose have certain aplicaitons.
+        /// In particular, the pairwise multiple is equivlante to treating the
+        /// vectors as if they were diagonal matricies.
+        /// </summary>
+        /// <param name="v">The second vector</param>
+        /// <returns>The pairwise product of the two vectors</returns>
+        public Vector MultPW(Vector v)
+        {
+            //checks that the vectors are the same length
+            if (v.Length != this.Length) throw new ArgumentShapeException("v");
+
+            //creates a new vector to store the result
+            Vector output = new Vector(vector.Length);
+
+            //builds the resultant vector
+            for (int i = 0; i < vector.Length; i++)
+                output.vector[i] = this.vector[i] * v.vector[i];
+
+            return output;
+        }
+
         #endregion /////////////////////////////////////////////////////////////
 
         #region Special Methods...
@@ -479,6 +502,25 @@ namespace Vulpine.Core.Calc.Matrices
             double a = this.Mult(other);
             double b = this.Norm() * other.Norm();
             return Math.Acos(a / b);
+        }
+
+        /// <summary>
+        /// Computes the inverse of the current vector, by inverting each of the 
+        /// vector's components. Note that this is not a standard vector operaiton, 
+        /// and should not be thought of as a true inverse. However, it is useful 
+        /// if the vector is being made to represent a diagonal matrix. 
+        /// </summary>
+        /// <returns>The conponentwise inverse of the vector</returns>
+        public Vector Inv()
+        {
+            //creates a new vector to store the result
+            Vector inv = new Vector(vector.Length);
+
+            //inverts each of the elements
+            for (int i = 0; i < vector.Length; i++)
+                inv.vector[i] = 1.0 / this.vector[i];
+
+            return inv;
         }
 
         /// <summary>

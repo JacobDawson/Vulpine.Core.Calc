@@ -51,6 +51,7 @@ namespace Vulpine.Core.Calc.Algorithms
         //[Inverse] Column Updating Method
         //Quasi-Newton [Inverse] Least Squares ?
         //Simplex (Nelder-Meed) Method
+        //Limited Memory BFGS Method
 
 
 
@@ -307,6 +308,7 @@ namespace Vulpine.Core.Calc.Algorithms
                 //computes the gradient and uses backtracking
                 Vector grad = g(xn);
                 double an = Backtrack(f, grad, xn);
+                //double an = Backtrack(f, g, grad, grad, xn);
 
                 //travels along the steepest decent
                 curr = xn - (an * grad);
@@ -412,6 +414,8 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>The point of minimum value</returns>
         public Result<Vector> RankOneSearchMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
+            Initialise();
+
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
 
@@ -445,6 +449,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //uses backtracking to refine our search
                 double an = Backtrack(f, dess, x1);
+                //double an = Backtrack(f, g, dess, g1, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -581,6 +586,8 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>The point of minimum value</returns>
         public Result<Vector> BFGS_SearchMin(MFunc f, VFunc<Vector> g, Vector x0)
         {
+            Initialise();
+
             //stores our aproximate inverse hessian
             Matrix bk = Matrix.Ident(x0.Length);
 
@@ -614,6 +621,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
                 //uses backtracking to refine our search
                 double an = Backtrack(f, dess, x1);
+                //double an = Backtrack(f, g, dess, g1, x1);
 
                 //travels the path of steepest decent
                 x2 = x1 - (an * dess);
@@ -720,6 +728,170 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion /////////////////////////////////////////////////////////////////////////
 
+        #region Nonlinear Conjugate Gradient Methods...
+
+        public Result<Vector> ConjugateSearchMin(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return ConjugateSearchMin(f, g, x0);
+        }
+
+        public Result<Vector> ConjugateSearchMin(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            Initialise();
+
+            //vectors used during our computaiton
+            Vector x1, x2, d1, d2, s1, s2;
+          
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            d1 = g(x0);
+            s1 = new Vector(d1);
+
+            //initialises the search direction paramaters
+            double bpr = 0.0;
+            double an = 1.0;
+
+            int ittr = 1;
+
+            //Vector diag = HessianDiag(f, x1, H0);
+            //d1 = diag.Inv().MultPW(d1);
+            //s1 = new Vector(d1);
+
+            while (true)
+            {               
+                //chooses a search direction and step-size
+                s2 = d1 + (bpr * s1);
+
+                ////tests for a desent dirrection
+                //if (s2 * d1 < 0)
+                //{
+                //    s2 = d1;
+                //    //valid = 0;
+                //    //reset++;
+                //}
+                //else
+                //{
+                //    //valid++;
+                //}
+
+                //an = Backtrack(f, s2, x1);
+                an = Backtrack2(f, g, s2, d1, x1);
+
+                //updates our best-guess and checks for termination
+                x2 = x1 - an * s2;
+                if (Step(x1, x2)) break;
+
+                //diag = HessianDiag(f, x2, H0);
+                //d2 = diag.Inv().MultPW(g(x2));
+
+                d2 = g(x2);
+
+                //if (ittr % 2 != 0)
+                //{
+                //    //updates the Polak Ribiere paramater
+                //    bpr = (d2 * (d2 - d1)) / (d1 * d1);
+                //    bpr = Math.Max(0.0, bpr);
+                //}
+                //else
+                //{
+                //    bpr = 0.0;
+                //}
+
+                ittr++;
+
+
+                //updates the Polak Ribiere paramater
+                bpr = (d2 * (d2 - d1)) / (d1 * d1);
+                bpr = Math.Max(0.0, bpr);
+
+                ////updates the Fletcher Reeves paramater
+                //bpr = (d2 * d2) / (d1 * d1);
+                //bpr = Math.Max(0.0, bpr);
+
+                ////updates the Hestenes Stiefel paramater
+                //bpr = (d2 * (d2 - d1)) / (s1 * (d2 - d1));
+                //bpr = Math.Max(0.0, -bpr);
+
+                ////updates the Dai Yuan paramater
+                //bpr = (d2 * d2) / (s1 * (d2 - d1));
+                //bpr = Math.Max(0.0, -bpr);
+
+                //copies the vectors to the next itteraiton
+                x1 = new Vector(x2);
+                d1 = new Vector(d2);
+                s1 = new Vector(s2);
+            }
+
+            return Finish(x2);
+        }
+
+
+        public Result<Vector> ConjugateExactMin(MFunc f, Vector x0)
+        {
+            VFunc<Vector> g = x => Grad(f, x, H0);
+            return ConjugateExactMin(f, g, x0);
+        }
+
+        public Result<Vector> ConjugateExactMin(MFunc f, VFunc<Vector> g, Vector x0)
+        {
+            //we create a second optimizer and initilise our own
+            RootFinder rf = new RootFinder(MaxSteps, Tolerance);
+            this.Initialise();
+
+            //vectors used during our computaiton
+            Vector x1, x2, d1, d2, s1, s2;
+
+            //initialises the starting paramaters
+            x1 = new Vector(x0);
+            d1 = g(x0);
+            s1 = new Vector(d1);
+
+            //initialises the search direction paramaters
+            double bpr = 0.0;
+            double an = 1.0;
+
+            while (true)
+            {
+                //chooses a search direction and step-size
+                s2 = d1 + (bpr * s1);
+                an = ExactSearch(rf, g, s2, x1);
+
+                //updates our best-guess and checks for termination
+                x2 = x1 - an * s2;
+                if (Step(x1, x2)) break;
+
+                d2 = g(x2);
+
+                //updates the Polak Ribiere paramater
+                bpr = (d2 * (d2 - d1)) / (d1 * d1);
+                bpr = Math.Max(0.0, bpr);
+
+                ////updates the Fletcher Reeves paramater
+                //bpr = (d2 * d2) / (d1 * d1);
+                //bpr = Math.Max(0.0, bpr);
+
+                ////updates the Hestenes Stiefel paramater
+                //bpr = (d2 * (d2 - d1)) / (s1 * (d2 - d1));
+                //bpr = Math.Max(0.0, -bpr);
+
+                ////updates the Dai Yuan paramater
+                //bpr = (d2 * d2) / (s1 * (d2 - d1));
+                //bpr = Math.Max(0.0, -bpr);
+
+                //copies the vectors to the next itteraiton
+                x1 = new Vector(x2);
+                d1 = new Vector(d2);
+                s1 = new Vector(s2);
+            }
+
+            return Finish(x2);
+        }
+
+
+        #endregion /////////////////////////////////////////////////////////////////////////
+
+
 
         /// <summary>
         /// Swaps two floating point values in place.
@@ -768,6 +940,37 @@ namespace Vulpine.Core.Calc.Algorithms
             return grad;
         }
 
+        private static Vector HessianDiag(MFunc f, Vector x, double h)
+        {
+            Vector diag = new Vector(x.Length);
+            double fx2 = f(x) * 2.0;
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                Vector a = new Vector(x);
+                Vector b = new Vector(x);
+
+                a[i] = a[i] + h;
+                b[i] = b[i] - h;
+
+                double dx = f(a) - fx2 + f(b);
+                diag[i] = dx / (h * h);
+
+                //we only return positive definate aproximations
+                if (diag[i] <= 0.0)
+                {
+                    Vector ident = new Vector(x.Length);
+
+                    for (int j = 0; j < x.Length; j++)
+                        ident[j] = 1.0;
+
+                    return ident;
+                }
+            }
+
+            return diag;
+        }
+
         private double ExactSearch(RootFinder rf, VFunc<Vector> g, Vector gn, Vector xn)
         {
             //initilises the values used to find the optimal step-size
@@ -812,6 +1015,108 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             //returns the stepsize
+            return an;
+        }
+
+        private double Backtrack(MFunc f, VFunc<Vector> g, Vector dess, Vector g1, Vector x1)
+        {
+            double C2 = 0.6; //0.8;
+
+            //intiialises the armijo-wolfe paramaters
+            double an = step;
+            double f_x1 = f(x1);
+            double dot = dess * g1;
+            double w1 = C2 * dess * g1;
+
+            while (true)
+            {
+                //uses the armijo conditions to check alpha
+                double d2 = f_x1 - (C1 * an * dot);
+                double d1 = f(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+
+                if (d1 <= d2)
+                {
+                    //then uses the wolfe conditions to check alpha
+                    double w2 = dess * g(x1 - (an * dess));
+
+                    //checks for termination
+                    if (Increment(1)) break;
+                    if (w1 <= w2) break;
+                }
+
+                //computes the new step-size
+                an = C0 * an;
+            }
+
+            return an;
+        }
+
+        private double Backtrack2(MFunc f, VFunc<Vector> g, Vector dess, Vector g1, Vector x1)
+        {
+            double C2 = 0.6;
+
+            //intiialises the armijo-wolfe paramaters
+            double an = step;
+            double f_x1 = f(x1);
+            double dot = dess * g1;
+            double w1 = C2 * dess * g1;
+
+            while (true)
+            {
+                //uses only the wolfe conditions to check alpha
+                double w2 = dess * g(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+                if (w1 <= w2) break;
+
+                //computes the new step-size
+                an = C0 * an;
+            }
+
+            return an;
+        }
+
+        private double Backtrack3(MFunc f, VFunc<Vector> g, Vector dess, Vector g1, Vector x1)
+        {
+            double C2 = 0.6;
+
+            //intiialises the armijo-wolfe paramaters
+            double an = step;
+            double f_x1 = f(x1);
+            double dot = dess * g1;
+            double w1 = C2 * dess * g1;
+
+            while (true)
+            {
+                //uses the armijo conditions to check alpha
+                double d2 = f_x1 - (C1 * an * dot);
+                double d1 = f(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+                if (d1 <= d2) break;
+
+                //computes the new step-size
+                an = C0 * an;
+            }
+
+            while (true)
+            {
+                //then uses the wolfe conditions to check alpha
+                double w2 = dess * g(x1 - (an * dess));
+
+                //checks for termination
+                if (Increment(1)) break;
+                if (w1 <= w2) break;
+
+                //computes the new step-size
+                an = C0 * an;
+            }
+
             return an;
         }
 

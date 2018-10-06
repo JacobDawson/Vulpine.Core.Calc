@@ -427,8 +427,8 @@ namespace Vulpine_Core_Calc_Tests.TestCases
                     },
                     new Vector[]
                     {
-                        new Vector(1.0, 0.0),
-                        new Vector(0.0, -1.5),
+                        new Vector(1.0, 0.5),
+                        new Vector(0.5, -1.5),
                     });
 
                 /**
@@ -503,6 +503,51 @@ namespace Vulpine_Core_Calc_Tests.TestCases
                     {
                         new Vector(-5.0, 5.0),
                         new Vector(8.0, 0.0),
+                    });
+
+                /**
+                 *  Inverted Bell Curve
+                 *  
+                 *  f(x, y) = -exp(-(x - 1)^2 / 4 - (y - 2)^2 / 10)
+                 *  
+                 *  d/dx = 1/2 (x - 1) -f(x, y)
+                 *  d/dy = 1/5 (y - 2) -f(x, y)
+                 *  
+                 *  min -1 @ [1, 2]
+                 *  
+                 *  [-1, 2] -> [1, 2]
+                 *  [3,  4] -> [1, 2]
+                 */
+                case 12: return new OptimizationProb(
+                    delegate(Vector x)
+                    {
+                        double xm1 = x[0] - 1.0;
+                        double ym2 = x[1] - 2.0;
+
+                        double temp = (xm1 * xm1) / 4.0 + (ym2 * ym2) / 10.0;
+                        return -Math.Exp(-temp);
+                    },
+                    delegate(Vector x)
+                    {
+                        double xm1 = x[0] - 1.0;
+                        double ym2 = x[1] - 2.0;
+
+                        double fxy = (xm1 * xm1) / 4.0 + (ym2 * ym2) / 10.0;
+                        fxy = Math.Exp(-fxy);
+
+                        double a = (xm1 * fxy) / 2.0;
+                        double b = (ym2 * fxy) / 5.0;
+
+                        return new Vector(a, b);
+                    },
+                    new Vector[]
+                    {
+                        new Vector(1.0, 2.0),
+                    },
+                    new Vector[]
+                    {
+                        new Vector(0.0, 2.0),
+                        new Vector(2.0, 3.0),
                     });
 
             }
