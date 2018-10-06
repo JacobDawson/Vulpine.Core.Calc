@@ -205,7 +205,7 @@ namespace Vulpine_Core_Calc_Tests.TestCases
                     },
                     new Vector[]
                     {
-                        new Vector(2.0, 2.0),
+                        new Vector(2.0, 1.0),
                         new Vector(5.0, -1.0),
                     });
 

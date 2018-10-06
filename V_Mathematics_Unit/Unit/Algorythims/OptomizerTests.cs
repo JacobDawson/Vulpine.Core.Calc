@@ -166,7 +166,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Optimizer opt = GetOptomizer();
             VFunc f = GetFunc(fx);
 
-            var res = opt.MinTernary(f, a, b);
+            var res = opt.TernaryMin(f, a, b);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -186,7 +186,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Optimizer opt = GetOptomizer();
             VFunc f = GetFunc(fx);
 
-            var res = opt.MinGolden(f, a, b);
+            var res = opt.GoldenMin(f, a, b);
 
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
@@ -196,56 +196,28 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
 
 
         [Test, Combinatorial]
-        public void GradientBt_FiniteDiff_ExpectedValue
+        public void GradientMin_FiniteDiff_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.GradientSearchMin(p.Objective, input);
+            var res = opt.GradientMin(p.Objective, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
-        public void GradientBt_GradGiven_ExpectedValue
+        public void GradientMin_GradGiven_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.GradientSearchMin(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_FiniteDiff_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientExactMin(p.Objective, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void GradientEx_GradGiven_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.GradientExactMin(p.Objective, p.Gradient, input);
+            var res = opt.GradientMin(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
@@ -254,56 +226,28 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         /*********************************************************************************/
 
         [Test, Combinatorial]
-        public void RankOneBt_FiniteDiff_ExpectedValue
+        public void RankOneMin_FiniteDiff_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.RankOneSearchMin(p.Objective, input);
+            var res = opt.RankOneMin(p.Objective, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
-        public void RankOneBt_GradGiven_ExpectedValue
+        public void RankOneMin_GradGiven_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.RankOneSearchMin(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneEx_FiniteDiff_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneExactMin(p.Objective, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void RankOneEx_GradGiven_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.RankOneExactMin(p.Objective, p.Gradient, input);
+            var res = opt.RankOneMin(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
@@ -312,56 +256,28 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         /*********************************************************************************/
 
         [Test, Combinatorial]
-        public void BFGSBt_FiniteDiff_ExpectedValue
+        public void BFGS_Min_FiniteDiff_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.BFGS_SearchMin(p.Objective, input);
+            var res = opt.BFGS_Min(p.Objective, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
-        public void BFGSBt_GradGiven_ExpectedValue
+        public void BFGS_Min_GradGiven_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.BFGS_SearchMin(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void BFGSEx_FiniteDiff_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.BFGS_ExactMin(p.Objective, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void BFGSEx_GradGiven_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.BFGS_ExactMin(p.Objective, p.Gradient, input);
+            var res = opt.BFGS_Min(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
@@ -370,56 +286,28 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         /*********************************************************************************/
 
         [Test, Combinatorial]
-        public void ConjugateBt_FiniteDiff_ExpectedValue
+        public void ConjugateMin_FiniteDiff_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.ConjugateSearchMin(p.Objective, input);
+            var res = opt.ConjugateMin(p.Objective, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
         }
 
         [Test, Combinatorial]
-        public void ConjugateBt_GradGiven_ExpectedValue
+        public void ConjugateMin_GradGiven_ExpectedValue
             ([Range(1, 12)] int prob, [Values(1, 2)] int start)
         {
             Optimizer opt = GetOptomizer();
             var p = OptimizationProb.GetCase(prob);
 
             var input = p.GetStart(start);
-            var res = opt.ConjugateSearchMin(p.Objective, p.Gradient, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void ConjugateEx_FiniteDiff_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.ConjugateExactMin(p.Objective, input);
-            LogResults(prob, res);
-
-            TestMinimum(p, res);
-        }
-
-        [Test, Combinatorial]
-        public void ConjugateEx_GradGiven_ExpectedValue
-            ([Range(1, 12)] int prob, [Values(1, 2)] int start)
-        {
-            Optimizer opt = GetOptomizer();
-            var p = OptimizationProb.GetCase(prob);
-
-            var input = p.GetStart(start);
-            var res = opt.ConjugateExactMin(p.Objective, p.Gradient, input);
+            var res = opt.ConjugateMin(p.Objective, p.Gradient, input);
             LogResults(prob, res);
 
             TestMinimum(p, res);
