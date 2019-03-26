@@ -1,6 +1,6 @@
 ﻿/**
  *  This file is an integral part of the Vulpine Core Library
- *  Copyright (c) 2016-2018 Benjamin Jacob Dawson
+ *  Copyright (c) 2016-2019 Benjamin Jacob Dawson
  *
  *      http://www.jakesden.com/corelibrary.html
  *
