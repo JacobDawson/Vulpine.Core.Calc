@@ -13,7 +13,8 @@ namespace QuickTests
         static void Main(string[] args)
         {
 
-            RootFinding.Run();
+            Distrobution.Run();
+            //RootFinding.Run();
             //DivByZero.Run();
             //LU_Decomp.Run();
             //RandomMatrix.Run();

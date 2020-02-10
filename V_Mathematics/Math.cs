@@ -566,7 +566,7 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="x">Input to the sigmoid function</param>
         /// <returns>The result of the sigmoid funciton</returns>
-        public static double Sgmd(double x)
+        public static double Sigmoid(double x)
         {
             //calculates the standard logistic funciton
             return 1.0 / (1.0 + Math.Exp(-x));
@@ -579,7 +579,7 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="x">Input to the inverse sigmoid funciton</param>
         /// <returns>The result of the inverse sigmoid funciton</returns>
-        public static double Asgmd(double x)
+        public static double Asigmoid(double x)
         {
             //takes care of the extrem cases
             if (x <= 0.0) return Double.NegativeInfinity;

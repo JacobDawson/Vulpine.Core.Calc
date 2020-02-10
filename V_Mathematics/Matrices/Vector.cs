@@ -249,6 +249,19 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
+        /// Obtains the desired element in the vector. If the index
+        /// is outside the range of the vector it returns a default value.
+        /// </summary>
+        /// <param name="index">Position of desired element</param>
+        /// <param name="def">Default value if index is invalid</param>
+        /// <returns>The desired element or default value</returns>
+        public double GetExtended(int index, double def)
+        {
+            if (index < 0 || index >= vector.Length) return def;
+            else return vector[index];
+        }
+
+        /// <summary>
         /// Sets the desired element in the vector.
         /// </summary>
         /// <param name="index">Position of the element</param>

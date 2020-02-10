@@ -426,6 +426,63 @@ namespace Vulpine.Core.Calc.RandGen
         }
 
         /// <summary>
+        /// Samples a descrete probability distribution by taking an array of weight
+        /// values and returning an index into the array. The higher a weight value
+        /// is the more likely its corisponding index will be chosen. The weights
+        /// need not be normalised, but they should all be positive.
+        /// </summary>
+        /// <param name="weights">An array of weight values</param>
+        /// <returns>A random index into the array</returns>
+        public int SampleDesc(params double[] weights)
+        {
+            //calls the vector based function below
+            Vector temp = new Vector(weights);
+            return SampleDesc(temp);
+        }
+
+        /// <summary>
+        /// Samples a descrete probability distribution by taking an array of weight
+        /// values and returning an index into the array. The higher a weight value
+        /// is the more likely its corisponding index will be chosen. The weights
+        /// need not be normalised, but they should all be positive.
+        /// </summary>
+        /// <param name="weights">An array of weight values</param>
+        /// <returns>A random index into the array</returns>
+        public int SampleDesc(Vector weights)
+        {
+            //copies the wieghts for the probability distribution
+            Vector pd = new Vector(weights);
+            double total = 0.0;
+
+            for (int i = 0; i < pd.Length; i++)
+            {
+                //enshures that all the weights are positive
+                //and keeps a running total of the weights
+                pd[i] = Math.Abs(pd[i]);
+                total = total + pd[i];
+            }
+
+            total = 1.0 / total;
+
+            //used in generating a random sample
+            double selc = NextDouble();
+            double prev = 0.0;
+            double p = 0.0;
+
+            //stops when it finds the desired index
+            for (int i = 0; i < pd.Length; i++)
+            {
+                p = prev + (pd[i] * total);
+                if (selc < p) return i;
+                prev = p;            
+            }
+
+            //return the last index
+            return (pd.Length - 1);
+        }
+
+
+        /// <summary>
         /// Generates a random permutation of all the items in a given sequence.
         /// This is similar, in effect, to shuffeling a deck of cards.
         /// </summary>
