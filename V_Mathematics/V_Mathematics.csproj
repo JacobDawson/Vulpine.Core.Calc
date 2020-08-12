@@ -38,6 +38,9 @@
   <ItemGroup>
     <Compile Include="Algorithms\Integrator.cs" />
     <Compile Include="Algorithms\StepEventArgs.cs" />
+    <Compile Include="DataStruk\NodeKD.cs" />
+    <Compile Include="DataStruk\TreeVector.cs" />
+    <Compile Include="DataStruk\VectorPair.cs" />
     <Compile Include="Exceptions\ArgBoundsException.cs" />
     <Compile Include="Exceptions\InvBracketExcp.cs" />
     <Compile Include="Exceptions\SquareMatrixExcp.cs" />
