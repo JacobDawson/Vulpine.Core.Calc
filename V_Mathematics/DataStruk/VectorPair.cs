@@ -20,19 +20,19 @@ namespace Vulpine.Core.Calc.Data
         #region Class Definitions...
 
         //stores both the data and the vector that points to it
-        private E data;
+        private E value;
         private Vector vector;
 
         /// <summary>
         /// Creates a new vector pair, with the given data and the given vector. In
         /// this case, a copy of the vector is made, so as to not be mutable.
         /// </summary>
-        /// <param name="data">Data being pointed to</param>
+        /// <param name="value">Value being pointed to</param>
         /// <param name="vector">Vector pointing to the data</param>
-        public VectorPair(E data, Vector vector)
+        public VectorPair(E value, Vector vector)
         {
             //refrences the data and clones the vector
-            this.data = data;
+            this.value = value;
             this.vector = new Vector(vector);
         }
 
@@ -40,12 +40,12 @@ namespace Vulpine.Core.Calc.Data
         /// Creates a vector pair, with the given data and the elements of the
         /// vector pointing to said data. A new vector is created in this case.
         /// </summary>
-        /// <param name="data">Data being pointed to</param>
+        /// <param name="value">Value being pointed to</param>
         /// <param name="vector">Vector pointing to the data</param>
-        public VectorPair(E data, params double[] vector)
+        public VectorPair(E value, params double[] vector)
         {
             //refrences the data and clones the vector
-            this.data = data;
+            this.value = value;
             this.vector = new Vector(vector);
         }
 
@@ -55,7 +55,7 @@ namespace Vulpine.Core.Calc.Data
         /// <returns>The vector pair as a string</returns>
         public override string ToString()
         {
-            string sdata = (data == null) ? "NULL" : data.ToString();
+            string sdata = (value == null) ? "NULL" : value.ToString();
             return String.Format("{0} : {1}", vector, sdata);
         }
 
@@ -95,9 +95,9 @@ namespace Vulpine.Core.Calc.Data
         /// <summary>
         /// Obtains the data assigned to the curent vector.
         /// </summary>
-        public E Data
+        public E Value
         {
-            get { return data; }
+            get { return value; }
         }
 
 

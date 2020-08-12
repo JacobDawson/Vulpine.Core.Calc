@@ -9,7 +9,7 @@ using Vulpine.Core.Calc.Matrices;
 
 namespace Vulpine.Core.Calc.Data
 {
-    public class NodeKD<T> : Node<VectorPair<T>>
+    public class NodeKD<T> : Node<NodeKD<T>>
     {
         ////determins the position and orientation of the hyperplane
         //private int axis;
@@ -44,93 +44,184 @@ namespace Vulpine.Core.Calc.Data
         ///////////////////////////////////////////////////////////////////////////
 
 
-        //determins the position and orientation of the hyperplane
-        private int axis;
-        private double split;
+        ////determins the position and orientation of the hyperplane
+        //private int axis;
+        //private double split;
 
-        //determins if the node is a leaf
-        private bool leaf;
+        ////determins if the node is a leaf
+        //private bool leaf;
 
-        //contains a link to the left and right children
-        //also used to store the location and data in leaves
-        private Object left;
-        private Object right;
+        ////contains a link to the left and right children
+        ////also used to store the location and data in leaves
+        //private Object left;
+        //private Object right;
+
+
+        private short axis;
+        private Vector loc;
+
+        private NodeKD<T> left;
+        private NodeKD<T> right;
+
+        private T value;
+
+       
 
 
         public NodeKD(int axis, double split, NodeKD<T> left, NodeKD<T> right)
         {
-            //this is not a leaf node
-            this.leaf = false;
-
             //sets the axis and the split
-            this.axis = axis;
-            this.split = split;
+            this.axis = (short)axis;
+            this.loc = new Vector(split);
 
             //sets the left and right children
             this.left = left;
             this.right = right;
+
+            //intermediat nodes do not store value
+            value = default(T);
         }
 
-        public NodeKD(Vector loc, T data)
+        public NodeKD(Vector loc, T value)
         {
             //this is a leaf node
-            this.leaf = true;
+            this.axis = -1;
 
-            //stores the data in the left pointer
-            this.left = new VectorPair<T>(data, loc);
+            //stores a copy of the vector
+            this.loc = new Vector(loc);
+            this.value = value;
 
             //sets other values to default
-            axis = -1;
-            split = Double.NaN;
+            left = null;
             right = null;
         }
 
-        public NodeKD(VectorPair<T> pair)
+        //public NodeKD(VectorPair<T> pair)
+        //{
+        //    //this is a leaf node
+        //    this.leaf = true;
+
+        //    //stores the data in the left pointer
+        //    this.left = pair;
+
+        //    //sets other values to default
+        //    axis = -1;
+        //    split = Double.NaN;
+        //    right = null;
+        //}
+
+        /// <summary>
+        /// Determins if the curent node is a leaf
+        /// </summary>
+        public bool IsLeaf
         {
-            //this is a leaf node
-            this.leaf = true;
-
-            //stores the data in the left pointer
-            this.left = pair;
-
-            //sets other values to default
-            axis = -1;
-            split = Double.NaN;
-            right = null;
+            get { return (axis < 0); }
         }
 
+        public int Axis
+        {
+            get { return axis; }
+        }
 
-
-        public NodeKD<T> Left
+        public double Split
         {
             get
             {
-                if (leaf) return null;
-                else return left as NodeKD<T>;
+                if (axis < 0) return 0.0;
+                else return loc[0];
             }
+        }
+
+        public NodeKD<T> Left
+        {
+            get { return left; }
         }
 
         public NodeKD<T> Right
         {
-            get
+            get { return right; }
+        }
+
+        public Vector Location
+        {
+            get 
             {
-                if (leaf) return null;
-                else return right as NodeKD<T>;
+                if (axis >= 0) return null;
+                else return new Vector(loc); 
             }
         }
 
-        public VectorPair<T> Data
+        public T Value
         {
-            get
+            get 
             {
-                if (!leaf) return null;
-                else return left as VectorPair<T>;
+                if (axis < 0) return value;
+                else return default(T);
             }
-            set
+        }
+
+        /// <summary>
+        /// Returns a refrence to the current node, nessary for
+        /// implementing the Node interface.
+        /// </summary>
+        public NodeKD<T> Data
+        {
+            get { return this; }
+            set { throw new InvalidOperationException(); }
+        }
+
+        //public NodeKD<T> Data
+        //{
+        //    get
+        //    {
+        //        //simply returns a refrence to itself
+        //        return this;
+        //    }
+        //    set
+        //    {
+        //        //we can't change our internal data
+        //        throw new InvalidOperationException();
+        //    }
+        //}
+
+        /// <summary>
+        /// Determins which path of the tree should be follwed, based on
+        /// a point being probed.
+        /// </summary>
+        /// <param name="probe">Vector to probe the tree</param>
+        /// <returns>The root of the path to be followed</returns>
+        public NodeKD<T> Trace(Vector probe)
+        {
+            //If we are at a leaf, we can't trace further
+            if (axis < 0) return null;
+
+            double val = probe.GetExtended(axis);
+
+            if (val > loc[0]) return right;
+            else return left;
+        }
+
+
+        public NodeKD<T> GetOther(NodeKD<T> child)
+        {          
+            if (child == left) return right;
+            if (child == right) return left;
+
+            return null;
+        }
+
+        public double Dist(Vector probe)
+        {
+            if (axis < 0)
             {
-                //we arn't allowed to set the data, especialy if
-                //the curent node is not a leaf
-                throw new InvalidOperationException();
+                //if we are a leaf, just return the distance to the probe
+                return loc.Dist(probe);
+            }
+            else
+            {
+                //computes the shortest distance to the hyper plane
+                double val = probe.GetExtended(axis);
+                return Math.Abs(val - loc[0]);
             }
         }
 
@@ -140,16 +231,12 @@ namespace Vulpine.Core.Calc.Data
         /// before right, if the node has two children.
         /// </summary>
         /// <returns>List of the node's children</returns>
-        public IEnumerable<Node<VectorPair<T>>> ListChildren()
+        public IEnumerable<Node<NodeKD<T>>> ListChildren()
         {
-            //leaves, by definition, do not have children
-            if (leaf) yield break;
+            //by definition, leaves do not have children
+            if (axis < 0) yield break;
 
-            //converts the references
-            NodeKD<T> left = this.left as NodeKD<T>;
-            NodeKD<T> right = this.right as NodeKD<T>;
-
-            //returns the non-null children
+            //returns the left and right children, if they exist
             if (left != null) yield return left;
             if (right != null) yield return right;
         }
