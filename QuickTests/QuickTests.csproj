@@ -46,6 +46,7 @@
     <Compile Include="Binomial.cs" />
     <Compile Include="Distrobution.cs" />
     <Compile Include="DivByZero.cs" />
+    <Compile Include="GeneratePoints.cs" />
     <Compile Include="LU-Decomp.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

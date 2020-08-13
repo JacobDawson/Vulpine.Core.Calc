@@ -12,8 +12,8 @@ namespace QuickTests
     {
         static void Main(string[] args)
         {
-
-            Distrobution.Run();
+            GeneratePoints.Run();
+            //Distrobution.Run();
             //RootFinding.Run();
             //DivByZero.Run();
             //LU_Decomp.Run();

@@ -112,59 +112,52 @@ namespace Vulpine.Core.Calc.Data
 
         public override VectorPair<E> GetNearest(Vector probe)
         {
-            //NEEDS MORE WORK!!!!!
-
             //we can't search the tree if the structor hasn't been built
             if (root == null) throw new InvalidOperationException();
 
-            var queue = new DequeArray<NodeKD<E>>();
+            var stack = new DequeArray<NodeKD<E>>();
             double mindist = Double.PositiveInfinity;
 
             NodeKD<E> curr = root;
-            NodeKD<E> prev = null;
-            NodeKD<E> other = null;
             NodeKD<E> best = null;
-            
 
-            //fined the lowest leaf containing the node
-            while (!curr.IsLeaf)
+            stack.PushBack(root);
+
+            while (!stack.Empty)
             {
-                queue.PushBack(curr);
-                curr = curr.Trace(probe);               
-            }
+                curr = stack.PopBack();
+                double dist = curr.Dist(probe);
 
-            mindist = probe.Dist(curr.Location);
-            bool found = false;
-            best = curr;
-
-            while (!found)
-            {
-                prev = curr;
-                curr = queue.PopBack();
-                other = curr.GetOther(prev);
-
-                double dist = other.Dist(probe);
+                //ignore branches greater than our minimum distance
                 if (dist > mindist) continue;
 
-                if (other.IsLeaf)
+                if (curr.IsLeaf)
                 {
                     //updates the best match so far
-                    best = other;
+                    best = curr;
                     mindist = dist;
                 }
                 else
                 {
-                    //starts searching on the alternate branch
-                    queue.PushBack(other);
-                    curr = other.Trace(probe);
+                    //obtains the direction to probe and it's sibling
+                    NodeKD<E> temp = curr.Trace(probe);
+                    NodeKD<E> other = curr.GetOther(temp);
+
+                    //pushes the nodes in reverse visiting order
+                    stack.PushBack(other);
+                    stack.PushBack(temp);
                 }
             }
 
-            //LOOK UP DEPTH-FIRST SEARH
-            
-            
+            //if we somehow fail to find a match
+            if (best == null) return null;
 
-            throw new NotImplementedException();
+            //extracts the value and the location
+            Vector loc = best.Location;
+            E value = best.Value;
+
+            //returns the new vector pair
+            return new VectorPair<E>(value, loc);
         }
 
         public override IEnumerable<VectorPair<E>> GetNearest(Vector probe, int count)
