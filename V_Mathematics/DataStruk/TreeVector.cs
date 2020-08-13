@@ -19,6 +19,12 @@ namespace Vulpine.Core.Calc.Data
     public abstract class TreeVector<E>
     {
         /// <summary>
+        /// Determins if it is nessary to (re)build the data structor, in order
+        /// to get the maximum efficent search time.
+        /// </summary>
+        public abstract bool BuildRequired { get; }
+
+        /// <summary>
         /// Preemptively adds a new vector pair to the data structor. Note that
         /// this insertion is not garenteed to take effect untill after the data
         /// structor has been (re)built.

@@ -29,7 +29,15 @@ namespace Vulpine.Core.Calc.Data
             root = null;
         }
 
-        
+        public override bool BuildRequired
+        {
+            get
+            {
+                if (root == null) return true;
+                
+                return false;
+            }
+        }
 
 
         public override void Add(Vector loc, E data)
@@ -128,11 +136,11 @@ namespace Vulpine.Core.Calc.Data
                 curr = stack.PopBack();
                 double dist = curr.Dist(probe);
 
-                //ignore branches greater than our minimum distance
-                if (dist > mindist) continue;
-
                 if (curr.IsLeaf)
                 {
+                    //ignore leaves greater than our minimum distance
+                    if (dist > mindist) continue;
+
                     //updates the best match so far
                     best = curr;
                     mindist = dist;
@@ -144,7 +152,7 @@ namespace Vulpine.Core.Calc.Data
                     NodeKD<E> other = curr.GetOther(temp);
 
                     //pushes the nodes in reverse visiting order
-                    stack.PushBack(other);
+                    if (dist < mindist) stack.PushBack(other);
                     stack.PushBack(temp);
                 }
             }
