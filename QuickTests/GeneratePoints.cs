@@ -30,7 +30,6 @@ namespace QuickTests
             TreeVector<Vector> tree = new TreeKD<Vector>(dim);
 
 
-
             Console.WriteLine();
             List<Vector> points = new List<Vector>(count);
             VRandom rng = new RandMT();

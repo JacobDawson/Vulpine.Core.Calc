@@ -11,51 +11,6 @@ namespace Vulpine.Core.Calc.Data
 {
     public class NodeKD<T> : Node<NodeKD<T>>
     {
-        ////determins the position and orientation of the hyperplane
-        //private int axis;
-        //private double split;
-
-        ////determins if the node is a leaf
-        //private bool leaf;
-
-        ////contains a link to the left and right children
-        //private NodeKD<T> left;
-        //private NodeKD<T> right;
-
-        ////stores the location and the data in the leaf
-        //private Vector loc;
-        //private T data;
-
-        ///////////////////////////////////////////////////////////////////////////
-
-        ////This implementation stores data in all nodes, not just leaves
-
-        ////determins the axis on which to split
-        //private int axis;
-
-        ////stores the location and the data it points to
-        //private Vector loc;
-        //private T data;
-
-        ////contains a link to the left and right
-        //private NodeKD<T> left;
-        //private NodeKD<T> right;
-        
-        ///////////////////////////////////////////////////////////////////////////
-
-
-        ////determins the position and orientation of the hyperplane
-        //private int axis;
-        //private double split;
-
-        ////determins if the node is a leaf
-        //private bool leaf;
-
-        ////contains a link to the left and right children
-        ////also used to store the location and data in leaves
-        //private Object left;
-        //private Object right;
-
 
         private short axis;
         private Vector loc;
@@ -96,19 +51,6 @@ namespace Vulpine.Core.Calc.Data
             right = null;
         }
 
-        //public NodeKD(VectorPair<T> pair)
-        //{
-        //    //this is a leaf node
-        //    this.leaf = true;
-
-        //    //stores the data in the left pointer
-        //    this.left = pair;
-
-        //    //sets other values to default
-        //    axis = -1;
-        //    split = Double.NaN;
-        //    right = null;
-        //}
 
         /// <summary>
         /// Determins if the curent node is a leaf
@@ -169,20 +111,6 @@ namespace Vulpine.Core.Calc.Data
             get { return this; }
             set { throw new InvalidOperationException(); }
         }
-
-        //public NodeKD<T> Data
-        //{
-        //    get
-        //    {
-        //        //simply returns a refrence to itself
-        //        return this;
-        //    }
-        //    set
-        //    {
-        //        //we can't change our internal data
-        //        throw new InvalidOperationException();
-        //    }
-        //}
 
         /// <summary>
         /// Determins which path of the tree should be follwed, based on

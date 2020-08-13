@@ -100,7 +100,6 @@ namespace Vulpine.Core.Calc.Data
             get { return value; }
         }
 
-
         /// <summary>
         /// Obtains a copy of the input vector, which points to the data.
         /// Note this is only a copy. Changing it will not change the input vector.
