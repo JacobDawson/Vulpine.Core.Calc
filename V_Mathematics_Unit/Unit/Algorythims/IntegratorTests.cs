@@ -51,7 +51,7 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         public void LogResults(int f, Result<Double> res)
         {
             if (loging) Console.WriteLine
-                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.Count);
+                ("function:{0} error:{1} ittr:{2}", f, res.Error, res.Iterations);
         }
 
 

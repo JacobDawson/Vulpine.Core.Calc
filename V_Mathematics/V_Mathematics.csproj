@@ -37,6 +37,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\Integrator.cs" />
+    <Compile Include="Algorithms\Quantizer.cs" />
+    <Compile Include="Algorithms\ResultMulti.cs" />
     <Compile Include="Algorithms\StepEventArgs.cs" />
     <Compile Include="DataStruk\NodeKD.cs" />
     <Compile Include="DataStruk\TreeKD.cs" />

@@ -1,6 +1,6 @@
 ﻿/**
  *  This file is an integral part of the Vulpine Core Library
- *  Copyright (c) 2016-2019 Benjamin Jacob Dawson
+ *  Copyright (c) 2016-2020 Benjamin Jacob Dawson
  *
  *      http://www.jakesden.com/corelibrary.html
  *
@@ -22,6 +22,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,22 +30,18 @@ using System.Text;
 namespace Vulpine.Core.Calc.Algorithms
 {
     /// <summary>
-    /// This class allows for the presentation of values which are inprecise, usualy
-    /// the result of some numerical procedure. Every result contains an error term
-    /// which can be considered a mesurement of precision. Note however, that precision
-    /// should never be construed for accuracy. A Result can be very precise, but
-    /// highly inacurate! Results also contain a count paramater, which is indicitive
-    /// of how long it took to compute the result. The count paramater is not used
-    /// by every method, and it's exact interpritation can vary.
+    /// This class allows for multiple results to be returned from a single, iteritive,
+    /// algorythim. In short, multiple results are compined with a single error term
+    /// which respesnts the precision (not acuracy) of the combined agrigate results.
+    /// For full details, please see the "Result" class.
     /// </summary>
     /// <typeparam name="T">Type of result</typeparam>
-    /// <remarks>Last Update: 2017-01-26</remarks>
-    public class Result<T> : IFormattable, IComparable<Result<T>>
+    public class ResultMulti<T> : IFormattable, IEnumerable<T>, IComparable<ResultMulti<T>> 
     {
         #region Class Definitions...
 
         //stores a refrence to the result
-        private T result;
+        private T[] results;
 
         //the amount of error in the result
         private double error;
@@ -53,17 +50,18 @@ namespace Vulpine.Core.Calc.Algorithms
         private int count;
 
         /// <summary>
-        /// Constructs a new result with the given error value 
-        /// and iteration count.
+        /// Contsrutcs a new result with the given error value
+        /// and iteration count
         /// </summary>
-        /// <param name="val">Value of the result</param>
+        /// <param name="vals">List of values in the result</param>
         /// <param name="err">Amount of error in the result</param>
         /// <param name="count">Number of interations used</param>
-        public Result(T val, double err, int count)
+        public ResultMulti(IEnumerable<T> vals, double err, int count)
         {
-            this.result = val;
+            this.results = vals.ToArray();
             this.error = Math.Abs(err);
             this.count = Math.Abs(count);
+            
         }
 
         /// <summary>
@@ -71,15 +69,15 @@ namespace Vulpine.Core.Calc.Algorithms
         /// error, and has taken no time to compute.
         /// </summary>
         /// <param name="val">Value of the result</param>
-        public Result(T val)
+        public ResultMulti(IEnumerable<T> vals)
         {
-            this.result = val;
+            this.results = vals.ToArray();
             this.error = Double.PositiveInfinity;
-            this.count = 0;
+            this.count = 0;          
         }
 
         /// <summary>
-        /// Reports the computed value along with it's error. Tipicaly the
+        /// Reports the total error for the agrigate result. Tipicaly the
         /// error is reletive when the value is large, and absolute when the
         /// value is small, although the exact interpritaiton can varry.
         /// </summary>
@@ -91,7 +89,7 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         /// <summary>
-        /// Reports the computed value along with it's error. Tipicaly the
+        /// Reports the total error for the agrigate result. Tipicaly the
         /// error is reletive when the value is large, and absolute when the
         /// value is small, although the exact interpritaiton can varry.
         /// It passes on the formating information if it is able.
@@ -101,15 +99,8 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>The result as a string</returns>
         public string ToString(string format, IFormatProvider provider)
         {
-            var temp = result as IFormattable;
-            string s1, s2;
-
-            if (temp == null) s1 = result.ToString();
-            else s1 = temp.ToString(format, provider);
-
-            s2 = error.ToString(format, provider);
-
-            return String.Format("res:<{0}>, err:{1}", s1, s2);
+            string s = error.ToString(format, provider);
+            return String.Format("Error: {0}", s);
         }
 
         /// <summary>
@@ -121,29 +112,48 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>True if the objects are equal</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Result<T>)
-            {
-                var other = (Result<T>)obj;
+            //determins if the other object is a multi result
+            var other = obj as ResultMulti<T>;
+            if (other == null) return false;
 
-                if (!result.Equals(other.result)) return false;
-                if (!error.Equals(other.error)) return false;
-                return true;
+            //determins if both objects have the same number of results
+            if (results.Length != other.results.Length) return false;
+
+            //determins if the error terms are equal
+            if (!error.Equals(other.error)) return false;
+
+            //determins if all the results are equal
+            for (int i = 0; i < results.Length; i++)
+            {
+                T parA = this.results[i];
+                T parB = other.results[i];
+                if (!parA.Equals(parB)) return false;
             }
 
-            return false;
+            //the items must be equal
+            return true;
         }
 
         /// <summary>
         /// Generates a hash code for the curent result, constructed from
-        /// the value of the result, and the amound of error in the result.
+        /// the values of the result, and the amound of error in the result.
         /// </summary>
         /// <returns>The hash of the result</returns>
         public override int GetHashCode()
-        {
-            int a1 = result.GetHashCode();
-            int a2 = error.GetHashCode();
+        {          
+            int hash = error.GetHashCode();
+            int temp = 0;
 
-            return unchecked((a1 * 907) ^ a2);
+            for (int i = 0; i < results.Length; i++)
+            {
+                unchecked
+                {
+                    temp = results[i].GetHashCode();
+                    hash ^= (hash << 5) + (hash >> 2) + temp;
+                }
+            }
+
+            return hash;
         }
 
         /// <summary>
@@ -154,7 +164,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         /// <param name="other">A result to compare</param>
         /// <returns>See description</returns>
-        public int CompareTo(Result<T> other)
+        public int CompareTo(ResultMulti<T> other)
         {
             if (this.error < other.error) return -1;
             if (this.error > other.error) return 1;
@@ -165,14 +175,6 @@ namespace Vulpine.Core.Calc.Algorithms
         #endregion /////////////////////////////////////////////////////////////
 
         #region Class Properties...
-
-        /// <summary>
-        /// The computed value. 
-        /// </summary>
-        public T Value
-        {
-            get { return result; }
-        }
 
         /// <summary>
         /// The amount error between the generated value and the previous value.
@@ -195,17 +197,41 @@ namespace Vulpine.Core.Calc.Algorithms
             get { return count; }
         }
 
+        /// <summary>
+        /// The number of resultant values in this multi-result.
+        /// </summary>
+        public int NumResults
+        {
+            get { return results.Length; }
+        }
+
         #endregion /////////////////////////////////////////////////////////////
 
-        #region Class Conversions...
+        #region Result Acess...
 
         /// <summary>
-        /// Allows the value of the result to be automaticly extracted
-        /// whenever the result is used as it's internal type.
+        /// Allows for indivitual access to the resultant values, by index.
         /// </summary>
-        public static implicit operator T(Result<T> val)
-        { 
-            return val.result; 
+        /// <param name="index">Index of the resultant value</param>
+        /// <returns>The desired resultant</returns>
+        public T GetResult(int index)
+        {
+            if (index < 0 || index >= results.Length)
+                throw new ArgumentOutOfRangeException();
+
+            return results[index];
+        }
+
+        /// <summary>
+        /// Enumerates all the resultant vlaues in this multi-result.
+        /// </summary>
+        /// <returns>A list of all resultant values</returns>
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < results.Length; i++)
+            {
+                yield return results[i];
+            }
         }
 
         #endregion /////////////////////////////////////////////////////////////
@@ -213,22 +239,24 @@ namespace Vulpine.Core.Calc.Algorithms
         #region Operator Overlodes...
 
         //refferences the CompareTo() function
-        public static bool operator >(Result<T> a, Result<T> b)
+        public static bool operator >(ResultMulti<T> a, ResultMulti<T> b)
         { return a.CompareTo(b) > 0; }
 
         //refferences the CompareTo() function
-        public static bool operator <(Result<T> a, Result<T> b)
+        public static bool operator <(ResultMulti<T> a, ResultMulti<T> b)
         { return a.CompareTo(b) < 0; }
 
         //refferences the CompareTo() function
-        public static bool operator >=(Result<T> a, Result<T> b)
+        public static bool operator >=(ResultMulti<T> a, ResultMulti<T> b)
         { return a.CompareTo(b) >= 0; }
 
         //refferences the CompareTo() function
-        public static bool operator <=(Result<T> a, Result<T> b)
+        public static bool operator <=(ResultMulti<T> a, ResultMulti<T> b)
         { return a.CompareTo(b) <= 0; }
 
         #endregion /////////////////////////////////////////////////////////////
 
+        IEnumerator IEnumerable.GetEnumerator()
+        { return GetEnumerator(); }
     }
 }

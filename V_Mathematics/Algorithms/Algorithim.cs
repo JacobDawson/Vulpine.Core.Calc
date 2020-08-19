@@ -350,6 +350,22 @@ namespace Vulpine.Core.Calc.Algorithms
             return new Result<T>(value, error, count);
         }
 
+        /// <summary>
+        /// Uses multiple values to generate a result, reporting the curent
+        /// error value and number of iterations along with them. This method
+        /// should be called at the end of each procedure, before returning. 
+        /// </summary>
+        /// <param name="value">The final value of computation</param>
+        /// <returns>The packaged result</returns>
+        protected ResultMulti<T> Finish<T>(IEnumerable<T> values)
+        {
+            //invokes any finishing events that are regesterd
+            if (e_finish != null) e_finish(this, EventArgs.Empty);
+
+            //returns the generated result
+            return new ResultMulti<T>(values, error, count);
+        }
+
         #endregion //////////////////////////////////////////////////////////////
     }
 }

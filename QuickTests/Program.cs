@@ -12,7 +12,9 @@ namespace QuickTests
     {
         static void Main(string[] args)
         {
-            GeneratePoints.Run();
+            BayerMatrixTest.Run();
+            //GeneratePoints.Run();
+            
             //Distrobution.Run();
             //RootFinding.Run();
             //DivByZero.Run();

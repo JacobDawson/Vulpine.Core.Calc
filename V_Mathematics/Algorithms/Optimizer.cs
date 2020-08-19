@@ -640,7 +640,7 @@ namespace Vulpine.Core.Calc.Algorithms
             if (f1 * f2 < 0)
             {
                 var res = rf.Brent(af, 0.0, step);
-                Increment(res.Count);
+                Increment(res.Iterations);
 
                 an = res.Value;
             }

@@ -182,8 +182,11 @@ namespace Vulpine.Core.Calc.Matrices
 
             for (int i = 0; i < vector.Length; i++)
             {
-                temp = vector[i].GetHashCode();
-                hash ^= (hash << 5) + (hash >> 2) + temp;
+                unchecked
+                {
+                    temp = vector[i].GetHashCode();
+                    hash ^= (hash << 5) + (hash >> 2) + temp;
+                }
             }
 
             return hash;

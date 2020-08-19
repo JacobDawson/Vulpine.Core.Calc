@@ -331,7 +331,15 @@ namespace Vulpine.Core.Calc.Data
                 else leftset.Add(pair);
             }
 
+            //if (leftset.Empty || rightset.Empty) throw new InvalidOperationException();
+
             working.Clear();
+
+
+            //if we fail to split the data, choose a diffrent hyperplane
+            if (leftset.Empty) return BuildInc(rightset, level + 1);
+            if (rightset.Empty) return BuildInc(leftset, level + 1);
+
 
             //itterativly builds the left and right subtrees
             NodeKD<E> left = BuildInc(leftset, level + 1);

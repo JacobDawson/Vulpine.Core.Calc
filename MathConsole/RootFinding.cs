@@ -237,7 +237,7 @@ namespace MathConsole
                             value = rf.Secant(f.Evaluate, y, x1, x2);
                             method = "Secant Method"; break;
                         default:
-                            value = new Result<Double>();
+                            value = default(Result<Double>); //new Result<Double>();
                             method = "Error"; break;
                     }
                 }
