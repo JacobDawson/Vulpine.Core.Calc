@@ -95,11 +95,31 @@ namespace Vulpine.Core.Calc.Data
         public override void Add(Vector loc, E data)
         {
             //we do not allow vectors that are smaller than our dimention
-            if (loc.Length < dim) throw new InvalidOperationException();
+            if (loc.Length < dim) throw new ArgumentShapeException();
+
+            //if a duplicate vector is added, we must throw an exception
+            if (this.Contains(loc)) throw new InvalidOperationException();
 
             //we create a new vector pair and add it to the list
             var temp = new VectorPair<E>(data, loc);
             insertions.Add(temp);
+        }
+
+        /// <summary>
+        /// Determins if a vector has already been inserted into the structor.
+        /// </summary>
+        /// <param name="loc">A vector to test</param>
+        /// <returns>True if the vector is found int the structor</returns>
+        public override bool Contains(Vector loc)
+        {
+            //checks the tree first for contaiment
+            if (TreeContains(loc)) return true;
+
+            //checks the list of insertions, if not found in tree
+            var probe = new VectorPair<E>(default(E), loc);
+            if (insertions.Contains(probe)) return true;
+
+            return false;
         }
 
         /// <summary>
@@ -241,6 +261,9 @@ namespace Vulpine.Core.Calc.Data
         {
             insertions.Clear();
             ClearTree();
+
+            root = null;
+            tcount = 0;
         }
 
         #endregion /////////////////////////////////////////////////////////////////////
@@ -348,6 +371,28 @@ namespace Vulpine.Core.Calc.Data
             //returns the root of the curent subtree
             return new NodeKD<E>(axis, mean, left, right);
 
+        }
+
+        /// <summary>
+        /// Determins if the tree portion contains a vector that is identical
+        /// to the input vector.
+        /// </summary>
+        /// <param name="v">Vector to test</param>
+        /// <returns>True if the tree portion contains the vector</returns>
+        private bool TreeContains(Vector v)
+        {
+            //the tree cant contain the vector if there is no tree
+            if (root == null) return false;
+            NodeKD<E> current = root;
+
+            //traces the vector to a leaf
+            while (!current.IsLeaf)
+            {
+                current = current.Trace(v);
+            }
+
+            //returns true if the leaf contains our vector
+            return v.Equals(current.Location);
         }
 
         /// <summary>

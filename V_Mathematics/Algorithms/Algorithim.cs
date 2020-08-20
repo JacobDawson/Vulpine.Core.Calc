@@ -57,11 +57,11 @@ namespace Vulpine.Core.Calc.Algorithms
 
         //stores the delegate to handel step events
         private EventHandler<StepEventArgs> e_step;
+        private EventHandler<StepEventArgs> e_finish;
 
-        //stores the delegates for the start and finish events
+        //stores the delegates for the start of the algorythim
         private EventHandler e_start;
-        private EventHandler e_finish;
-
+        
         /// <summary>
         /// Creates a new Algorithim object with default stoping criteria.
         /// </summary>
@@ -196,7 +196,7 @@ namespace Vulpine.Core.Calc.Algorithms
         /// terminal condition, allowing the end user to prefrom any 
         /// nessary post processing.
         /// </summary>
-        public event EventHandler FinishEvent
+        public event EventHandler<StepEventArgs> FinishEvent
         {
             add { e_finish += value; }
             remove { e_finish -= value; }
@@ -344,7 +344,8 @@ namespace Vulpine.Core.Calc.Algorithms
         protected Result<T> Finish<T>(T value)
         {
             //invokes any finishing events that are regesterd
-            if (e_finish != null) e_finish(this, EventArgs.Empty);
+            var args = new StepEventArgs(count, error);
+            if (e_finish != null) e_finish(this, args);
 
             //returns the generated result
             return new Result<T>(value, error, count);
@@ -360,7 +361,8 @@ namespace Vulpine.Core.Calc.Algorithms
         protected ResultMulti<T> Finish<T>(IEnumerable<T> values)
         {
             //invokes any finishing events that are regesterd
-            if (e_finish != null) e_finish(this, EventArgs.Empty);
+            var args = new StepEventArgs(count, error);
+            if (e_finish != null) e_finish(this, args);
 
             //returns the generated result
             return new ResultMulti<T>(values, error, count);

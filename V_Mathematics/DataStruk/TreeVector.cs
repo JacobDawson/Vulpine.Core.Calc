@@ -21,6 +21,8 @@ namespace Vulpine.Core.Calc.Data
     /// <typeparam name="E">Element type of the vector tree</typeparam>
     public abstract class TreeVector<E> : IEnumerable<VectorPair<E>>
     {
+        //IDEA: Make TreeVector implement VDictionary
+
         #region Class Properties...
 
         /// <summary>
@@ -56,6 +58,13 @@ namespace Vulpine.Core.Calc.Data
         /// <param name="loc">Location of the data as a vector</param>
         /// <param name="data">Data pointed to by the vector</param>
         public abstract void Add(Vector loc, E data);
+
+        /// <summary>
+        /// Determins if a vector has already been inserted into the structor.
+        /// </summary>
+        /// <param name="loc">A vector to test</param>
+        /// <returns>True if the vector is found int the structor</returns>
+        public abstract bool Contains(Vector loc);
 
         /// <summary>
         /// Builds the internal data structor used to preform fast searches. Certain
