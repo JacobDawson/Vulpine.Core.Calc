@@ -52,6 +52,7 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="FormatExtentions.cs" />
     <Compile Include="Functions\Polynomial.cs" />
+    <Compile Include="Geometry\Trans2D.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="ArgumentShapeException.cs" />
@@ -83,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Matrices\IndexNotation.txt" />
+    <Content Include="Notes\QuantizerMethods.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

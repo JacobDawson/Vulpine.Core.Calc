@@ -1,0 +1,86 @@
+﻿
+
+Expectation–maximization algorithm:
+
+https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm
+
+I am very intregued by the Expectation Maximization algorrithm, or EM algorythim, as an extention to the K-Means
+algorythim. Although it's formal description is very obtuse, from what I unserstand it involves partitioning
+the data into a set of classes, just like K-means. But here each class is represented by some probability
+desnity function (PDF) (tipicaly a gausian) instead of just a mean.
+
+You start with a set of such distributions (one for each class) and then use the PDFs to compute
+the probability of each data element (x) belonging to each class. You could treat this as an absolute
+partition, assigning x to the class with the highest probablity. Or you could normalise the probabliies,
+creating a fuzzy distribution, with the probablity that x belogs to any given class.
+
+You then somehow use thes values to updae the PDF themselves in an itterative process. The best prosses I 
+thought of to do this is to asign each element (x) to one of the clases, as above, and then compute the
+mean and variance of all the elements assigned to that class, which then forms a new gausian PDF.
+
+Alternitively, because we can have weighted values, we could have every point contribute to the updating
+of every PDF, by assigning weights to each of the values based on the current PDFs. This may be the
+better, although slower alternitive, as all the avilabe data is utilised in each itteration.
+
+Furthermore, the best PDF to use seem to be eliptical gausians, where the variance is a matrix of values,
+rather than a single scalar value for spherical gausians. As one can imagin, the number of paramaters
+can grow exceptionaly large for large dimentions. So this mehtod should only be used if the number of
+dimentions can be kept small (<< 12) or else use spherical gausians.
+
+I would be intrested to see what this actualy looks like in practice. A 2D K-Means solution can be visualised
+as venoi diagram, with each of the cell representing one of the clases entered on the mean. A similar thing
+can be done with an absolute partition of a EM solution. It would be intresting to see what the boundries
+look like in that case, if they are still straight lines.
+
+It would be harder to visualise a fuzzy distribution, but if we only have 2 or 3 classes, we can colorise
+the output based on the class distribution of each point in our image. Granted, this is much more limited
+but perhaps it could prove insightfull.
+
+====================================================================================================
+
+Hartigan's Method:
+
+https://en.wikipedia.org/wiki/K-means_clustering#cite_note-:22-37
+
+telgarsky10a.pdf
+
+Hartigan's Method provides an alternitive to K-Means, where we start by partitioning the data into 
+K bins, determined at random. We then consider the prospect of moving each of the data points into
+each of the other bins. We then select the move that most reduces (or increases) some objective
+function, then preform that move.
+
+The wikipedia article on K-Means provides an effecient way to evaluate the objective function.
+
+For relativly small data sets, this could be done by exaustive search. For more complex problems,
+it dosen't seem like traditoal optimization algroythims would help. However, this seems like
+a perfect match for genetic algorythims, as the task of moving one data point to another bin
+could be seen as a type of mutaiton. Crossover is a little less clear, but could be implementd
+with some thought.
+
+Wikipedia also mentions there are two variants to this algorythim, one where the FIRST move
+found to improve the fitness function is taken, and another where the BEST move to improve
+the fitness function is taken. The first tends to be faster, while the latter is obviously
+more through.
+
+====================================================================================================
+
+SIDE NOTE: 
+
+It seems that genetic algorythims could be applicable to the general K-Means algorythim
+as well. The EM Algorythim could also be a canidate for Genetic Algorythims, with some clevar
+though as to what the mutations should be. Crossover is actualy easy in both these cases, just
+swap the definitions for the bins (the means in K-Means, or the PDFs in EM).
+
+Traditonal optimization algrorthims would not work as well, as the "Functions" to be optimised
+would not be smooth and have discontiniuties. It would be intresting to see if other optimisation
+techniques, like the ant or whale algorythim would fair better.
+
+====================================================================================================
+
+BFR Algorythim:
+
+https://github.com/jeppeb91/bfr
+
+This was mentioned in one of the Wikipedia articles, but I could not find an article on BFR itself.
+Fortunatly there is another git-hub repository which explains the algorythim in great detail.
+It basilcy works by passing over the dataset once and building the clusters incramentaly.
