@@ -112,6 +112,27 @@ namespace Vulpine.Core.Calc.Geometry
             return new Point2D(xh, yh);
         }
 
+        public Point2D InvertPoint(double x, double y)
+        {
+            //extends the point vector and applies the inverse transform
+            Vector v = new Vector(x, y, 1.0);
+            v = trans.InvAx(v);
+
+            //determins if this is a point at infinity
+            if (v[2].IsZero())
+            {
+                double inf = Double.PositiveInfinity;
+                return new Point2D(inf, inf);
+            }
+
+            //projects down from homogenious space
+            double xh = v[0] / v[2];
+            double yh = v[1] / v[2];
+
+            //returns the transfomred point
+            return new Point2D(xh, yh);
+        }
+
         /// <summary>
         /// Constructs a new transformation that is equivlant to preforming
         /// the current transformation and THEN the second trasnformation. 
@@ -137,6 +158,18 @@ namespace Vulpine.Core.Calc.Geometry
         }
 
         /// <summary>
+        /// Constructs a new transformation that is the inverse of the
+        /// current transformation. This is an expensive operation, so
+        /// it should be used sparingly.
+        /// </summary>
+        /// <returns>The inverse transformation</returns>
+        public Trans2D Invert()
+        {
+            Matrix inv = Matrix.Invert(trans);
+            return new Trans2D(inv);
+        }
+
+        /// <summary>
         /// Obtains a copy of the matrix representing this transformation.
         /// </summary>
         /// <returns>The transfomarion in matrix form</returns>
@@ -145,7 +178,7 @@ namespace Vulpine.Core.Calc.Geometry
             //returns a copy of the transformation matrix
             return new Matrix(trans);
         }
-
+       
         #endregion //////////////////////////////////////////////////////////
 
         #region Single Transformations...
@@ -226,7 +259,7 @@ namespace Vulpine.Core.Calc.Geometry
         /// or equevently, by reflecting across both the x and y asies 
         /// simultaniously.
         /// </summary>
-        public static Trans2D Invert
+        public static Trans2D RotateHalf
         {
             get
             {

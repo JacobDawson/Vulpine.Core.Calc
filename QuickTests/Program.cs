@@ -12,13 +12,13 @@ namespace QuickTests
     {
         static void Main(string[] args)
         {
-            BayerMatrixTest.Run();
+            //BayerMatrixTest.Run();
             //GeneratePoints.Run();
             
             //Distrobution.Run();
             //RootFinding.Run();
             //DivByZero.Run();
-            //LU_Decomp.Run();
+            LU_Decomp.Run();
             //RandomMatrix.Run();
             //Binomial.Run();
 

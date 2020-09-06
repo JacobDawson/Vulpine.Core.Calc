@@ -27,6 +27,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Vulpine.Core.Calc.Functions;
+
 namespace Vulpine.Core.Calc.Matrices
 {
     /// <summary>
@@ -611,33 +613,22 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (num_rows != num_cols) throw new ArgumentShapeException();
 
-            //obtains the LU decomposition
-            Matrix upper, lower;
-            Decomp(out upper, out lower);
+            int vpos = num_cols;
+            Matrix aug = new Matrix(num_rows, vpos + 1);
 
-            double[] x = new double[b.Length];
-            double[] y = new double[b.Length];
-
-            //Use Forward Propagation to sovle Ly = b
-            for (int i = 0; i < b.Length; i++)
+            //bulids the augmented matrix with the vector
+            for (int i = 0; i < num_rows; i++)
             {
-                y[i] = b.GetElement(i);
-                for (int j = 0; j < i; j++)
-                    y[i] = y[i] - lower.GetElement(i, j) * y[j];
-                y[i] = y[i] / lower.GetElement(i, i);
-
+                for (int j = 0; j < vpos; j++)
+                    aug[i, j] = this[i, j];
+                aug[i, vpos] = b[i];
             }
 
-            //Use Backward Propagation to solve Ux = y
-            for (int i = b.Length - 1; i >= 0; i--)
-            {
-                x[i] = y[i];
-                for (int j = i + 1; j < b.Length; j++)
-                    x[i] = x[i] - upper.GetElement(i, j) * x[j];
-                x[i] = x[i] / upper.GetElement(i, i);
-            }
+            //generates the reduced echelon form
+            aug.ToEchelonInit();
 
-            return new Vector(x);
+            //returns the resultent vector
+            return aug.GetColumn(vpos);
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -731,22 +722,15 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (num_rows != num_cols) throw new ArgumentShapeException();
 
-            //obtains the LU decomposition
-            Matrix upper, lower;
-            Decomp(out upper, out lower);
+            //makes a copy of the matrix in row-echelon form
+            Matrix temp = new Matrix(this);
+            double det = temp.ToEchelonInit();
 
-            //computes the product of the upper diagonal
-            double udet = 1.0;
+            //computes the product of the diagonal elements
             for (int i = 0; i < num_rows; i++)
-                udet = udet * upper.GetElement(i, i);
+                det = det * temp.GetElement(i, i);
 
-            //computes the product of the lower diagonal
-            double ldet = 1.0;
-            for (int i = 0; i < num_rows; i++)
-                ldet = ldet * lower.GetElement(i, i);
-
-            //returnst the product of determinats
-            return ldet * udet;
+            return det;
         }
 
         /// <summary>
@@ -766,6 +750,32 @@ namespace Vulpine.Core.Calc.Matrices
                 trace = trace + GetElement(i, i);
 
             return trace;
+        }
+
+        /// <summary>
+        /// Computes the row-reduced, echelon form of the current matrix. This form
+        /// contains a wealth of information about the matrix and can be used to
+        /// deduce the Rank and Kernal, among other properties.
+        /// </summary>
+        /// <returns>The matrix in row-echelon form</returns>
+        public Matrix GetEchelonForm()
+        {
+            //makes a copy and reduceses it to echelon form
+            Matrix temp = new Matrix(this);
+            temp.ToEchelonInit();
+            return temp;
+        }
+
+        /// <summary>
+        /// Obtains the charaistic polynomial of the curent matrix. This is a special
+        /// polynomial, who's roots are equevlent to the eiganvalues of the matrix.
+        /// </summary>
+        /// <returns>The charaistic polynomial</returns>
+        public Polynomial GetCharPoly()
+        {
+            //uses the Faddeeve Algorythim to generate the coffecents
+            double[] coeffs = this.Faddeeve();
+            return new Polynomial(coeffs);
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -788,25 +798,36 @@ namespace Vulpine.Core.Calc.Matrices
             //checks for non-square matricies
             if (a.num_rows != a.num_cols) throw new ArgumentShapeException("a");
 
-            //feteches the determinant
-            double det = a.Det();
+            int vpos = a.num_cols;
+            Matrix aug = new Matrix(a.num_rows, vpos * 2);
 
-            //sets up the intermediate C matrix
-            Matrix c = new Matrix(a.num_rows, a.num_cols);
-
+            //bulids the augmented matrix with the identity
             for (int i = 0; i < a.num_rows; i++)
             {
-                for (int j = 0; j < a.num_cols; j++)
+                for (int j = 0; j < vpos; j++)
+                    aug[i, j] = a.GetElement(i, j);
+
+                for (int j = vpos; j < vpos * 2; j++)
                 {
-                    double temp = a.Shrink(i, j);
-                    if ((i + j) % 2 == 1) temp = -temp;
-                    c.SetElement(i, j, temp);
+                    int jx = j - vpos;
+                    if (jx == i) aug[i, j] = 1.0;
+                    else aug[i, j] = 0.0;
                 }
             }
 
-            //computes the final matrix and returns    
-            Matrix inverse = c.Mult(1 / det);
-            return inverse.Trans();
+            //generates the reduced echelon form
+            aug.ToEchelonInit();
+
+            //extracts the resulting inverse matrix
+            Matrix result = new Matrix(a.num_rows, a.num_cols);
+            for (int i = 0; i < a.num_rows; i++)
+            {
+                for (int j = 0; j < a.num_cols; j++)
+                    result[i, j] = aug[i, vpos + j];
+            }
+
+            //returns the resultent vector
+            return result;
         }
 
         /// <summary>
@@ -840,11 +861,96 @@ namespace Vulpine.Core.Calc.Matrices
         #region Helper Methods...
 
         /// <summary>
+        /// Reduces the current matrix to reduced row-echelon form. It dose
+        /// this in-place, so the matrix must be copyed if the original matrix
+        /// is to be preserved. The value returned is the modification to the
+        /// determinate induced by the reduction.
+        /// </summary>
+        /// <returns>The coffecent to the determinate</returns>
+        private double ToEchelonInit()
+        {
+            double v, maxv;
+            int maxi;
+
+            double s = 1.0;
+            int i = 0;
+            int j = 0;
+
+            while (i < num_rows && j < num_cols)
+            {
+                maxi = i;
+                v = maxv = 0.0;
+
+                //findes the piviot index and max value
+                for (int k = i; k < num_rows; k++)
+                {
+                    v = GetElement(k, j);
+                    v = Math.Abs(v);
+                    if (v > maxv) maxi = k;
+                    if (v > maxv) maxv = v;
+                }
+
+                //if the row is escentialy zero, we skip it
+                if (maxv.IsZero()) { j++; continue; }
+
+                //swaps the current row with the piviot
+                if (maxi != i)
+                {
+                    SwapRows(maxi, i);
+                    s = s * -1.0;
+                }
+
+                //re-obtains the maximum element
+                maxv = GetElement(i, j);
+                s = s * maxv;
+
+                //normalises the pivot row
+                for (int u = j; u < num_cols; u++)
+                    this[i, u] = this[i, u] / maxv;
+
+                //eliminates the current column
+                for (int k = 0; k < num_rows; k++)
+                {
+                    if (k == i) continue;
+                    double temp = this[k, j];
+
+                    for (int u = 0; u < num_cols; u++)
+                    {
+                        double x = this[i, u] * temp;
+                        this[k, u] = this[k, u] - x;
+                    }
+                }
+
+                //increments counters
+                i++; j++;
+            }
+
+            return s;
+        }
+
+        /// <summary>
+        /// Swaps two rows in the current matrix, without having to
+        /// store either of the rows being swaped as vectors.
+        /// </summary>
+        /// <param name="row1">First row to swap</param>
+        /// <param name="row2">Second row to swap</param>
+        private void SwapRows(int row1, int row2)
+        {
+            for (int i = 0; i < num_cols; i++)
+            {
+                double temp = this[row1, i];
+                this[row1, i] = this[row2, i];
+                this[row2, i] = temp;
+            }
+        }
+
+        /// <summary>
         /// Every invertable matrix can be decomposed into an upper
         /// and lower triangular matrix, whose product is the original
         /// matrix. Doing this first can greatly improve the running times
-        /// of certain caluclations, like the determinate, which would
-        /// otherwise be exponential.
+        /// of certain caluclations, however the results tend to be
+        /// less numericaly stable. It also fails whenever any of the
+        /// diagonal entries are near zero.
         /// </summary>
         /// <param name="up">Is set to the upper triangular matrix</param>
         /// <param name="low">Is set to the lower triangular matrix</param>
@@ -873,7 +979,11 @@ namespace Vulpine.Core.Calc.Matrices
                 for (int i = k + 1; i < num_rows; i++)
                 {
                     val = a.GetElement(i, k);
-                    val = val / up.GetElement(k, k);
+
+                    double t = up.GetElement(k, k);
+                    t = t.IsZero() ? 1.0 : t;
+
+                    val = val / t;
                     low.SetElement(i, k, val);
                 }
 
@@ -892,52 +1002,36 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Helper method, shrinks the matrix by removing the indicated
-        /// row and column, and then returns the determinate of the reduced
-        /// matrix.
+        /// Uses Faddeeve's Algorythim to compute the coffecents of the
+        /// charteristic polynomial of the current matrix. The charistic
+        /// polynomial can then be used to derive the eigen values for 
+        /// the matrix. 
         /// </summary>
-        /// <param name="row">Row to be removed</param>
-        /// <param name="col">Column to be removed</param>
-        /// <returns>the determinate of the reduced matrix</returns>
-        private double Shrink(int row, int col)
+        /// <returns>The coffecents of the charteristic polynomial</returns>
+        private double[] Faddeeve()
         {
-            if (num_rows <= 2)
+            int size = this.NumColumns;
+
+            //used in interativly buildign the coffecents
+            Matrix mi = Matrix.Ident(size);
+            double[] cps = new double[size + 1];
+            double ci = 1.0;
+
+            //sets the intital coffecient
+            cps[size] = 1.0;
+
+            //itterativly builds the coffecents
+            for (int i = 1; i <= size; i++)
             {
-                //special case for size two
-                int r = (row + 1) % 2;
-                int c = (col + 1) % 2;
-                return GetElement(r, c);
+                Matrix temp = this * mi;
+
+                ci = temp.Trace() / -(double)i;
+                if (i != size) mi = temp + ci;
+
+                cps[size - i] = ci;
             }
 
-            //sets up resluting matrix
-            int rows = num_rows - 1;
-            int cols = num_cols - 1;
-            Matrix result = new Matrix(rows, cols);
-
-            //used in itterations
-            int x = 0;
-            int y = 0;
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < rows; j++)
-                {
-                    //takes care of deleting the row
-                    if (i < row) x = i;
-                    else x = i + 1;
-
-                    //takes care of deleting the col
-                    if (j < col) y = j;
-                    else y = j + 1;
-
-                    //copies the desired values
-                    double temp = GetElement(x, y);
-                    result.SetElement(i, j, temp);
-                }
-            }
-
-            //returns the determinat
-            return result.Det();
+            return cps;
         }
 
         #endregion //////////////////////////////////////////////////////////////
