@@ -580,7 +580,7 @@ namespace Vulpine.Core.Calc.Matrices
             Vector dist = new Vector(vector.Length);
             double sum = 0.0;
 
-            //takes the absolute value and computes the sum
+            //takes the exponential and computes the sum
             for (int i = 0; i < vector.Length; i++)
             {
                 dist.vector[i] = Math.Exp(vector[i]);

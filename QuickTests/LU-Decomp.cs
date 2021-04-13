@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Vulpine.Core.Calc;
 using Vulpine.Core.Calc.Matrices;
 
 namespace QuickTests
@@ -120,8 +122,16 @@ namespace QuickTests
                 low.SetElement(k, k, 1);
                 for (int i = k + 1; i < m.NumRows; i++)
                 {
+                    //val = a.GetElement(i, k);
+                    //val = val / up.GetElement(k, k);
+                    //low.SetElement(i, k, val);
+
                     val = a.GetElement(i, k);
-                    val = val / up.GetElement(k, k);
+
+                    double t = up.GetElement(k, k);
+                    t = t.IsZero() ? 1.0 : t;
+
+                    val = val / t;
                     low.SetElement(i, k, val);
                 }
 

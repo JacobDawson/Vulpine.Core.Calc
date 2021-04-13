@@ -61,6 +61,7 @@
     <Compile Include="Geometry\Point2D.cs" />
     <Compile Include="Geometry\Point3D.cs" />
     <Compile Include="Matrices\Vector.cs" />
+    <Compile Include="Matrices\VectorCmplx.cs" />
     <Compile Include="Numbers\Cmplx.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
     <Compile Include="Geometry\Rectangle.cs" />
