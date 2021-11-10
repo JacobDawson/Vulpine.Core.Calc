@@ -57,6 +57,7 @@
     <Compile Include="Math.cs" />
     <Compile Include="ArgumentShapeException.cs" />
     <Compile Include="Matrices\Matrix.cs" />
+    <Compile Include="Matrices\MatrixCmplx.cs" />
     <Compile Include="Matrices\MatrixSparse.cs" />
     <Compile Include="Geometry\Point2D.cs" />
     <Compile Include="Geometry\Point3D.cs" />

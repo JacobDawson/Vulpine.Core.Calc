@@ -1,6 +1,6 @@
 ﻿/**
  *  This file is an integral part of the Vulpine Core Library
- *  Copyright (c) 2016-2019 Benjamin Jacob Dawson
+ *  Copyright (c) 2016-2021 Benjamin Jacob Dawson
  *
  *      http://www.jakesden.com/corelibrary.html
  *
@@ -234,48 +234,52 @@ namespace Vulpine.Core.Calc.Functions
         //should have). Note also, that the multiply is not ambiguious, because
         //we start with the identity and multiply the same value over and over.
 
-        public A Evaluate<A>(A x) where A : Algebraic<A, Double>
-        {
-            A power = default(A); //should be set to ONE
-            A sum = default(A);   //should be set to ZERO
-
-            for (int i = 0; i < coeff.Length; i++)
-            {
-                sum = sum.Add(power.Mult(coeff[i]));
-                power = power.Mult(x);
-            }
-
-            return sum;
-        }
-
-        ///// <summary>
-        ///// Treats the domain of the polynomial as the set of all square
-        ///// matrices. Using an aproximating tailor series, this gives rise
-        ///// to the deffinition of the matrix exponential and trigometric
-        ///// functions.
-        ///// </summary>
-        ///// <param name="x">The input to the polynomial</param>
-        ///// <returns>The evaluation of the polynomial</returns>
-        ///// <exception cref="SquareMatrixExcp">If the input matrix is 
-        ///// not a square matrix</exception>
-        //public Matrix Evaluate(Matrix x)
+        //public A Evaluate<A>(A x) where A : Algebraic<A, Double>
         //{
-        //    //makes shure that the input matrix is square
-        //    SquareMatrixExcp.Check(x.NumColumns, x.NumRows);
+        //    A power = default(A); //should be set to ONE
+        //    A sum = default(A);   //should be set to ZERO
 
-        //    //stores the value as it is computed
-        //    Matrix value = Matrix.Ident(x.NumRows);
-        //    value.MultBy(coeff[coeff.Length - 1]);
-
-        //    //uses horners method to compute the polynomial
-        //    for (int i = coeff.Length - 2; i >= 0; i--)
+        //    for (int i = 0; i < coeff.Length; i++)
         //    {
-        //        value.MultBy(x);
-        //        value.AddWith(coeff[i]);
+        //        sum = sum.Add(power.Mult(coeff[i]));
+        //        power = power.Mult(x);
         //    }
 
-        //    return value;
+        //    return sum;
         //}
+
+        /// <summary>
+        /// Treats the domain of the polynomial as the set of all square
+        /// matrices. Using an aproximating tailor series, this gives rise
+        /// to the deffinition of the matrix exponential and trigometric
+        /// functions.
+        /// </summary>
+        /// <param name="x">The input to the polynomial</param>
+        /// <returns>The evaluation of the polynomial</returns>
+        /// <exception cref="SquareMatrixExcp">If the input matrix is 
+        /// not a square matrix</exception>
+        public Matrix Evaluate(Matrix x)
+        {
+            //makes shure that the input matrix is square
+            SquareMatrixExcp.Check(x.NumColumns, x.NumRows);
+
+            //stores the value as it is computed
+            Matrix value = Matrix.Ident(x.NumRows);
+            //value.MultBy(coeff[coeff.Length - 1]);
+            value = value.Mult(coeff[coeff.Length - 1]);
+
+            //uses horners method to compute the polynomial
+            for (int i = coeff.Length - 2; i >= 0; i--)
+            {
+                //value.MultBy(x);
+                //value.AddWith(coeff[i]);
+
+                value = value.Mult(x);
+                value = value.Add(coeff[i]);
+            }
+
+            return value;
+        }
 
         #endregion ////////////////////////////////////////////////////////////
 
@@ -520,6 +524,11 @@ namespace Vulpine.Core.Calc.Functions
             return new Polynomial(quo);
         }
 
+
+        //NOTE: Consider adding a composition opperator, in order to
+        //compose one polynomial with another
+
+
         #endregion ////////////////////////////////////////////////////////////
 
         #region Eucildian Implementation...
@@ -572,6 +581,121 @@ namespace Vulpine.Core.Calc.Functions
                 output[i] = coeff[i] * s;
 
             return new Polynomial(output);
+        }
+
+        #endregion ////////////////////////////////////////////////////////////
+
+        #region Special Methods...
+
+        public VectorCmplx GenRoots()
+        {
+            if (coeff.Length == 2)
+            {
+                //finds the x-intercept of the binomial
+                double root = -coeff[1] / coeff[0];
+                return new VectorCmplx(root);
+            }
+            else if (coeff.Length == 3)
+            {
+                //extracts the coeffecents
+                double a = coeff[2];
+                double b = coeff[1];
+                double c = coeff[0];
+
+                //uses the quadratic formula
+                double rad = (b * b) - (4.0 * a * c);
+                Cmplx sr = Cmplx.Sqrt(rad);
+                Cmplx r1 = (-b + sr) / (a + a);
+                Cmplx r2 = (-b - sr) / (a + a);
+
+                return new VectorCmplx(r1, r2);
+            }
+            else if (coeff.Length == 4)
+            {
+                //extracts the coeffecents
+                double a = coeff[3];
+                double b = coeff[2];
+                double c = coeff[1];
+                double d = coeff[0];
+
+                double b2 = b * b;
+                double ac = a * c;
+
+                //computes the intermedia terms
+                double del0 = b2 - (3.0 * ac);
+                double del1 = (2.0 * b2 * b) - (9.0 * b * ac) + (27.0 * a * a * d);
+                double rad = (del1 * del1) - (4.0 * del0 * del0 * del0);
+
+                Cmplx cmp = Cmplx.Sqrt(rad);
+                Cmplx c1 = (del1 + cmp) / 2.0;
+                Cmplx c2 = (del1 - cmp) / 2.0;
+                cmp = (c1.Abs > c2.Abs) ? c1 : c2;
+
+                //finds all solutions to the complex cube root
+                Cmplx r1 = Cmplx.Pow(cmp, 1.0 / 3.0);
+                Cmplx r2 = r1 * new Cmplx(-0.5, 0.866025403784439);
+                Cmplx r3 = r2 * new Cmplx(-0.5, 0.866025403784439);
+
+                r1 = b + r1 + (del0 / r1);
+                r2 = b + r2 + (del0 / r2);
+                r3 = b + r3 + (del0 / r3);
+
+                //computes the final roots for the polynomial
+                VectorCmplx roots = new VectorCmplx(r1, r2, r3);
+                return roots / (-3.0 * a);
+            }
+            else if (coeff.Length == 5)
+            {
+                //extracts the coeffecents
+                double a = coeff[4];
+                double b = coeff[3];
+                double c = coeff[2];
+                double d = coeff[1];
+                double e = coeff[0];
+
+                double a2 = a * a;
+                double b2 = b * b;
+                double ac = a * c;
+
+                double alpha = (8.0 * ac) - (3.0 * b2);
+                double beta = (8.0 * a2 * d) - (4.0 * ac * b) + (b2 * b);
+                double gamma = (256.0 * e * a * a2) - (64.0 * a2 * b * d);
+                gamma = gamma + (16.0 * ac * b2) - (3.0 * b2 * b2);
+
+                alpha = alpha / (8.0 * a2);
+                beta = beta / (8.0 * a2 * a);
+                gamma = gamma / (256.0 * a2 * a2);
+
+                double alpha2 = alpha * alpha;
+                double beta2 = beta * beta;
+
+                double p = (alpha2) / (-12.0) - gamma;
+                double q = (alpha * gamma) / 3.0 - (alpha2 * alpha) / 108.0 - beta2 / 8.0;
+                Cmplx r = -q / 2.0 + Cmplx.Sqrt((q * q) / 4.0 + (p * p * p) / 27.0);
+                Cmplx u = Cmplx.Pow(r, 1.0 / 3.0);
+
+                if (u.Abs.IsZero()) u = Cmplx.Pow(q, 1.0 / 3.0);
+                else u = u - p / (3.0 * u);
+
+                Cmplx y = (-5.0 / 6.0) * alpha + u;
+                Cmplx w = Cmplx.Sqrt(alpha + 2.0 * y);
+
+                Cmplx rad1 = -(3.0 * alpha + 2.0 * y + (2.0 * beta) / w);
+                Cmplx rad2 = -(3.0 * alpha + 2.0 * y - (2.0 * beta) / w);
+                double front = -b / (4.0 * a);
+
+                Cmplx r1 = front + (w + rad1) / 2.0;
+                Cmplx r2 = front + (w - rad1) / 2.0;
+                Cmplx r3 = front + (-w + rad2) / 2.0;
+                Cmplx r4 = front + (-w - rad2) / 2.0;
+
+                return new VectorCmplx(r1, r2, r3, r4);
+            }
+            else
+            {
+                //larger degree polynomials are not suported
+                throw new InvalidOperationException();
+            }
         }
 
         #endregion ////////////////////////////////////////////////////////////

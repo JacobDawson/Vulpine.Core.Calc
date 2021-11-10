@@ -31,7 +31,7 @@ using Vulpine.Core.Calc.Numbers;
 
 namespace Vulpine.Core.Calc.Matrices
 {
-    public class VectorCmplx : Euclidean<VectorCmplx, Cmplx>, IEnumerable<Cmplx>
+    public sealed class VectorCmplx : Euclidean<VectorCmplx, Cmplx>, IEnumerable<Cmplx>
     {
         #region Class Deffinitions...
 
@@ -48,8 +48,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// of the vector are initialy set to zero.
         /// </summary>
         /// <param name="length">The lenght of the vector</param>
-        /// <exception cref="BoundsException">If the length of
-        /// the vector is less than two</exception>
         public VectorCmplx(int length)
         {
             //makes shure we have a length of atleast one
@@ -71,8 +69,8 @@ namespace Vulpine.Core.Calc.Matrices
         /// Constructs a new complex vector from a set of values.
         /// </summary>
         /// <param name="vals">The values of the vector</param>
-        /// <exception cref="BoundsException">If the length of
-        /// the vector is less than two</exception>
+        /// <exception cref="ArgumentShapeException">If the length of
+        /// the vector is less than one</exception>
         public VectorCmplx(params Cmplx[] vals)
         {
             //checks for valid length
@@ -91,13 +89,14 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Constructs a new complex vector from a set of values.
+        /// Constructs a new complex vector from a set real and imaginary paris.
+        /// The coffecents are given as real numbers, alternating between real
+        /// and imaginary parts. For example the input (1, 2, 3, 4) gives the 
+        /// vector [1 + 2i, 3 + 4i].
         /// </summary>
         /// <param name="vals">The values of the vector</param>
-        /// <exception cref="BoundsException">If the length of
-        /// the vector is less than two</exception>
-        /// <exception cref="MathException">If the length of
-        /// the input is not divisible by two</exception>
+        /// <exception cref="ArgumentShapeException">If either the number of
+        /// paramates is less than two, or is an odd number</exception>
         public VectorCmplx(params double[] vals)
         {
             //makes shure the input makes sense
@@ -153,7 +152,6 @@ namespace Vulpine.Core.Calc.Matrices
                 imag[i] = 0.0;
             }
         }
-
 
         public override string ToString()
         {
@@ -224,6 +222,12 @@ namespace Vulpine.Core.Calc.Matrices
             get { return real.Length; }
         }
 
+        /// <summary>
+        /// Accesses the vector elements by index. See the SetElement() 
+        /// and GetElement() methods for more details.
+        /// </summary>
+        /// <param name="index">The index of the vector element</param>
+        /// <returns>The requested element</returns>
         public Cmplx this[int index]
         {
             get { return GetElement(index); }
@@ -239,7 +243,7 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="index">Position of desired element</param>
         /// <returns>The desired element</returns>
-        /// <exception cref="BoundsException">If the index is
+        /// <exception cref="ArgumentOutOfRangeException">If the index is
         /// outside the bounds of the vector</exception>
         public Cmplx GetElement(int index)
         {
@@ -258,7 +262,7 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="index">Position of the element</param>
         /// <param name="value">Value to be set</param>
-        /// <exception cref="BoundsException">If the index is
+        /// <exception cref="ArgumentOutOfRangeException">If the index is
         /// outside the bounds of the vector</exception>
         public void SetElement(int index, Cmplx value)
         {
@@ -319,12 +323,13 @@ namespace Vulpine.Core.Calc.Matrices
         #region Vector Operations...
 
         /// <summary>
-        /// Generates a new vector that is the sum of the current
-        /// vector and a second vector. It overides the '+' opperator.
+        /// Generates a new vector that is the sum of the current vector 
+        /// and a second vector.
         /// </summary>
-        /// <param name="v">The second opperand</param>
+        /// <param name="v">The second vector</param>
         /// <returns>The sum of the two vectors</returns>
-        /// <exception cref="MathException">If the vectors are of
+        /// <remarks>It overloads the (+) opperator</remarks>
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public VectorCmplx Add(VectorCmplx v)
         {
@@ -346,11 +351,12 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Generates a new vector that is the diffrence of the current
-        /// vector and a second vector. It overides the '-' opperator.
+        /// vector and a second vector.
         /// </summary>
-        /// <param name="v">The second opperand</param>
+        /// <param name="v">The second vector</param>
         /// <returns>The diffrence of the two vectors</returns>
-        /// <exception cref="MathException">If the vectors are of
+        /// <remarks>It overloads the (-) opperator</remarks>
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public VectorCmplx Sub(VectorCmplx v)
         {
@@ -371,13 +377,16 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Computes the dot product, or inner product, of the curent
-        /// vector and a second given vector. The result is a floating
-        /// point scalar. It overides the '*' opperator.
+        /// Computes the Hermitian dot product of the curent complex vector,
+        /// and a second given vector. It is defined as the first vector times
+        /// the conjiguate transpose of the second. This results in real values
+        /// when a vector is crossed with itself, though the general result
+        /// is complex.
         /// </summary>
-        /// <param name="v">The second opperand</param>
-        /// <returns>The dot procuct of the two vectors</returns>
-        /// <exception cref="MathException">If the vectors are of
+        /// <param name="v">The second vector</param>
+        /// <returns>The Hermitian dot procuct of the two vectors</returns>
+        /// <remarks>It overloads the (*) opperator</remarks>
+        /// <exception cref="ArgumentShapeException">If the vectors are of
         /// differing length</exception>
         public Cmplx Mult(VectorCmplx v)
         {
@@ -388,8 +397,6 @@ namespace Vulpine.Core.Calc.Matrices
             double temp1, temp2;
             double out_r = 0.0;
             double out_i = 0.0;
-
-            //NOTE: This method computes ab* not a*b [a*b = (ab*)*] 
 
             //computes the loop for the real component
             for (int i = 0; i < real.Length; i++)
@@ -413,10 +420,10 @@ namespace Vulpine.Core.Calc.Matrices
 
         /// <summary>
         /// Computes the product of a vector and a complex scalar.
-        /// It overides the '*' and '/' opperators.
         /// </summary>
-        /// <param name="s">The scalar value opperand</param>
+        /// <param name="s">Value by which to scale the vector</param>
         /// <returns>The product of this vector and a scalar</returns>
+        /// <remarks>It overloads the (*) and (/) opperators, respectivly</remarks>
         public VectorCmplx Mult(Cmplx s)
         {
             VectorCmplx output = new VectorCmplx(real.Length);
@@ -537,6 +544,27 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
+        /// Computes the Euclidian angle between two complex vectors. This is the same
+        /// angle you get by treating the coplex vectors as a real vectors with twice 
+        /// the dimentionality, and taking the angle of that.
+        /// </summary>
+        /// <param name="v">The second vector</param>
+        /// <returns>The Euclidian angle between the two vectors</returns>
+        public double AngleE(VectorCmplx v)
+        {
+            //starts with the Hermitian dot produt
+            Cmplx dot = this.Mult(v);
+
+            //computes the norm of both vectors
+            double a = this.Norm();
+            double b = v.Norm();
+
+            //computes the cosine of the angle
+            double cos = dot.CofR / (a * b);
+            return Math.Acos(cos);
+        }
+
+        /// <summary>
         /// Computes the Hermitian angle between two complex vectors. Note that this
         /// is diffrent from the Euclidian angle, defined on the decomposed real vector
         /// space. In particular, vectors that are orthoginal in real vector space, may
@@ -560,27 +588,6 @@ namespace Vulpine.Core.Calc.Matrices
         }
 
         /// <summary>
-        /// Computes the Euclidian angle between two complex vectors. This is the same
-        /// angle you get by treating the coplex vectors as a real vectors with twice 
-        /// the dimentionality, and taking the angle of that.
-        /// </summary>
-        /// <param name="v">The second vector</param>
-        /// <returns>The Euclidian angle between the two vectors</returns>
-        public double AngleE(VectorCmplx v)
-        {
-            //starts with the Hermitian dot produt
-            Cmplx dot = this.Mult(v);
-
-            //computes the norm of both vectors
-            double a = this.Norm();
-            double b = v.Norm();
-
-            //computes the cosine of the angle
-            double cos = dot.CofR / (a * b);
-            return Math.Acos(cos);
-        }
-
-        /// <summary>
         /// Computes the inverse of the current vector, by inverting each of the 
         /// vector's components. Note that this is not a standard vector operaiton, 
         /// and should not be thought of as a true inverse. However, it is useful 
@@ -595,10 +602,13 @@ namespace Vulpine.Core.Calc.Matrices
             //inverts each of the elements
             for (int i = 0; i < real.Length; i++)
             {
-                Cmplx c = this.GetElement(i).Inv();
+                double re = real[i];
+                double ie = imag[i];
 
-                inv.real[i] = c.CofR;
-                inv.imag[i] = c.CofI;
+                double temp = (re * re) + (ie * ie);
+
+                inv.real[i] = re / temp;
+                inv.imag[i] = -ie / temp;
             }
 
             return inv;
@@ -609,6 +619,7 @@ namespace Vulpine.Core.Calc.Matrices
         /// piece-wise conjugation of each of the vector elements.
         /// </summary>
         /// <returns>The component-wise conjugate of the vector</returns>
+        /// <remarks>It overloads the (~) opperator</remarks>
         public VectorCmplx Conj()
         {
             //creates a new vector to store the result
@@ -698,20 +709,20 @@ namespace Vulpine.Core.Calc.Matrices
 
         #region Class Conversions...
 
-        /**
-         *  Allows Explicit conversion from a complex vector to
-         *  a floting point vector, by ignoring the imaginary part.
-         */
+        /// <summary>
+        /// Allows Explicit conversion from a complex vector to a floating
+        /// point vector, by ignoring the imaginary part.
+        /// </summary>
         public static explicit operator Vector(VectorCmplx v)
         {
             return v.Real();
         }
 
-        /**
-         *  Allows an Implicit conversion from a floting point vector
-         *  to a complex vector as all rational numbers can also
-         *  be treated as complex numbers.
-         */
+        /// <summary>
+        /// Allows an Implicit converson from a floating point vector
+        /// to a compelx vector, as all real numbers can also be treates
+        /// as complex numbers.
+        /// </summary>
         public static implicit operator VectorCmplx(Vector v)
         {
             return new VectorCmplx(v);
@@ -745,6 +756,18 @@ namespace Vulpine.Core.Calc.Matrices
         public static VectorCmplx operator /(VectorCmplx v, Cmplx s)
         { return v.Mult(1.0 / s); }
 
+        //references the Conj(v) funciton
+        public static VectorCmplx operator ~(VectorCmplx v)
+        { return v.Conj(); }
+
+        //refrences the Mult(-1) function
+        public static VectorCmplx operator -(VectorCmplx v)
+        { return v.Mult(-1.0); }
+
+        //refrences the copy constructor
+        public static VectorCmplx operator +(VectorCmplx v)
+        { return new VectorCmplx(v); }
+
         #endregion /////////////////////////////////////////////////////////////
 
         //object ICloneable.Clone()
@@ -754,4 +777,5 @@ namespace Vulpine.Core.Calc.Matrices
         { return GetEnumerator(); }
 
     }
+
 }

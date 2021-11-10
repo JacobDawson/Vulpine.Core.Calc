@@ -589,6 +589,13 @@ namespace Vulpine.Core.Calc
             return Math.Log(-x);
         }
 
+
+        public static double SoftPlus(double x)
+        {
+            double temp = Math.Exp(x) + 1.0;
+            return Math.Log(temp);
+        }
+
         #endregion //////////////////////////////////////////////////////////////////
 
         #region Advanced Functions...

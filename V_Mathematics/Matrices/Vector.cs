@@ -497,7 +497,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// why it is sometimes refred to as normalising the vector.
         /// </summary>
         /// <returns>The corisponding unit vector</returns>
-        /// <remarks>It overloads the (~) opperator</remarks>
         public Vector Unit()
         {
             //uses the inverse magnitude to normalise
@@ -673,10 +672,6 @@ namespace Vulpine.Core.Calc.Matrices
         //references the Outer(v) function
         public static Matrix operator %(Vector v, Vector w)
         { return v.Outer(w); }
-
-        //refrences the Unit(v) function
-        public static Vector operator ~(Vector v)
-        { return v.Unit(); }
 
         //refrences the Mult(-1) function
         public static Vector operator -(Vector v)
