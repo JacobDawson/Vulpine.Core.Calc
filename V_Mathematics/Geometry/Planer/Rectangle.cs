@@ -28,7 +28,7 @@ using System.Text;
 
 using Vulpine.Core.Calc.Exceptions;
 
-namespace Vulpine.Core.Calc.Geometry
+namespace Vulpine.Core.Calc.Geometry.Planer
 {
     /// <summary>
     /// This structor represents a bounded area within the two dimentional cartisian

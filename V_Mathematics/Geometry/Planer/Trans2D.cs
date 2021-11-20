@@ -28,7 +28,7 @@ using System.Text;
 
 using Vulpine.Core.Calc.Matrices;
 
-namespace Vulpine.Core.Calc.Geometry
+namespace Vulpine.Core.Calc.Geometry.Planer
 {
     /// <summary>
     /// This class represents arbitrary transfomations of 2D objects. It suports

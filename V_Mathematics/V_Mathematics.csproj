@@ -52,20 +52,22 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="FormatExtentions.cs" />
     <Compile Include="Functions\Polynomial.cs" />
-    <Compile Include="Geometry\Trans2D.cs" />
+    <Compile Include="Geometry\Planer\Curve2D.cs" />
+    <Compile Include="Geometry\Planer\Line2D.cs" />
+    <Compile Include="Geometry\Planer\Trans2D.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="ArgumentShapeException.cs" />
     <Compile Include="Matrices\Matrix.cs" />
     <Compile Include="Matrices\MatrixCmplx.cs" />
     <Compile Include="Matrices\MatrixSparse.cs" />
-    <Compile Include="Geometry\Point2D.cs" />
-    <Compile Include="Geometry\Point3D.cs" />
+    <Compile Include="Geometry\Planer\Point2D.cs" />
+    <Compile Include="Geometry\Spatial\Point3D.cs" />
     <Compile Include="Matrices\Vector.cs" />
     <Compile Include="Matrices\VectorCmplx.cs" />
     <Compile Include="Numbers\Cmplx.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
-    <Compile Include="Geometry\Rectangle.cs" />
+    <Compile Include="Geometry\Planer\Rectangle.cs" />
     <Compile Include="Algorithms\Algorithim.cs" />
     <Compile Include="Algorithms\Optimizer.cs" />
     <Compile Include="Algorithms\Result.cs" />
@@ -86,8 +88,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Matrices\IndexNotation.txt" />
+    <Content Include="Notes\AlgorythimFix.txt" />
     <Content Include="Notes\QuantizerMethods.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Vulpine.Core.Calc.Numbers;
+using Vulpine.Core.Calc.Geometry.Planer;
+
 namespace Vulpine.Core.Calc.Algorithms
 {
     /// <summary>
@@ -48,6 +51,8 @@ namespace Vulpine.Core.Calc.Algorithms
         //Computing the Average Value
         //Computing the Arc Length
         //Multi-varient Intergration
+
+        //Tanh-Sinh Quadrature "qthsh.pdf" !!!
 
 
         //NOTE: Consider making the itterator count report the number
@@ -526,6 +531,193 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
         #endregion //////////////////////////////////////////////////////////////////
+
+        public Result<Cmplx> Trapezoid(VFunc<Cmplx> f, Cmplx a, Cmplx b)
+        {
+            //Line2D line = new Line2D((Point2D)a, (Point2D)b);
+
+            //throw new NotImplementedException();
+
+            Line2D line = new Line2D(a, b);
+            return Trapezoid(f, line);
+        }
+
+        public Result<Cmplx> Trapezoid(VFunc<Cmplx> f, Curve2D c)
+        {
+            //composit function that returns the real component
+            VFunc freal = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofR;
+            };
+
+            //composit function that returns the imaginary component
+            VFunc fimag = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofI;
+            };
+
+            //intergrates over f(c(t)) * c'(t)
+            var res_r = Trapezoid(freal, 0.0, 1.0);
+            var res_i = Trapezoid(fimag, 0.0, 1.0);
+
+            //returns the combined result
+            return Combine(res_r, res_i);
+        }
+
+        public Result<Cmplx> Romberg(VFunc<Cmplx> f, Curve2D c)
+        {
+            //composit function that returns the real component
+            VFunc freal = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofR;
+            };
+
+            //composit function that returns the imaginary component
+            VFunc fimag = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofI;
+            };
+
+
+            //uses an internal intergrator to preform the intergration
+            var quad = new Integrator(base.MaxSteps, base.Tolerance);
+            //quad.StepEvent += (x, y) => Step(y.Error);
+
+            quad.StepEvent += delegate(Object sender, StepEventArgs args)
+            {
+                args.Halt = this.Step(args.Error);
+            };
+
+            Initialise();
+
+            //intergrates over f(c(t)) * c'(t)
+            var res_r = quad.Romberg(freal, 0.0, 1.0);
+            var res_i = quad.Romberg(fimag, 0.0, 1.0);
+
+            //returns the combined result
+            return Combine(res_r, res_i);
+        }
+
+        public Result<Cmplx> Romberg2(VFunc<Cmplx> f, Curve2D c)
+        {
+            Initialise();
+
+            //composit function that returns the real component
+            VFunc freal = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofR;
+            };
+
+            //composit function that returns the imaginary component
+            VFunc fimag = delegate(double t)
+            {
+                Cmplx z = (Cmplx)c.Sample(t);
+                z = f(z) * (Cmplx)c.Deriv(t);
+
+                return z.CofI;
+            };
+
+            //sets up the array for romberg intergration
+            int array_size = base.MaxSteps + 2;
+            double[] prev_r = new double[array_size];
+            double[] curr_r = new double[array_size];
+            double[] prev_i = new double[array_size];
+            double[] curr_i = new double[array_size];
+
+            //performs the first level of intergration
+            prev_r[0] = SingleTrap(freal, 0.0, 1.0, 1);
+            prev_i[0] = SingleTrap(fimag, 0.0, 1.0, 1);
+
+            //used in main loop
+            double rombn_r = 0.0;
+            double rombl_r = 0.0;
+            double rombn_i = 0.0;
+            double rombl_i = 0.0;
+            long trap = 2;
+            int level = 1;
+
+            Cmplx rombn;
+            Cmplx rombl;
+
+            while (true)
+            {
+                if (level % 2 == 0)
+                {
+                    //prefroms romberg intergration
+                    prev_r[0] = SingleTrap(freal, 0.0, 1.0, trap);
+                    RombergLevel(curr_r, prev_r, level);
+
+                    //checks for validation
+                    rombn_r = prev_r[level];
+                    rombl_r = curr_r[level - 1];
+
+                    //prefroms romberg intergration
+                    prev_i[0] = SingleTrap(fimag, 0.0, 1.0, trap);
+                    RombergLevel(curr_i, prev_i, level);
+
+                    //checks for validation
+                    rombn_i = prev_i[level];
+                    rombl_i = curr_i[level - 1];
+                }
+                else
+                {
+                    //prefroms romberg intergration
+                    curr_r[0] = SingleTrap(freal, 0.0, 1.0, trap);
+                    RombergLevel(prev_r, curr_r, level);
+
+                    //checks for validation
+                    rombn_r = curr_r[level];
+                    rombl_r = prev_r[level - 1];
+
+                    //prefroms romberg intergration
+                    curr_i[0] = SingleTrap(fimag, 0.0, 1.0, trap);
+                    RombergLevel(prev_i, curr_i, level);
+
+                    //checks for validation
+                    rombn_i = curr_i[level];
+                    rombl_i = prev_i[level - 1];
+                }
+
+                rombn = new Cmplx(rombn_r, rombn_i);
+                rombl = new Cmplx(rombl_r, rombl_i);
+
+                //determins if we should continue
+                if (Step(rombl, rombn)) break;
+
+                //updates counters
+                level = level + 1;
+                trap = trap << 1;
+            }
+
+            //returns the best answer
+            return Finish(rombn);
+        }
+
+
+        private static Result<Cmplx> Combine(Result<Double> res_r, Result<Double> res_i)
+        {
+            Cmplx res = new Cmplx(res_r, res_i);
+
+            //NOTE: Use the euclidan norm to combine error values, the itteration
+            //counts can simply be sumed.
+
+            throw new NotImplementedException();
+        }
 
 
     }

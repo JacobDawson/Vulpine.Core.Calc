@@ -30,7 +30,7 @@ using Vulpine.Core.Data.Exceptions;
 using Vulpine.Core.Calc.Exceptions;
 using Vulpine.Core.Calc.Matrices;
 
-namespace Vulpine.Core.Calc.Geometry
+namespace Vulpine.Core.Calc.Geometry.Spatial
 {
     /// <summary>
     /// This structor represents a unique point in cartisian cordinate space.

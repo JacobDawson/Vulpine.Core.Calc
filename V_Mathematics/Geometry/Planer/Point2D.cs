@@ -29,8 +29,9 @@ using System.Text;
 using Vulpine.Core.Data.Exceptions;
 using Vulpine.Core.Calc.Exceptions;
 using Vulpine.Core.Calc.Matrices;
+using Vulpine.Core.Calc.Numbers;
 
-namespace Vulpine.Core.Calc.Geometry
+namespace Vulpine.Core.Calc.Geometry.Planer
 {
     /// <summary>
     /// This structor represents a unique point in the cartisian cordinate plane. 
@@ -396,12 +397,43 @@ namespace Vulpine.Core.Calc.Geometry
         #region Class Conversions...
 
         //creates a vector containing the listed cordinates
-        public static implicit operator Vector(Point2D p)
-        { return new Vector(p.x, p.y); }
 
-        //converts the vector by calling the constructor
+        /// <summary>
+        /// Allows implicit conversion to generic Vectors, as all 2D points
+        /// are also 2D vectors, by definition.
+        /// </summary>
+        public static implicit operator Vector(Point2D p)
+        { 
+            return new Vector(p.x, p.y); 
+        }
+
+        /// <summary>
+        /// Requires explicit conversion from generic vectors, as this operation
+        /// is only well defined for 2D vectors.
+        /// </summary>
         public static explicit operator Point2D(Vector v)
-        { return new Point2D(v); }
+        { 
+            return new Point2D(v); 
+        }
+
+        /// <summary>
+        /// Allows for implicit conversion from Complex Numbers. Because all
+        /// complex numbers exist in a 2D plane, all such numbers are points.
+        /// </summary>
+        public static implicit operator Point2D(Cmplx z)
+        {
+            return new Point2D(z.CofR, z.CofI);
+        }
+
+        /// <summary>
+        /// Requires explicit conversion to Complex Numbers, because this incures
+        /// an interpritation of the point as a number. In this sense the set "C" of
+        /// complex numbers is more restrected than the set "R2" of points.
+        /// </summary>
+        public static explicit operator Cmplx(Point2D p)
+        {
+            return new Cmplx(p.X, p.Y);
+        }
 
         #endregion //////////////////////////////////////////////////////////////
 

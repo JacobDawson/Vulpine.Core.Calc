@@ -1,0 +1,172 @@
+﻿
+There is a pressing issue with the Algorythim class that needs to be addressed before I can continue with
+implementing the Complex Intergration functions. As it stands, the complex intergration methods seperate
+the problem into two distinct sub problems, one real and one complex. It then invokes the underlying method
+twice, once for the real part, and again for the imaginary, combining the results at the end.
+
+This is fine, numericaly speaking, and as long as we only cary about the end result, there is no problem.
+But because the Algorythim class exposes an "OnStep" event, we do care about the intermediat steps.
+Curently, any listnere subscribed to "OnStep" will see a stream of real coffecents converge to a solution,
+followed by a second stream of imaginary coffecents. Idealy, what we should see, is a stream of complex
+numbers converging to a single solution.
+
+There are a few ways in which we could address this situation:
+
+1) Do nothing - This is not very riggerous, and will likely lead to unexpected results for any subscribers
+   of the "OnStep" event, as noted above. Still it may not be the worst solution as it would allow us to
+   continue working untill a more satisfactory solution is found.
+   
+2) Disable the "OnStep" event for select methods - This is arguably better than doing nothing and is the
+   minimal amount of action we could take. It's still not ideal, as this behavior is undocumented, and it's
+   not clear which methods should invoke "OnStep" and which should not. But at the very least it would
+   prevent errouious data being fed to the "OnStep" event. The downside is that this feels more like a
+   hack than a solution.
+   
+3) Remove the "OnStep" event alltogether - While the onstep event is nice to have, it's not clear that it
+   is actualy nessary. Removing it removes the problem, and the Algorythim class becomes less restrictive
+   regarding what kinds of subclasses can be derived. It also resolves another correlated problem, regarding
+   methods that do not converge, but terminate in an arbitrary (but finite) number of steps.
+   
+   The problem with this solution, is we do not know if the "OnStep" event will become more relevent in the
+   future. So far, it's primary use has been with debuging and displaying the mehtods themselves. So far, we
+   have not encountered any algorythim slow enough to warrent an "OnStep" event, in order to inform the user
+   of it's progress. That may change as we experement with optimization problems involving high dimentional
+   data. As a cavot, there is no reason why we couden't reintroduce the "OnStep" event to the subclasses where
+   such an event would be the most usefull, apart from the ubituity of the Algorythim class.
+   
+4) Implement "OnStep" Correctly - This is the most difficult solution of all. In order to get "OnStep" to
+   work as inteded for complex intergration, we would need to seperate instances of the algorythim class.
+   Each of these internal instances would be responcable for solving each of the sub-problems, while the
+   main instance would be responcible for combining them together. The main instance would have to supply
+   it's own "OnStep" event to both of the sub instances, so it could collect and combine the data as it is
+   generated. Furthermore, in order to enshure that the two instances run in lock step, it would be nessary
+   to run each on a seperate thread of excicution, and use thred secronising teniques inside the onstep event.
+
+   At this point, this solution seems like more trouble than it's worth, particularly for a feature that is
+   underutilized at the moment. It also dosen't feel right having a mehtod that is inherently multi-treaded,
+   when there is no external indication of that, and no clear reason why it should be. 
+
+5) Change to itterative methods - This is somehting I considered when first designing the Algorythim class,
+   but rejected for reasons I cannot remember. Instead of having an "OnStep" event that users can subscribe to,
+   we change all of our methods into itterative mehtods. By yeilding the intermediat values as we compute them
+   we effectivly replace the need for "OnStep". The end user can now step through the algorythim at their own
+   discression, by itterating the results. For those only intrested in the end result (most people) they can
+   simply call Last() on the itterator.
+
+   This solves the problem of requring seperate threads to control the subrutienes. Here our method can simply
+   invoke the underlying mehtod twice, without need for an alternat instance. By utlisint the iterators, it
+   is able to contoll the excicution order of the subrutenes, running them in lock-step, while simultaniously
+   yeilding the combined results.
+
+   This is a paradime shift for the Algorythim class. It would require refactoring much of the code for all the
+   subclases of Algorythim. Unlike removing or disablying the "OnStep" event, which would require miminal to
+   no refactoring at all. Still, I feel it is a more elegent solution than requring multiple threads running
+   seperate instances. Another problem is the Result<T> class, in order for this to work we would have to return
+   an enumeration of results, making the reuturn type IEnumerable<Result<Cmplx>>.
+
+6) Change the complex intergration implementation - If I could somehow change the implementation of complex
+   intergration, so that it did not rely on subruteens, that would remove the problem as well. However, it
+   is not clear if this is possable for all versions of complex intergration, and assuming it is possable, there
+   is no garentee we won't run into the same problem again in a completly diffrent method. It also makes the
+   methods themselves more bloated, leading to code duplicaiton. I'm not shure if this path is worth it, but
+   I can at least try it out.
+
+
+From an old Note (dated 2016-03-18):
+
+
+I think I should replace my former Algorythim class and instead have methods that return itterators when 
+preforming numerical analisis. I could then have extention methods (similar to LINQ) that "evaluate" the 
+itterators by providing stoping conditions, weather it be a tolerence threshold, a set number of itterations, 
+or a time limit. Infact, it may be better to have these methods return other itterators, with the stoping 
+conditions applied, rather than actualy evaluating them. This would allow users to combine stoping conditions 
+by chaning them together, which is a nice effect, and relly feels like LINQ.
+
+
+And again (from 2015-09-14):
+
+
+I have been considering an alternative to my Algorythims object in my math library. Instead of spesifying 
+the stoping criteria inside a "solver" object, the numerical methods are static and actualy return itterators, 
+which list all the steps of the process without end. I then could provide an extention method on the itterator 
+(smilar to LINQ) called Converge, that would take the stoping conditions, and run the itterator till they are 
+met. This feels more robust, as the end user could choose to itterate the results themselves, profroming aditonal 
+calculations and providing alternative stoping conditions. Also, the converge method could be set up to detect 
+Divergence as well, returning either positive or negative infinity in those cases.
+
+
+
+==============================================================================
+
+
+Upon more thought, I think I want to go with Option 3 from above, removing the "OnStep" event all together.
+I definatly do not want to go with Option 4, due to the multi-threaded messiness. And I don't relly want to
+go with Option 5 either. The main problem with Option 5 is that it removes one of the pricnciple bnenefits of
+having an Algorythim class in the first place. From the user's prespective, they only have to suppoly the
+stoping criteria once, during construction. Then all methods use the same stoping criteria. Since stoping
+criteria is unlikely to change between invocations, this is ideal. If the user dose need diffrent critera,
+for diffrent use cases, they can create multiple instances.
+
+Contrast this with functions that return an itterator. The user would then spesify the stoping critera by
+chaning multiple function invocations, LINQ style. They would then need to either itterate the reuslts 
+themselves, or use the Last() method to get the final result. While this tenique is very powerfull, and would
+allow the user to spesify exactly what they want, they would need to do this for every single funciton
+invocation, making the interface cumbersome to use. We might could mitigate this by providing wraper methods 
+that use reasonable defaults, but this feels like a case of over engenering. Especialy when we are not shure
+the feature is all that usefull.
+
+The methods derived from Algorythim are ment to be used internaly, as part of a larger, more complicated
+procesures. For example, in a ray tracing aplication, I can use Optimization to compute the intersection of
+a ray with a parametric surface. In this case, the ray tracing might need an "OnStep" event, but the
+Optimization dose not. Idealy, these mehtods should run on the order of miliseconds or seconds, not
+miniuts, and certanly not hours! While we could frame some giant problems in terms of Optimisaiton, we aren't
+going to use the Optimizer class to train Nurual Networks, it just wasn't built for that. We are much more
+likely to use a special Trainer class, in that case. 
+
+
+
+===========================================================================
+
+
+There are two reasons to have an "OnStep" function. One is to inform the user that the Algorythim has made
+some progress, so they do not think that the computer is frozen, and understand that work is still being
+done. The other reason is so that the user can STOP the Algorythim, in the event it is taking too long.
+
+Both of these features are usefull to have for long running processes, and are less usefull for shorter
+processes. The Halting feature is especialy usefull for series that converge, as usefull information can
+still be obtained, dispite stoping early. Contrast this with funcitons that must run to completion before
+returning a meaningfull answer. Halting them requires discarding everything up till that point.
+
+There are basicly two types of numerical methods, ones that converge to a single answer, only stoping once
+some criteria has been met. Then there are those that run for a spesific, but finite, number of itterations,
+returning a result only once they have completed. These diffrent methods have very diffrent needs and
+requiements for an "OnStep" event.
+
+So far, everything we have addressed has focused on the first part of the "OnStep" event, namily informing
+the user of our progress. Getting the second part, providing a way for the user to Halt the algorythim, is
+considerably mroe difficult. 
+
+The problem comes from the fact that we are basicly spliting our method in two, and treating two method
+invocations as if they were one. Using a layer of indirection helps solve some issues, but winds up creating
+others. How do we get the two methods to wire together, so they are treated the same? If we halt one of the
+methods, how can we ensure the other halts as well?
+
+Perhaps we should consider only the first case, and report our progress, without giving an option to Halt.
+However this reduces the usefullness of an OnStep event significantly. The scale of functions that would
+benifit from reporting our progress, are also the ones most in need of a Halt option. Therefore, it makes
+little scense to implement one without the other.
+
+Considering everything covered so far, I still feel like the best option is to remove the "OnStep" event
+from the Algorythim class. While an "OnStep" event is usefull, I feel like it is better left to the top
+level processes, which are unlikely to form parts of larger processes. For example, the Renderer class in
+the Imaging Library uses a similar "OnRender" event, to achieve the same result. 
+
+For processes that are lilely to be used in other processes, having an "OnStep" like event is more of a
+hinderence than a benifit. This includes most of Algorythim's sub classes, hence why it should be removed.
+While some of Algorythim's sub classes might be used as top level processes, they can implement their own
+version of "OnStep" that is most benificial to them. While classes like the Intergrator class, can be left
+alone.
+
+
+
+I want to remove the "OnStep" funciton.
