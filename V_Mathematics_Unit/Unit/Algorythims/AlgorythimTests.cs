@@ -177,32 +177,32 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(stop, Is.True, "The step funciton did not stop, even though tollerence was met.");
         }
 
-        [Test]
-        public void Step_NewInstance_HandlerCalled()
-        {
-            var alg = new TestableAlgorythim(100, 0.001);
+        //[Test]
+        //public void Step_NewInstance_HandlerCalled()
+        //{
+        //    var alg = new TestableAlgorythim(100, 0.001);
 
-            bool called = false;
-            alg.StepEvent += delegate(Object o, StepEventArgs args)
-            { called = true; };
+        //    bool called = false;
+        //    alg.StepEvent += delegate(Object o, StepEventArgs args)
+        //    { called = true; };
 
-            alg.Call_Step(0.5, 1.0);
+        //    alg.Call_Step(0.5, 1.0);
 
-            Assert.That(called, Is.True, "The StepEvent handler was never called.");           
-        }
+        //    Assert.That(called, Is.True, "The StepEvent handler was never called.");           
+        //}
 
-        [Test]
-        public void Step_NewInstance_HaltUpponRequest()
-        {
-            var alg = new TestableAlgorythim(100, 0.001);
+        //[Test]
+        //public void Step_NewInstance_HaltUpponRequest()
+        //{
+        //    var alg = new TestableAlgorythim(100, 0.001);
 
-            alg.StepEvent += delegate(Object o, StepEventArgs args)
-            { args.Halt = true; };
+        //    alg.StepEvent += delegate(Object o, StepEventArgs args)
+        //    { args.Halt = true; };
 
-            bool stop = alg.Call_Step(0.5, 1.0);
+        //    bool stop = alg.Call_Step(0.5, 1.0);
 
-            Assert.That(stop, Is.True, "The step function did not stop after the event handler halted.");
-        }
+        //    Assert.That(stop, Is.True, "The step function did not stop after the event handler halted.");
+        //}
 
         [TestCase(0)]
         [TestCase(5)]
@@ -252,36 +252,36 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(stop, Is.True, "The step funciton did not stop, even though tollerence was met.");
         }
 
-        [Test]
-        public void Step_VectorsGiven_HandlerCalled()
-        {
-            var alg = new TestableAlgorythim(100, 0.001);
+        //[Test]
+        //public void Step_VectorsGiven_HandlerCalled()
+        //{
+        //    var alg = new TestableAlgorythim(100, 0.001);
 
-            bool called = false;
-            alg.StepEvent += delegate(Object o, StepEventArgs args)
-            { called = true; };
+        //    bool called = false;
+        //    alg.StepEvent += delegate(Object o, StepEventArgs args)
+        //    { called = true; };
 
-            Vector v1 = GetVector(1);
-            Vector v2 = GetVector(2);
-            alg.Call_Step(v1, v2);
+        //    Vector v1 = GetVector(1);
+        //    Vector v2 = GetVector(2);
+        //    alg.Call_Step(v1, v2);
 
-            Assert.That(called, Is.True, "The StepEvent handler was never called.");
-        }
+        //    Assert.That(called, Is.True, "The StepEvent handler was never called.");
+        //}
 
-        [Test]
-        public void Step_VectorsGiven_HaltUpponRequest()
-        {
-            var alg = new TestableAlgorythim(100, 0.001);
+        //[Test]
+        //public void Step_VectorsGiven_HaltUpponRequest()
+        //{
+        //    var alg = new TestableAlgorythim(100, 0.001);
 
-            alg.StepEvent += delegate(Object o, StepEventArgs args)
-            { args.Halt = true; };
+        //    alg.StepEvent += delegate(Object o, StepEventArgs args)
+        //    { args.Halt = true; };
 
-            Vector v1 = GetVector(1);
-            Vector v2 = GetVector(2);
-            bool stop = alg.Call_Step(v1, v2);
+        //    Vector v1 = GetVector(1);
+        //    Vector v2 = GetVector(2);
+        //    bool stop = alg.Call_Step(v1, v2);
 
-            Assert.That(stop, Is.True, "The step function did not stop after the event handler halted.");
-        }
+        //    Assert.That(stop, Is.True, "The step function did not stop after the event handler halted.");
+        //}
 
 
     }

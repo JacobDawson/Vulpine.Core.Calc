@@ -170,3 +170,109 @@ alone.
 
 
 I want to remove the "OnStep" funciton.
+
+
+
+===========================================================================
+
+
+
+I have found a new possable solution! We still split the problem into two parts like before, and we use
+a child instance of the class to solve both parts. However, we have the "OnStep" event of the child instance
+call the Step() function of our parent instance. This is nearly perfect. It is very elegent in it's
+simplicity. The only problem I see is that the limits of the parent class is imposed on both of the
+children. This means that the max number of itterations must be split between both children. Although, this
+is not too much of an issue, as we can just increase the maximum number of itterations, so it may be seen
+more as a feature, rather than a bug.
+
+It sort of works for halting, in that if the user tells the process to halt, it will stop the first process,
+however the second process will continue, requiring that the process be told to halt twice, which is
+probably not ideal.
+
+Then there is the problem that the error values are still not reported in decending order. I was willing to
+overlook this oddity, as long as the itteration count and halting function worked, but that dose not seem
+to be the case.
+
+In order to make Halt work correctly, we need some way of determining if the first subruteen ended because
+of a halt, and if so, return from our parent ruteen before the second subruteen starts to run. The best way
+to do this would be to have some flag in the Results struct to indicate if some ruteen terminated because
+of a Halt. However, this is a less than elegent solution that what I had before.
+
+The solution could be made a lot more elegent if we disband with the idea that the end user could Halt the
+function, and restrict the "OnStep" event to information purpouses only. However, as I mentoned before, the
+"OnStep" event is signfiantly less usefull, wihout a Halt option of some kind. But, maybe we don't need the
+"OnStep" event itself to provide the Halt functionality. Perhaps there could be some sort of Halt() method
+on the algoyrthim class itself?
+
+We need to consider that multiple threads could have access to the Algorythim class. Trying to make Algorythim
+completly "thread-safe" is bound to impact it's preformance, and be very verbose. 
+
+To implement the Halt() method, I would need some sort of halt_flag in the Algorythim class itself. Initaizing
+the algorythim would set halt_flag = false, calling Halt() would set halt_flag = true. The OnStep() method would
+check the halt_flag on Algorythim them, rather than the halt_flag on the event arguments.
+
+How dose this help? Well the subruteens do not stop when Halt() is called, as they are not connected with that
+method. However, the parent instance can check to see if it has halted before invoking the subruteens. This
+means that the subrueens will run to completion based on their own stoping criteria, which might not be
+desirable.
+
+In the "OnStep" event of the child instance, we need to do two things. One, we need to invoke the "OnStep"
+event of our parent instance. Two, we need to call Halt() on the child instance, if it was called on the
+parent. This way we ought to get the behavior we seek. Halt() only needs to be called once, and everything 
+stops.
+
+There is one more potential issue though. Most itterative mehtods can be Halted and return the best aproximating
+value found to that point. This is not the case if we split the methods. This is because if we halt before the
+first method can finish, the second method never gets a chance to run. Since we need both mehtods to run in
+order to reutrn an answer, we can return a best guess in this case. This brings us back to the original problem.
+If we care about this, then we cannot split the algorythim!
+
+
+Things "OnStep" Should do:
+
+1) report a monotinicaly increasing count
+2) report a monotonicaly decreasing error
+3) allow the user to stop the current process, and 
+4) return the best guess so far (when halted)
+
+
+So far, we have only been able to gaurentee the first point when using seperate methods. We might could allow
+for the third point with a bit of work, that would make the function very verbose. As for points 2 and 4, I
+don't think they can be done with seperate methods, and reqire some sort of combined method. They could potentialy
+work using Iterative methods, or multiple threads (solutions 4 and 5 from above). However I do not want to
+implement either of those. I also do not want to sacrifice the simplicity of seperate methods. Which once again,
+leaves me with only one choice, remove the "OnStep" event.
+
+There is also another key asumtion that we have been making so far. That is, the seperate sub problems can be run
+in lock-step with each other, and that thay take the same number of steps to terminate. This, however, is in no
+way garenteed. Nor should it be. The linear nature of an "OnStep" event, simply dose not apply to these kinds of
+methods. 
+
+I actual thought it was a nice "feature" that the maximum number of itterations wound up being split between the
+subruteens. However, this dose not mean that the split is 50/50, as one sub ruteen may require more steps to
+terminate than the other.
+
+The main problem is that the error values are not strictly decreasing, and that it is dificult to get Halt() to
+work correctly. Perhaps this sheds light on a diffrent issue. Perhaps we shoulden't be reporting the intermentent
+error values at all? After all, if our goal is mearly to show that we are doing "something" then providing an
+increasing count, should be suffecent. This also means that our class can work for functions that do not have
+intermentent error values, but still have counts.
+
+If we report the error, only at the end, this makes a lot more scense. And simplfying the "OnStep" event is
+arguably better than removing it all together. There is sill the problem of the Halt() mehtod though.
+
+
+=============================================================================================
+
+
+Do I Want To Switch To Using Itterators? - No
+
+Do I Want To Use Multi-Threaded Solutions? - No
+
+Do I Want To Combine Subruteens and Duplicate Code? - No
+
+Do I Want To Remove The Error Values From On Step? - I Don't Know
+
+
+
+

@@ -36,6 +36,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\Algorithim.cs" />
     <Compile Include="Algorithms\Integrator.cs" />
     <Compile Include="Algorithms\Quantizer.cs" />
     <Compile Include="Algorithms\ResultMulti.cs" />
@@ -68,7 +69,6 @@
     <Compile Include="Numbers\Cmplx.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
     <Compile Include="Geometry\Planer\Rectangle.cs" />
-    <Compile Include="Algorithms\Algorithim.cs" />
     <Compile Include="Algorithms\Optimizer.cs" />
     <Compile Include="Algorithms\Result.cs" />
     <Compile Include="Algorithms\RootFinder.cs" />

@@ -544,23 +544,9 @@ namespace Vulpine.Core.Calc.Algorithms
 
         public Result<Cmplx> Trapezoid(VFunc<Cmplx> f, Curve2D c)
         {
-            //composit function that returns the real component
-            VFunc freal = delegate(double t)
-            {
-                Cmplx z = (Cmplx)c.Sample(t);
-                z = f(z) * (Cmplx)c.Deriv(t);
-
-                return z.CofR;
-            };
-
-            //composit function that returns the imaginary component
-            VFunc fimag = delegate(double t)
-            {
-                Cmplx z = (Cmplx)c.Sample(t);
-                z = f(z) * (Cmplx)c.Deriv(t);
-
-                return z.CofI;
-            };
+            //splits the intergrand into two parts
+            VFunc freal = RealIntergrand(f, c);
+            VFunc fimag = ImagIntergrand(f, c);
 
             //intergrates over f(c(t)) * c'(t)
             var res_r = Trapezoid(freal, 0.0, 1.0);
@@ -572,35 +558,18 @@ namespace Vulpine.Core.Calc.Algorithms
 
         public Result<Cmplx> Romberg(VFunc<Cmplx> f, Curve2D c)
         {
-            //composit function that returns the real component
-            VFunc freal = delegate(double t)
-            {
-                Cmplx z = (Cmplx)c.Sample(t);
-                z = f(z) * (Cmplx)c.Deriv(t);
-
-                return z.CofR;
-            };
-
-            //composit function that returns the imaginary component
-            VFunc fimag = delegate(double t)
-            {
-                Cmplx z = (Cmplx)c.Sample(t);
-                z = f(z) * (Cmplx)c.Deriv(t);
-
-                return z.CofI;
-            };
-
+            //splits the intergrand into two parts
+            VFunc freal = RealIntergrand(f, c);
+            VFunc fimag = ImagIntergrand(f, c);
 
             //uses an internal intergrator to preform the intergration
             var quad = new Integrator(base.MaxSteps, base.Tolerance);
-            //quad.StepEvent += (x, y) => Step(y.Error);
-
             quad.StepEvent += delegate(Object sender, StepEventArgs args)
-            {
-                args.Halt = this.Step(args.Error);
-            };
+            { args.Halt = this.Step(args.Error); };
 
             Initialise();
+
+            //NOTE: If We Halt the first mehtod, the second method will still run
 
             //intergrates over f(c(t)) * c'(t)
             var res_r = quad.Romberg(freal, 0.0, 1.0);
@@ -608,106 +577,29 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //returns the combined result
             return Combine(res_r, res_i);
+
+            //NOTE: Need to call Finish!!
         }
 
-        public Result<Cmplx> Romberg2(VFunc<Cmplx> f, Curve2D c)
+        private static VFunc RealIntergrand(VFunc<Cmplx> f, Curve2D c)
         {
-            Initialise();
-
-            //composit function that returns the real component
-            VFunc freal = delegate(double t)
+            return delegate(double t)
             {
                 Cmplx z = (Cmplx)c.Sample(t);
                 z = f(z) * (Cmplx)c.Deriv(t);
-
                 return z.CofR;
             };
+        }
 
-            //composit function that returns the imaginary component
-            VFunc fimag = delegate(double t)
+        private static VFunc ImagIntergrand(VFunc<Cmplx> f, Curve2D c)
+        {
+            return delegate(double t)
             {
                 Cmplx z = (Cmplx)c.Sample(t);
                 z = f(z) * (Cmplx)c.Deriv(t);
-
                 return z.CofI;
             };
-
-            //sets up the array for romberg intergration
-            int array_size = base.MaxSteps + 2;
-            double[] prev_r = new double[array_size];
-            double[] curr_r = new double[array_size];
-            double[] prev_i = new double[array_size];
-            double[] curr_i = new double[array_size];
-
-            //performs the first level of intergration
-            prev_r[0] = SingleTrap(freal, 0.0, 1.0, 1);
-            prev_i[0] = SingleTrap(fimag, 0.0, 1.0, 1);
-
-            //used in main loop
-            double rombn_r = 0.0;
-            double rombl_r = 0.0;
-            double rombn_i = 0.0;
-            double rombl_i = 0.0;
-            long trap = 2;
-            int level = 1;
-
-            Cmplx rombn;
-            Cmplx rombl;
-
-            while (true)
-            {
-                if (level % 2 == 0)
-                {
-                    //prefroms romberg intergration
-                    prev_r[0] = SingleTrap(freal, 0.0, 1.0, trap);
-                    RombergLevel(curr_r, prev_r, level);
-
-                    //checks for validation
-                    rombn_r = prev_r[level];
-                    rombl_r = curr_r[level - 1];
-
-                    //prefroms romberg intergration
-                    prev_i[0] = SingleTrap(fimag, 0.0, 1.0, trap);
-                    RombergLevel(curr_i, prev_i, level);
-
-                    //checks for validation
-                    rombn_i = prev_i[level];
-                    rombl_i = curr_i[level - 1];
-                }
-                else
-                {
-                    //prefroms romberg intergration
-                    curr_r[0] = SingleTrap(freal, 0.0, 1.0, trap);
-                    RombergLevel(prev_r, curr_r, level);
-
-                    //checks for validation
-                    rombn_r = curr_r[level];
-                    rombl_r = prev_r[level - 1];
-
-                    //prefroms romberg intergration
-                    curr_i[0] = SingleTrap(fimag, 0.0, 1.0, trap);
-                    RombergLevel(prev_i, curr_i, level);
-
-                    //checks for validation
-                    rombn_i = curr_i[level];
-                    rombl_i = prev_i[level - 1];
-                }
-
-                rombn = new Cmplx(rombn_r, rombn_i);
-                rombl = new Cmplx(rombl_r, rombl_i);
-
-                //determins if we should continue
-                if (Step(rombl, rombn)) break;
-
-                //updates counters
-                level = level + 1;
-                trap = trap << 1;
-            }
-
-            //returns the best answer
-            return Finish(rombn);
         }
-
 
         private static Result<Cmplx> Combine(Result<Double> res_r, Result<Double> res_i)
         {
@@ -717,6 +609,96 @@ namespace Vulpine.Core.Calc.Algorithms
             //counts can simply be sumed.
 
             throw new NotImplementedException();
+        }
+
+
+        public IEnumerable<Double> Romberg2(VFunc f, double a, double b)
+        {
+            //checks that we have a correct bracket
+            if (a > b) yield break; // return Romberg2(f, a, b);
+
+            Initialise();
+
+            //checks to see if we have zero length
+            if (VMath.IsZero(b - a))
+            {
+                base.error = Math.Abs(b - a);
+                yield return 0.0;
+                yield break;
+                //return Finish(0.0);
+            }
+
+            //sets up the array for romberg intergration
+            int array_size = base.MaxSteps + 2;
+            double[] prev = new double[array_size];
+            double[] curr = new double[array_size];
+
+            //performs the first level of intergration
+            prev[0] = SingleTrap(f, a, b, 1);
+
+            //used in main loop
+            double rombn = 0.0;
+            double rombl = 0.0;
+            long trap = 2;
+            int level = 1;
+
+            while (true)
+            {
+                if (level % 2 == 0)
+                {
+                    //prefroms romberg intergration
+                    prev[0] = SingleTrap(f, a, b, trap);
+                    RombergLevel(curr, prev, level);
+
+                    //checks for validation
+                    rombn = prev[level];
+                    rombl = curr[level - 1];
+                }
+                else
+                {
+                    //prefroms romberg intergration
+                    curr[0] = SingleTrap(f, a, b, trap);
+                    RombergLevel(prev, curr, level);
+
+                    //checks for validation
+                    rombn = curr[level];
+                    rombl = prev[level - 1];
+                }
+
+                ////determins if we should continue
+                //if (Step(rombl, rombn)) break;
+
+                yield return rombn;
+
+                //updates counters
+                level = level + 1;
+                trap = trap << 1;
+            }
+
+            ////returns the best answer
+            //return Finish(rombn);
+        }
+
+
+        public IEnumerable<Cmplx> Romberg2(VFunc<Cmplx> f, Curve2D c)
+        {
+            //splits the intergrand into two parts
+            VFunc freal = RealIntergrand(f, c);
+            VFunc fimag = ImagIntergrand(f, c);
+
+            var ittr1 = Romberg2(freal, 0.0, 1.0).GetEnumerator();
+            var ittr2 = Romberg2(fimag, 0.0, 1.0).GetEnumerator();
+
+            do
+            {
+                double r = ittr1.Current;
+                double i = ittr2.Current;
+                yield return new Cmplx(r, i);
+
+            } while (ittr1.MoveNext() && ittr2.MoveNext());
+
+            ittr1.Dispose();
+            ittr2.Dispose();
         }
 
 
