@@ -562,23 +562,12 @@ namespace Vulpine.Core.Calc.Algorithms
             VFunc freal = RealIntergrand(f, c);
             VFunc fimag = ImagIntergrand(f, c);
 
-            //uses an internal intergrator to preform the intergration
-            var quad = new Integrator(base.MaxSteps, base.Tolerance);
-            quad.StepEvent += delegate(Object sender, StepEventArgs args)
-            { args.Halt = this.Step(args.Error); };
-
-            Initialise();
-
-            //NOTE: If We Halt the first mehtod, the second method will still run
-
             //intergrates over f(c(t)) * c'(t)
-            var res_r = quad.Romberg(freal, 0.0, 1.0);
-            var res_i = quad.Romberg(fimag, 0.0, 1.0);
+            var res_r = Romberg(freal, 0.0, 1.0);
+            var res_i = Romberg(fimag, 0.0, 1.0);
 
             //returns the combined result
             return Combine(res_r, res_i);
-
-            //NOTE: Need to call Finish!!
         }
 
         private static VFunc RealIntergrand(VFunc<Cmplx> f, Curve2D c)
@@ -608,98 +597,24 @@ namespace Vulpine.Core.Calc.Algorithms
             //NOTE: Use the euclidan norm to combine error values, the itteration
             //counts can simply be sumed.
 
-            throw new NotImplementedException();
+            int count = res_r.Iterations + res_i.Iterations;
+            bool pass = res_r.IsValid && res_i.IsValid;
+
+            //double e1 = res_r.Error;
+            //double e2 = res_i.Error;
+
+            //double error = (e1 * e1) + (e2 * e2);
+            //error = Math.Sqrt(error);
+
+            double error = Math.Max(res_r.Error, res_i.Error);
+
+            return new Result<Cmplx>(res, error, count, pass);
+
+            //throw new NotImplementedException();
         }
 
 
-        public IEnumerable<Double> Romberg2(VFunc f, double a, double b)
-        {
-            //checks that we have a correct bracket
-            if (a > b) yield break; // return Romberg2(f, a, b);
-
-            Initialise();
-
-            //checks to see if we have zero length
-            if (VMath.IsZero(b - a))
-            {
-                base.error = Math.Abs(b - a);
-                yield return 0.0;
-                yield break;
-                //return Finish(0.0);
-            }
-
-            //sets up the array for romberg intergration
-            int array_size = base.MaxSteps + 2;
-            double[] prev = new double[array_size];
-            double[] curr = new double[array_size];
-
-            //performs the first level of intergration
-            prev[0] = SingleTrap(f, a, b, 1);
-
-            //used in main loop
-            double rombn = 0.0;
-            double rombl = 0.0;
-            long trap = 2;
-            int level = 1;
-
-            while (true)
-            {
-                if (level % 2 == 0)
-                {
-                    //prefroms romberg intergration
-                    prev[0] = SingleTrap(f, a, b, trap);
-                    RombergLevel(curr, prev, level);
-
-                    //checks for validation
-                    rombn = prev[level];
-                    rombl = curr[level - 1];
-                }
-                else
-                {
-                    //prefroms romberg intergration
-                    curr[0] = SingleTrap(f, a, b, trap);
-                    RombergLevel(prev, curr, level);
-
-                    //checks for validation
-                    rombn = curr[level];
-                    rombl = prev[level - 1];
-                }
-
-                ////determins if we should continue
-                //if (Step(rombl, rombn)) break;
-
-                yield return rombn;
-
-                //updates counters
-                level = level + 1;
-                trap = trap << 1;
-            }
-
-            ////returns the best answer
-            //return Finish(rombn);
-        }
-
-
-        public IEnumerable<Cmplx> Romberg2(VFunc<Cmplx> f, Curve2D c)
-        {
-            //splits the intergrand into two parts
-            VFunc freal = RealIntergrand(f, c);
-            VFunc fimag = ImagIntergrand(f, c);
-
-            var ittr1 = Romberg2(freal, 0.0, 1.0).GetEnumerator();
-            var ittr2 = Romberg2(fimag, 0.0, 1.0).GetEnumerator();
-
-            do
-            {
-                double r = ittr1.Current;
-                double i = ittr2.Current;
-                yield return new Cmplx(r, i);
-
-            } while (ittr1.MoveNext() && ittr2.MoveNext());
-
-            ittr1.Dispose();
-            ittr2.Dispose();
-        }
+       
 
 
     }

@@ -55,12 +55,8 @@ namespace Vulpine.Core.Calc.Algorithms
         protected int count;
         protected double error;
 
-        //stores the delegate to handel step events
-        private EventHandler<StepEventArgs> e_step;
-        private EventHandler<StepEventArgs> e_finish;
-
-        //stores the delegates for the start of the algorythim
-        private EventHandler e_start;
+        //determins how the error value is measured
+        protected ErrorMeasure measure;
         
         /// <summary>
         /// Creates a new Algorithim object with default stoping criteria.
@@ -69,13 +65,14 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             this.max = 1024;
             this.tol = VMath.TOL;
+            this.measure = ErrorMeasure.Augmented;
 
             Initialise();
         }
 
         /// <summary>
         /// Creates a new Algorithim object with the given maximum number of
-        /// itterations and the minimal relitive error allowed.
+        /// itterations and the minimal augmented error allowed.
         /// </summary>
         /// <param name="max">Maximum number of itterations</param>
         /// <param name="tol">Minimial accepted error</param>
@@ -83,6 +80,24 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             this.max = (max > 2) ? max : 2;
             this.tol = Math.Abs(tol);
+            this.measure = ErrorMeasure.Augmented;
+
+            Initialise();
+        }
+
+        /// <summary>
+        /// Creates a new Algorythim object with the given maximum number of
+        /// itterations, the minimial amount of error allowed, and the error
+        /// measument used in calculations
+        /// </summary>
+        /// <param name="max">Maximum number of itterations</param>
+        /// <param name="tol">Minimial accepted error</param>
+        /// <param name="em">Error measurment used in calculations</param>
+        public Algorithm(int max, double tol, ErrorMeasure em)
+        {
+            this.max = (max > 2) ? max : 2;
+            this.tol = Math.Abs(tol);
+            this.measure = em;
 
             Initialise();
         }
@@ -124,6 +139,8 @@ namespace Vulpine.Core.Calc.Algorithms
             test &= (this.max == other.max);
             test &= (this.tol == other.tol);
 
+            //NOTE: Should include the error measure
+
             return test;
         }
 
@@ -137,6 +154,8 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             int h = max.GetHashCode();
             int a1 = tol.GetHashCode();
+
+            //NOTE: Should include the error measure
 
             return unchecked((h * 2243) ^ a1);
         }
@@ -165,41 +184,13 @@ namespace Vulpine.Core.Calc.Algorithms
             get { return tol; }
         }
 
-        #endregion //////////////////////////////////////////////////////////////
-
-        #region Class Events...
-
         /// <summary>
-        /// The step event is invoked every time the algorythim updates it's
-        /// error values. The event can be used to impart aditional stoping
-        /// criteria, by rasing the Halt flag in the event args.
+        /// Represents how the error value is tipicaly calculated. Certain algorythims
+        /// may ignore this procedure and substitute their own error value.
         /// </summary>
-        public event EventHandler<StepEventArgs> StepEvent
+        public ErrorMeasure Measure
         {
-            add { e_step += value; }
-            remove { e_step -= value; }
-        }
-
-        /// <summary>
-        /// The start event is envoked as soon as the algorythim starts,
-        /// before anything else happens. It's mostly included for sake of
-        /// completness, but may be useful in a multi-threaded enviroment.
-        /// </summary>
-        public event EventHandler StartEvent
-        {
-            add { e_start += value; }
-            remove { e_start -= value; }
-        }
-
-        /// <summary>
-        /// The finish event is envoked once the algorythim reaches a
-        /// terminal condition, allowing the end user to prefrom any 
-        /// nessary post processing.
-        /// </summary>
-        public event EventHandler<StepEventArgs> FinishEvent
-        {
-            add { e_finish += value; }
-            remove { e_finish -= value; }
+            get { return measure; }
         }
 
         #endregion //////////////////////////////////////////////////////////////
@@ -213,9 +204,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// </summary>
         protected void Initialise()
         {
-            //invokes any starting events that are regesterd
-            if (e_start != null) e_start(this, EventArgs.Empty);
-
             //Initialises the algorythim for a new run
             error = Double.PositiveInfinity;
             count = 0;
@@ -247,10 +235,7 @@ namespace Vulpine.Core.Calc.Algorithms
         {
             //updates the count and the error
             this.count = count + 1;
-            this.error = error;
-
-            //informs the listeners & checks for halting
-            if (OnStep(count, error)) return true;
+            this.error = Math.Abs(error);
 
             //determins if sucessive itterations are nessary
             if (error.IsNaN()) return true;
@@ -273,12 +258,19 @@ namespace Vulpine.Core.Calc.Algorithms
             //increments the count
             count = count + 1;
 
-            //computes the error value
+            //finds the distance between the curent value and the last
             double dist = Math.Abs(curr - last);
-            error = dist / (Math.Abs(curr) + 1.0);
 
-            //informs the listeners & checks for halting
-            if (OnStep(count, error)) return true;
+            //computes the error value, based on the current measure
+            switch (measure)
+            {
+                case ErrorMeasure.Absolute: 
+                    error = dist; break;
+                case ErrorMeasure.Relative:
+                    error = dist / Math.Abs(curr); break;
+                case ErrorMeasure.Augmented:
+                    error = dist / (Math.Abs(curr) + 1.0); break;
+            }
 
             //determins if sucessive itterations are nessary
             if (error.IsNaN()) return true;
@@ -301,13 +293,19 @@ namespace Vulpine.Core.Calc.Algorithms
             //increments the count
             count = count + 1;
 
-            //computes the error value
+            //finds the distance between the curent value and the last
             double dist = curr.Dist(last);
-            dist = dist / (curr.Norm() + 1.0);
-            error = Math.Abs(dist);
 
-            //informs the listeners & checks for halting
-            if (OnStep(count, error)) return true;
+            //computes the error value, based on the current measure
+            switch (measure)
+            {
+                case ErrorMeasure.Absolute:
+                    error = dist; break;
+                case ErrorMeasure.Relative:
+                    error = dist / curr.Norm(); break;
+                case ErrorMeasure.Augmented:
+                    error = dist / (curr.Norm() + 1.0); break;
+            }
 
             //determins if sucessive itterations are nessary
             if (error.IsNaN()) return true;
@@ -315,23 +313,6 @@ namespace Vulpine.Core.Calc.Algorithms
             if (count >= max) return true;
 
             return false;     
-        }
-
-        /// <summary>
-        /// Raises the step event and informs all listeners. It returns true if
-        /// any of the listners indicate that the process should stop.
-        /// </summary>
-        /// <param name="step">Curent number of iterations preformed</param>
-        /// <param name="error">Current calculated error value</param>
-        /// <returns>True if the process should stop</returns>
-        private bool OnStep(int step, double error)
-        {
-            //checks that we actualy have someone listening
-            if (e_step == null) return false;
-
-            //creates new event args and invokes the event
-            var args = new StepEventArgs(step, error);
-            e_step(this, args); return args.Halt;
         }
 
         /// <summary>
@@ -343,12 +324,11 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>The packaged result</returns>
         protected Result<T> Finish<T>(T value)
         {
-            //invokes any finishing events that are regesterd
-            var args = new StepEventArgs(count, error);
-            if (e_finish != null) e_finish(this, args);
+            //compares error values to see if the result passes
+            bool pass = (error <= tol) && error.IsANumber();
 
-            //returns the generated result
-            return new Result<T>(value, error, count);
+            //returns the generated result with the error value
+            return new Result<T>(value, error, count, pass);
         }
 
         /// <summary>
@@ -360,10 +340,6 @@ namespace Vulpine.Core.Calc.Algorithms
         /// <returns>The packaged result</returns>
         protected ResultMulti<T> Finish<T>(IEnumerable<T> values)
         {
-            //invokes any finishing events that are regesterd
-            var args = new StepEventArgs(count, error);
-            if (e_finish != null) e_finish(this, args);
-
             //returns the generated result
             return new ResultMulti<T>(values, error, count);
         }

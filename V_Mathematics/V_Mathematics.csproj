@@ -37,10 +37,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\Algorithim.cs" />
+    <Compile Include="Algorithms\ErrorMeasure.cs" />
     <Compile Include="Algorithms\Integrator.cs" />
     <Compile Include="Algorithms\Quantizer.cs" />
     <Compile Include="Algorithms\ResultMulti.cs" />
-    <Compile Include="Algorithms\StepEventArgs.cs" />
     <Compile Include="DataStruk\NodeKD.cs" />
     <Compile Include="DataStruk\TreeKD.cs" />
     <Compile Include="DataStruk\TreeVector.cs" />

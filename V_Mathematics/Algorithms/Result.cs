@@ -52,18 +52,23 @@ namespace Vulpine.Core.Calc.Algorithms
         //stores the number of itterations
         private int count;
 
+        //determins if the reslt should be considered valid
+        private bool valid;
+
         /// <summary>
-        /// Constructs a new result with the given error value 
-        /// and iteration count.
+        /// Constructs a new result with the given error value,
+        /// itteration count, and validity status.
         /// </summary>
         /// <param name="val">Value of the result</param>
         /// <param name="err">Amount of error in the result</param>
         /// <param name="count">Number of interations used</param>
-        public Result(T val, double err, int count)
+        /// <param name="valid">True if valid</param>
+        public Result(T val, double err, int count, bool valid)
         {
             this.result = val;
             this.error = Math.Abs(err);
             this.count = Math.Abs(count);
+            this.valid = valid;
         }
 
         /// <summary>
@@ -76,6 +81,7 @@ namespace Vulpine.Core.Calc.Algorithms
             this.result = val;
             this.error = Double.PositiveInfinity;
             this.count = 0;
+            this.valid = false;
         }
 
         /// <summary>
@@ -193,6 +199,15 @@ namespace Vulpine.Core.Calc.Algorithms
         public int Iterations
         {
             get { return count; }
+        }
+
+        /// <summary>
+        /// Indicates weather the results are valid, tipicaly determined by comparing
+        /// the error value to some user defined threashold.
+        /// </summary>
+        public bool IsValid
+        {
+            get { return valid; }
         }
 
         #endregion /////////////////////////////////////////////////////////////
