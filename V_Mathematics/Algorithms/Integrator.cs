@@ -63,6 +63,13 @@ namespace Vulpine.Core.Calc.Algorithms
 
         //used in 3-point Gausian intergration
         private const double G3 = 0.77459666924148337704;
+
+        private const double G5_A = 0.53846931010568309104;
+        private const double G5_B = 0.90617984593866399280;
+        private const double G5_C = 107.69145086235745531;
+        private const double G5_D = 53.308549137642544691;
+
+        private const double L5 = 0.65465367070797714380;
         
         //stores the weights for 7-point Gausian quadrature
         private static readonly double[] GW =
@@ -122,7 +129,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
         #endregion //////////////////////////////////////////////////////////////////
 
-        #region Trapezoid Rule...
+        #region Basic Intergration...
 
         /// <summary>
         /// Uses repeated aplications of the trapizoid rule to aproximate the
@@ -186,6 +193,69 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //returns the best answer
             return Finish(trap);
+        }
+
+        /// <summary>
+        /// Uses 3-Point Gausian quadrature to aproximate the anti-drivitive of the
+        /// function at the given value. That is, it aproximates the function 
+        /// who's dirivitive is the given funciton.
+        /// </summary>
+        /// <param name="f">The integrand</param>
+        /// <param name="x">Input to the anti-drivitive</param>
+        /// <returns>The anti-drivitive at the given value</returns>
+        public Result<Double> Gauss(VFunc f, double x)
+        {
+            return Gauss(f, 0.0, x);
+        }
+
+        /// <summary>
+        /// Uses 3-Point Gausian quadrature to aproximate the given definate intergral 
+        /// to the requested acuracy. Geometricly, this can be thought of as finding 
+        /// the area under the curve, bracketed by the two endpoints.
+        /// </summary>
+        /// <param name="f">The integrand</param>
+        /// <param name="a">The lower bound</param>
+        /// <param name="b">The upper bound</param>
+        /// <returns>The results of intergration</returns>
+        public Result<Double> Gauss(VFunc f, double a, double b)
+        {
+            //checks that we have a correct bracket
+            if (a > b)
+            {
+                var res = Gauss(f, b, a);
+                return Finish(-res.Value);
+            }
+
+            //start with 4 subdivisions
+            long n = 4;
+
+            //used in main loop
+            double curr = 0.0;
+            double last = 0.0;
+            Initialise();
+
+            //checks to see if we have zero length
+            if (VMath.IsZero(b - a))
+            {
+                base.error = Math.Abs(b - a);
+                return Finish(0.0);
+            }
+
+            while (true)
+            {
+                //preforms the trapizoid rule
+                curr = SingleGauss3(f, a, b, n);
+
+                //determins if tollerence is met
+                if (Step(last, curr)) break;
+
+                //trailing refrence
+                last = curr;
+                n = n << 1;
+            }
+
+            //returns the best answer
+            return Finish(curr);
         }
 
         #endregion //////////////////////////////////////////////////////////////////
@@ -281,48 +351,21 @@ namespace Vulpine.Core.Calc.Algorithms
             return Finish(rombn);
         }
 
-
-        #endregion //////////////////////////////////////////////////////////////////
-
-        #region Gausian Quadrature...
-
-        /// <summary>
-        /// Uses 3-Point Gausian quadrature to aproximate the anti-drivitive of the
-        /// function at the given value. That is, it aproximates the function 
-        /// who's dirivitive is the given funciton.
-        /// </summary>
-        /// <param name="f">The integrand</param>
-        /// <param name="x">Input to the anti-drivitive</param>
-        /// <returns>The anti-drivitive at the given value</returns>
-        public Result<Double> Gauss(VFunc f, double x)
+        public Result<Double> RombergGause(VFunc f, double x)
         {
-            return Gauss(f, 0.0, x);
+            return RombergGause(f, 0.0, x);
         }
 
-        /// <summary>
-        /// Uses 3-Point Gausian quadrature to aproximate the given definate intergral 
-        /// to the requested acuracy. Geometricly, this can be thought of as finding 
-        /// the area under the curve, bracketed by the two endpoints.
-        /// </summary>
-        /// <param name="f">The integrand</param>
-        /// <param name="a">The lower bound</param>
-        /// <param name="b">The upper bound</param>
-        /// <returns>The results of intergration</returns>
-        public Result<Double> Gauss(VFunc f, double a, double b)
+        
+        public Result<Double> RombergGause(VFunc f, double a, double b)
         {
             //checks that we have a correct bracket
             if (a > b)
             {
-                var res = Gauss(f, b, a);
+                var res = RombergGause(f, b, a);
                 return Finish(-res.Value);
             }
 
-            //start with 4 subdivisions
-            long n = 4;
-
-            //used in main loop
-            double curr = 0.0;
-            double last = 0.0;
             Initialise();
 
             //checks to see if we have zero length
@@ -332,22 +375,55 @@ namespace Vulpine.Core.Calc.Algorithms
                 return Finish(0.0);
             }
 
+            //sets up the array for romberg intergration
+            int array_size = base.MaxSteps + 2;
+            double[] prev = new double[array_size];
+            double[] curr = new double[array_size];
+
+            //performs the first level of intergration
+            prev[0] = SingleTrap(f, a, b, 1);
+
+            //used in main loop
+            double rombn = 0.0;
+            double rombl = 0.0;
+            long trap = 2;
+            int level = 1;
+
             while (true)
             {
-                //preforms the trapizoid rule
-                curr = SingleGauss3(f, a, b, n);
+                if (level % 2 == 0)
+                {
+                    //prefroms romberg intergration
+                    prev[0] = SingleGauss3(f, a, b, trap);
+                    RombergLevel(curr, prev, level);
 
-                //determins if tollerence is met
-                if (Step(last, curr)) break;
+                    //checks for validation
+                    rombn = prev[level];
+                    rombl = curr[level - 1];
+                }
+                else
+                {
+                    //prefroms romberg intergration
+                    curr[0] = SingleGauss3(f, a, b, trap);
+                    RombergLevel(prev, curr, level);
 
-                //trailing refrence
-                last = curr;
-                n = n << 1;
+                    //checks for validation
+                    rombn = curr[level];
+                    rombl = prev[level - 1];
+                }
+
+                //determins if we should continue
+                if (Step(rombl, rombn)) break;
+
+                //updates counters
+                level = level + 1;
+                trap = trap << 1;
             }
 
             //returns the best answer
-            return Finish(curr);
+            return Finish(rombn);
         }
+
 
         #endregion //////////////////////////////////////////////////////////////////
 
@@ -386,6 +462,116 @@ namespace Vulpine.Core.Calc.Algorithms
         }
 
 
+
+        public Result<Double> DubExp(VFunc f, double x)
+        {
+            return DubExp(f, 0.0, x);
+        }
+
+
+
+        public Result<Double> DubExp(VFunc f, double a, double b)
+        {
+            //checks that we have a correct bracket
+            if (a > b)
+            {
+                var res = DubExp(f, b, a);
+                return Finish(-res.Value);
+            }
+
+            Initialise();
+
+            //checks to see if we have zero length
+            if (VMath.IsZero(b - a))
+            {
+                base.error = Math.Abs(b - a);
+                return Finish(0.0);
+            }
+
+            //values used throughout the double eponential methods
+            double c = (a + b) / 2.0;
+            double d = (b - a) / 2.0;
+            double s = f(c);
+            double h = 2.0;
+            double error, v;
+            
+            //determins if this is the first itteration
+            bool first = true;
+
+            //obtains the tollerence value from our parent class
+            double eps = this.Tolerance;
+            if (eps > 1.0e-06) eps = 1.0e-06;
+
+            while (true)
+            {
+                //values used in the inner loop
+                double p = 0.0;
+                double q = 1.0;
+                double fp = 0.0;
+                double fm = 0.0;
+                double t, eh;
+
+                h = h / 2.0;
+                t = eh = Math.Exp(h);
+                if (!first) eh = eh * eh;
+
+                while (Math.Abs(q) > Math.Abs(p) * eps)
+                {
+                    double u = Math.Exp((1.0 / t) - t);
+                    double r = (2.0 * u) / (1.0 + u);
+                    double w = ((t + (1.0 / t)) * r) / (1.0 + u);
+                    double x = d * r;
+
+                    //Console.Write("$");
+
+                    //takes care of extrainous bounds
+                    if (a + x > a)
+                    {
+                        double y = f(a + x);
+                        if (y.IsANumber()) fp = y;
+                    }
+                    else
+                    {
+                        //Console.Write("*");
+                    }
+
+                    if (b - x < b)
+                    {
+                        double y = f(b - x);
+                        if (y.IsANumber()) fm = y;
+                    }
+                    else
+                    {
+                        //Console.Write("*");
+                    }
+
+                    q = w * (fp + fm);
+                    p = p + q;
+                    t = t * eh;
+                }
+
+                v = 2.0 * s;
+                s = s + p;
+                
+                //this is no longer the first iteration
+                first = false;
+
+                //compues the error and determins if we should stop
+                error = Math.Abs(v - s);
+                error = error / (Math.Abs(s) + eps);
+                if (Step(error)) break;
+            }
+
+            //returns the result with the given error
+            return Finish(d * s * h);
+
+        }
+
+
+
+
+
+
         #endregion //////////////////////////////////////////////////////////////////
 
         #region Helper Methods...
@@ -418,35 +604,7 @@ namespace Vulpine.Core.Calc.Algorithms
 
             //finishes rule and returns
             return trap * (h / 2.0);
-        }
-
-        /// <summary>
-        /// Computes the next level of values for Romberg intergration, using
-        /// the exisiting values of the previous level. It overwrites the
-        /// values of the curent level as it goes.
-        /// </summary>
-        /// <param name="prev">The previous level</param>
-        /// <param name="curr">The curent level</param>
-        /// <param name="level">Index of the curent level</param>
-        private static void RombergLevel(double[] prev, double[] curr, int level)
-        {
-            //used in loop
-            double a1 = 0.0;
-            double a2 = 0.0;
-            double factor = 1.0;
-
-            for (int i = 1; i <= level; i++)
-            {
-                //obtains the values to combine
-                a1 = curr[i - 1];
-                a2 = prev[i - 1];
-                factor = factor * 4.0;
-
-                //combines the values
-                curr[i] = ((factor * a1) - a2) / (factor - 1.0);
-            }
-
-        }
+        }        
 
         /// <summary>
         /// Preforms a single level of 3-Point Gausian quadrature, with the
@@ -479,6 +637,59 @@ namespace Vulpine.Core.Calc.Algorithms
             }
 
             return gauss;
+        }
+
+        private static double SingleLobatto5(VFunc f, double a, double b, long n)
+        {
+            //calculates the step size
+            double h = (b - a) / (2 * n);
+            double curr = a;
+            double gauss = 0.0;
+
+            //preforms gausian intergration
+            for (long i = 0; i < n; i++)
+            {
+                double mid = curr + h;
+
+                double temp = f(mid) * 64.0;
+                temp += f((h * L5) + mid) * 49.0;
+                temp += f((h * -L5) + mid) * 49.0;
+                temp += f((h * 1.0) + mid) * 9.0;
+                temp += f((h * -1.0) + mid) * 9.0;
+
+                gauss += (temp / 90.0) * h;
+                curr += h + h;
+            }
+
+            return gauss;
+        }
+
+        /// <summary>
+        /// Computes the next level of values for Romberg intergration, using
+        /// the exisiting values of the previous level. It overwrites the
+        /// values of the curent level as it goes.
+        /// </summary>
+        /// <param name="prev">The previous level</param>
+        /// <param name="curr">The curent level</param>
+        /// <param name="level">Index of the curent level</param>
+        private static void RombergLevel(double[] prev, double[] curr, int level)
+        {
+            //used in loop
+            double a1 = 0.0;
+            double a2 = 0.0;
+            double factor = 1.0;
+
+            for (int i = 1; i <= level; i++)
+            {
+                //obtains the values to combine
+                a1 = curr[i - 1];
+                a2 = prev[i - 1];
+                factor = factor * 4.0;
+
+                //combines the values
+                curr[i] = ((factor * a1) - a2) / (factor - 1.0);
+            }
+
         }
 
         /// <summary>
@@ -592,25 +803,16 @@ namespace Vulpine.Core.Calc.Algorithms
 
         private static Result<Cmplx> Combine(Result<Double> res_r, Result<Double> res_i)
         {
+            //creates a new complex result from the two real results
             Cmplx res = new Cmplx(res_r, res_i);
 
-            //NOTE: Use the euclidan norm to combine error values, the itteration
-            //counts can simply be sumed.
-
+            //combines the stats of both results
             int count = res_r.Iterations + res_i.Iterations;
             bool pass = res_r.IsValid && res_i.IsValid;
-
-            //double e1 = res_r.Error;
-            //double e2 = res_i.Error;
-
-            //double error = (e1 * e1) + (e2 * e2);
-            //error = Math.Sqrt(error);
-
             double error = Math.Max(res_r.Error, res_i.Error);
 
+            //returns the new combined result
             return new Result<Cmplx>(res, error, count, pass);
-
-            //throw new NotImplementedException();
         }
 
 
