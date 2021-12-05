@@ -57,6 +57,7 @@
     <Compile Include="Geometry\Planer\Line2D.cs" />
     <Compile Include="Geometry\Planer\Trans2D.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="Jacobi.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="ArgumentShapeException.cs" />
     <Compile Include="Matrices\Matrix.cs" />

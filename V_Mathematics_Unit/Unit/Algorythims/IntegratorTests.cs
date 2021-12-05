@@ -245,6 +245,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
 
+        //[TestCase(1, 0.0, 1.0, 1.0)]
+        //[TestCase(2, 0.0, 1.0, -1.0 / 9.0)]
+        //[TestCase(3, 0.0, 2.0, 2.0)]
+        //[TestCase(4, 0.0, 1.0, -1.25)]
+        //[TestCase(5, 3.0, 9.0, 1.7627471740390860505)]
+        //[TestCase(6, 0.0, 3.0 * Math.PI, 1.6747617989799612659)]
+        //[TestCase(7, 0.0, 1.0, -4.0 / 9.0)]
+        //[TestCase(8, 0.0, 1.0, Math.PI / 4.0)]
+        //[TestCase(9, 0.0, 1.0, 1.19814023473559220744)]
+        //[TestCase(10, 0.0, 1.0, 2.0)]
+        //[TestCase(11, 0.0, Math.PI / 2.0, -1.08879304515180106525)]
+        //[TestCase(12, 0.0, Math.PI / 2.0, 2.22144146907918312351)]
+        //public void Gauss_VerticleAsymptote_ExpectedValue(int fx, double a, double b, double act)
+        //{
+        //    Integrator ing = GetIntegrator();
+        //    VFunc f = GetFunc2(fx);
+
+        //    var res = ing.Gauss(f, a, b);
+
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
+
 
         /*************************************************************************/
 
@@ -271,6 +294,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
             LogResults(fx, res);
             Assert.That(res.Value, Ist.WithinTolOf(act, exp));
         }
+
+        //[TestCase(1, 0.0, 1.0, 1.0)]
+        //[TestCase(2, 0.0, 1.0, -1.0 / 9.0)]
+        //[TestCase(3, 0.0, 2.0, 2.0)]
+        //[TestCase(4, 0.0, 1.0, -1.25)]
+        //[TestCase(5, 3.0, 9.0, 1.7627471740390860505)]
+        //[TestCase(6, 0.0, 3.0 * Math.PI, 1.6747617989799612659)]
+        //[TestCase(7, 0.0, 1.0, -4.0 / 9.0)]
+        //[TestCase(8, 0.0, 1.0, Math.PI / 4.0)]
+        //[TestCase(9, 0.0, 1.0, 1.19814023473559220744)]
+        //[TestCase(10, 0.0, 1.0, 2.0)]
+        //[TestCase(11, 0.0, Math.PI / 2.0, -1.08879304515180106525)]
+        //[TestCase(12, 0.0, Math.PI / 2.0, 2.22144146907918312351)]
+        //public void RombergGause_VerticleAsymptote_ExpectedValue(int fx, double a, double b, double act)
+        //{
+        //    Integrator ing = GetIntegrator();
+        //    VFunc f = GetFunc2(fx);
+
+        //    var res = ing.RombergGause(f, a, b);
+
+        //    LogResults(fx, res);
+        //    Assert.That(res.Value, Ist.WithinTolOf(act, exp));
+        //}
 
 
         /*************************************************************************/
@@ -349,6 +395,29 @@ namespace Vulpine_Core_Calc_Tests.Unit.Algorythims
         
             Assert.That(res, Ist.WithinTolOf(act, exp));
         }
+
+        //[TestCase(1, 0.0, 1.0, 1.0)]
+        //[TestCase(2, 0.0, 1.0, -1.0 / 9.0)]
+        //[TestCase(3, 0.0, 2.0, 2.0)]
+        //[TestCase(4, 0.0, 1.0, -1.25)]
+        //[TestCase(5, 3.0, 9.0, 1.7627471740390860505)]
+        //[TestCase(6, 0.0, 3.0 * Math.PI, 1.6747617989799612659)]
+        //[TestCase(7, 0.0, 1.0, -4.0 / 9.0)]
+        //[TestCase(8, 0.0, 1.0, Math.PI / 4.0)]
+        //[TestCase(9, 0.0, 1.0, 1.19814023473559220744)]
+        //[TestCase(10, 0.0, 1.0, 2.0)]
+        //[TestCase(11, 0.0, Math.PI / 2.0, -1.08879304515180106525)]
+        //[TestCase(12, 0.0, Math.PI / 2.0, 2.22144146907918312351)]
+        //public void Kronrod_VerticleAsymptote_ExpectedValue(int fx, double a, double b, double act)
+        //{
+        //    VFunc f = GetFunc2(fx);
+        //    double res = Integrator.Kronrod(f, a, b);
+        //    double error = Math.Abs((res - act) / act);
+
+        //    if (loging) Console.WriteLine("function:{0:00} accuracy:{1:G5}", fx, error);
+
+        //    Assert.That(res, Ist.WithinTolOf(act, exp)); ;
+        //}
 
 
         /*************************************************************************/

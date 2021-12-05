@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AGM_Tests.cs" />
     <Compile Include="BayerMatrixTest.cs" />
     <Compile Include="Binomial.cs" />
     <Compile Include="Distrobution.cs" />

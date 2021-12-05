@@ -18,9 +18,12 @@ namespace QuickTests
             //Distrobution.Run();
             //RootFinding.Run();
             //DivByZero.Run();
-            LU_Decomp.Run();
+            //LU_Decomp.Run();
             //RandomMatrix.Run();
             //Binomial.Run();
+
+            //AGM_Tests.TestComp4();
+            AGM_Tests.TestError();
 
             Console.ReadKey();
         }

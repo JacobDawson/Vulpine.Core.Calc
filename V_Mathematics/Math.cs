@@ -94,6 +94,21 @@ namespace Vulpine.Core.Calc
         public const double RTP = 2.5066282746310005024;
 
         /// <summary>
+        /// Gauss's Constant, which has relationships with the Arethmetic-Geometric
+        /// mean, the gamma function, the beta function, the lemniscate constants,
+        /// and the eleptic intergrals. It is aproximatly (0.8346268).
+        /// </summary>
+        public const double GA = 0.83462684167407318628; 
+
+        /// <summary>
+        /// Represents the imaginary constant i raised to the i-th power (i^i).
+        /// Dispite originating in the complex plane, this value is real for all
+        /// branches of the complex lograthim. The principle branch is represented
+        /// here. It is aproximatly (0.2078796).
+        /// </summary>
+        public const double II = 0.20787957635076190855;
+
+        /// <summary>
         /// The default error tollarence used within the mathamatics library.
         /// It is desined to be greater that the precision of a single floating
         /// point value, but less than the presision of a double. 
@@ -914,6 +929,66 @@ namespace Vulpine.Core.Calc
 
             phi = 1.0 + VMath.Erf(phi);
             return phi * 0.5;
+        }
+
+        /// <summary>
+        /// Computes the Arethmetic-Geometric mean of two numbers, defined as the limit of
+        /// repeated applications of both the Arethmetic and Geometric means. For real values,
+        /// this limit is only defined when a and b are both positive. Inputing negative values
+        /// into the Arethemetic-Geometric mean returns NaN.
+        /// </summary>
+        /// <param name="a">First paramater of AGM</param>
+        /// <param name="b">Second paramater of AGM</param>
+        /// <returns>The AGM of the two paramaters</returns>
+        public static double AGM(double a, double b)
+        {
+            //checks that a and b are both positive real values
+            if (a < 0.0 || b < 0.0) return Double.NaN;
+
+            double m;
+
+            //itterativly computes the arehmentic and geometric means
+            for (int i = 0; i < 10; i++)
+            {
+                m = (a + b) / 2.0;
+                b = Math.Sqrt(a * b);
+                a = m;
+            }
+
+            return a;
+        }
+
+        /// <summary>
+        /// Extends the notion of the Arethmetic-Geometric mean to the complex numbers. 
+        /// At each step we select the branch of the Geometric mean that is garenteed 
+        /// to reach convergence. The result of this selective process is known as the 
+        /// Simplest Value for the AGM.
+        /// </summary>
+        /// <param name="a">First paramater of AGM</param>
+        /// <param name="b">Second paramater of AGM</param>
+        /// <returns>the Simplest Value of the AGM</returns>
+        public static Cmplx AGM(Cmplx a, Cmplx b)
+        {
+            Cmplx an, bn;
+            double t1, t2;
+
+            for (int i = 0; i < 10; i++)
+            {
+                //computes the aretmentic and geometric means
+                an = (a + b) / 2.0;
+                bn = Cmplx.Sqrt(a * b);
+
+                //makes shure we choose the right branch of sqrt
+                t1 = (an - bn).Abs;
+                t2 = (an + bn).Abs;
+                if (t1 > t2) bn = -bn;
+
+                a = an;
+                b = bn;
+            }
+
+            return a;
+
         }
 
         #endregion //////////////////////////////////////////////////////////////////       
