@@ -49,8 +49,10 @@
     <Compile Include="Distrobution.cs" />
     <Compile Include="DivByZero.cs" />
     <Compile Include="GeneratePoints.cs" />
+    <Compile Include="JacobiTests.cs" />
     <Compile Include="LU-Decomp.cs" />
     <Compile Include="MatrixExponenital.cs" />
+    <Compile Include="PadeAprox.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomMatrix.cs" />

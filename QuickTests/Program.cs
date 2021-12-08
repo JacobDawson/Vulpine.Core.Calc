@@ -23,7 +23,11 @@ namespace QuickTests
             //Binomial.Run();
 
             //AGM_Tests.TestComp4();
-            AGM_Tests.TestError();
+            //AGM_Tests.TestError();
+
+            //PadeAprox.TryPade();
+
+            JacobiTests.TestInversion1();
 
             Console.ReadKey();
         }

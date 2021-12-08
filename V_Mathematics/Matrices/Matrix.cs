@@ -605,8 +605,6 @@ namespace Vulpine.Core.Calc.Matrices
         /// </summary>
         /// <param name="b">The vector (b) in the equaiton</param>
         /// <returns>The solution (x) to the equation</returns>
-        /// <exception cref="SquareMatrixExcp">If the number of rows
-        /// dose not match the number of columns</exception>
         /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
         public Vector InvAx(Vector b)
         {
@@ -629,6 +627,49 @@ namespace Vulpine.Core.Calc.Matrices
 
             //returns the resultent vector
             return aug.GetColumn(vpos);
+        }
+
+        /// <summary>
+        /// Atempts to solve the equation (Ax = b) for some unknown vector
+        /// (x). It is considerably faster than the alternate method, but less
+        /// numericaly stable. In particular, it should not be used when there
+        /// are null elements on the diagonal.
+        /// </summary>
+        /// <param name="b">The vector (b) in the equaiton</param>
+        /// <returns>The solution (x) to the equation</returns>
+        /// <exception cref="ArgumentShapeException">If matrix is not square</exception>
+        public Vector InvAx2(Vector b)
+        {
+            //checks for non-square matricies
+            if (num_rows != num_cols) throw new ArgumentShapeException();
+
+            //obtains the LU decomposition
+            Matrix upper, lower;
+            Decomp(out upper, out lower);
+
+            double[] x = new double[b.Length];
+            double[] y = new double[b.Length];
+
+            //Use Forward Propagation to sovle Ly = b
+            for (int i = 0; i < b.Length; i++)
+            {
+                y[i] = b.GetElement(i);
+                for (int j = 0; j < i; j++)
+                    y[i] = y[i] - lower.GetElement(i, j) * y[j];
+                y[i] = y[i] / lower.GetElement(i, i);
+
+            }
+
+            //Use Backward Propagation to solve Ux = y
+            for (int i = b.Length - 1; i >= 0; i--)
+            {
+                x[i] = y[i];
+                for (int j = i + 1; j < b.Length; j++)
+                    x[i] = x[i] - upper.GetElement(i, j) * x[j];
+                x[i] = x[i] / upper.GetElement(i, i);
+            }
+
+            return new Vector(x);
         }
 
         #endregion //////////////////////////////////////////////////////////////
