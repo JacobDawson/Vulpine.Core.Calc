@@ -36,6 +36,10 @@ namespace Vulpine.Core.Calc
 {
     public static class Jacobi
     {
+        //used to limit infinite sumations
+        private const int TC = 10;
+        private const int NC = 8;
+
 
         #region Elliptic Intergrals...
 
@@ -135,106 +139,126 @@ namespace Vulpine.Core.Calc
         //defining this function dose not seem to be as usefull, as the only
         //valid values for "x" are (-1 < x < 1) which achieves the same result
         //as if we computed F(arcsin(x), m) as (phi = sin(x)).
-        public static Cmplx FP(double x, double m)
-        {
-            //the eleptic intergral is undefined for (m > 1)
-            if (m > 1.0) return Double.NaN;
 
-            //checkes when the radical is negative
-            if (m > 0) //0 < m < 1
-            {
-                double c = 1.0 / Math.Sqrt(m);
+        //public static double FP(double x, double m)
+        //{
+        //    //the eleptic intergral is undefined for (m > 1)
+        //    if (m > 1.0) return Double.NaN;
 
-                if (x > +c) return Double.NaN;
-                if (x < -c) return Double.NaN; 
-            }
+        //    //checkes when the radical is negative
+        //    if (m > 0) //0 < m < 1
+        //    {
+        //        double c = 1.0 / Math.Sqrt(m);
 
-            //uses the Legerande normal form
-            VFunc intgnd = delegate(double t)
-            {
-                double t2 = t * t;
-                double r = (1.0 - t2) * (1.0 - (m * t2));
-                return 1.0 / Math.Sqrt(r);
-            };
+        //        if (x > +c) return Double.NaN;
+        //        if (x < -c) return Double.NaN; 
+        //    }
 
-            //double x = Math.Sin(phi);
-            return Integrator.Kronrod(intgnd, 0.0, x);
-        }
+        //    //uses the Legerande normal form
+        //    VFunc intgnd = delegate(double t)
+        //    {
+        //        double t2 = t * t;
+        //        double r = (1.0 - t2) * (1.0 - (m * t2));
+        //        return 1.0 / Math.Sqrt(r);
+        //    };
+
+        //    //double x = Math.Sin(phi);
+        //    return Integrator.Kronrod(intgnd, 0.0, x);
+        //}
 
 
-        public static Cmplx FP(Cmplx x, Cmplx m)
-        {
-            //Cmplx x = Cmplx.Sin(phi);
+        //public static Cmplx FP(Cmplx x, Cmplx m)
+        //{
+        //    //Cmplx x = Cmplx.Sin(phi);
 
-            //uses the Legerande normal form
-            VFunc<Cmplx> intgnd = delegate(Cmplx t)
-            {
-                Cmplx t2 = t * t;
-                Cmplx a = 1.0 - t2;
-                Cmplx b = 1.0 - (m * t2);
+        //    //uses the Legerande normal form
+        //    VFunc<Cmplx> intgnd = delegate(Cmplx t)
+        //    {
+        //        Cmplx t2 = t * t;
+        //        Cmplx a = 1.0 - t2;
+        //        Cmplx b = 1.0 - (m * t2);
 
-                //splits the radical to avoid branch cuts
-                a = Cmplx.Sqrt(a);
-                b = Cmplx.Sqrt(b);
+        //        //splits the radical to avoid branch cuts
+        //        a = Cmplx.Sqrt(a);
+        //        b = Cmplx.Sqrt(b);
 
-                return 1.0 / (a * b);
-            };
+        //        return 1.0 / (a * b);
+        //    };
 
-            return Integrator.Kronrod(intgnd, 0.0, x);
-        }
+        //    return Integrator.Kronrod(intgnd, 0.0, x);
+        //}
 
         #endregion ////////////////////////////////////////////////////////////////////////
 
         #region Elliptic Functions...
 
+        //NOTE: Need to determin the bounds for (m) in the Real case.
+
         public static double SN(double u, double m)
         {
-            //To Implement Later...
-            throw new NotImplementedException();
+            //Uses the theta function to compute SN
+            double t = Theta(u, m);
+            return Math.Sin(t);
         }
 
         public static double CN(double u, double m)
         {
-            //To Implement Later...
-            throw new NotImplementedException();
+            //Uses the theta function to compute CN
+            double t = Theta(u, m);
+            return Math.Cos(t);
         }
 
-        public static Cmplx SN(Cmplx u, double m)
+        public static double DN(double u, double m)
         {
-            double mp = 1.0 - m;
-
-            ////uses the hyperboloc definition to compute the sine
-            //double outR = Math.Sin(arg.real) * Math.Cosh(arg.imag);
-            //double outI = Math.Cos(arg.real) * Math.Sinh(arg.imag);
-
-            double outR = SN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
-            double outI = CN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
-
-
-
-
-            return new Cmplx(outR, outI);
+            //Uses SN to comptue DN in the real case
+            double t = SN(u, m);
+            t = m * t * t;
+            return Math.Sqrt(1.0 - t);
         }
 
+        //Dose Not Work!!
 
-        public static Cmplx CN(Cmplx u, double m)
-        {
-            double mp = 1.0 - m;
+        //public static Cmplx SN(Cmplx u, double m)
+        //{
+        //    double mp = 1.0 - m;
 
-            ////uses the hyperboloc definition to compute the cosine
-            //double outR = Math.Cos(arg.real) * Math.Cosh(arg.imag);
-            //double outI = Math.Sin(arg.real) * Math.Sinh(arg.imag);
+        //    ////uses the hyperboloc definition to compute the sine
+        //    //double outR = Math.Sin(arg.real) * Math.Cosh(arg.imag);
+        //    //double outI = Math.Cos(arg.real) * Math.Sinh(arg.imag);
+        //    //return new Cmplx(outR, outI);
 
-            double outR = CN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
-            double outI = SN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
+        //    double outR = SN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
+        //    double outI = CN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
 
 
-            return new Cmplx(outR, -outI);
+        //NOTE: I feel like this probably would work, but trying to find the
+        //exact form of sin, cos, sinh, and cosh to use would be a headache!
 
-            //formula for hyperbolic cosine
-            //double outR = Math.Cosh(arg.real) * Math.Cos(arg.imag);
-            //double outI = Math.Sinh(arg.real) * Math.Sin(arg.imag);
-        }
+
+        //    return new Cmplx(outR, outI);
+        //}
+
+
+        //public static Cmplx CN(Cmplx u, double m)
+        //{
+        //    double mp = 1.0 - m;
+
+        //    ////uses the hyperboloc definition to compute the cosine
+        //    //double outR = Math.Cos(arg.real) * Math.Cosh(arg.imag);
+        //    //double outI = Math.Sin(arg.real) * Math.Sinh(arg.imag);
+        //    //return new Cmplx(outR, -outI);
+
+        //    double outR = CN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
+        //    double outI = SN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
+
+
+        //    return new Cmplx(outR, -outI);
+
+        //    ////inverts the formula used for complex cosine
+        //    //double outR = Math.Cosh(arg.real) * Math.Cos(arg.imag);
+        //    //double outI = Math.Sinh(arg.real) * Math.Sin(arg.imag);
+        //    //return new Cmplx(outR, outI);
+        //}
 
         //represents the constant value K(1/2)
         private const double KH = 1.85407467730137191843;
@@ -243,267 +267,224 @@ namespace Vulpine.Core.Calc
         public static Cmplx SN(Cmplx u, Cmplx m)
         {  
             //computes the quarter periods
-            Cmplx kp = K(1.0 - m).MultI();
-            Cmplx k = K(m);
+            Cmplx kp = K(1.0 - m);
+            Cmplx ki = kp.MultI();
+            Cmplx km = K(m);
 
             //creates a change of basis for the tilable parallelagram
-            Vector p1 = k * 4.0;
-            Vector p2 = kp * 2.0;
+            Vector p1 = km * 4.0;
+            Vector p2 = ki * 2.0;
             Matrix t = new Matrix(2, 2,
                 p1[0], p2[0],
                 p1[1], p2[1]);
 
 
-            ////converts the unit parallelagram to the unit square
-            //Cmplx up = (Cmplx)t.InvAx(u) * KH * 4.0;
-
             //converts the tialable parallelagram to the unit square
-            Cmplx up = (Cmplx)t.InvAx(u);
+            Vector x = t.InvAx(u);
 
-            //double a = 4.0;
+            //grabs the fractional cordinate values
+            x[0] = x[0].Frac();
+            x[1] = x[1].Frac();
 
-            ////scales the unit square by KH * 4.0
-            //double sr = ((up.CofR.Frac() * 4.0) - 2.0) * KH;
-            //double si = ((up.CofI.Frac() * 2.0) - 1.0) * KH;
+            ////center aorund the origin
+            //if (x[0] > 0.5) x[0] -= 1.0;
+            //if (x[1] > 0.5) x[1] -= 1.0;
+
+            //converts back to our original cordinates
+            Cmplx up = (Cmplx)(t * x);
+
+
+            ////grab the fractional cordinate values
+            //double sr = up.CofR.Frac();
+            //double si = up.CofI.Frac();
+
+            ////center aorund the origin
+            //if (sr > 0.5) sr = sr - 1.0;
+            //if (si > 0.5) si = si - 1.0;
+
+            ////scale to the domain of SN(u, 1/2)
+            //sr = sr * 4.0 * KH;
+            //si = si * 2.0 * KH;
+
             //up = new Cmplx(sr, si);
 
 
-            //double sr = up.CofR.Frac() * 4.0 * KH;
-            //double si = up.CofI.Frac() * 2.0 * KH;
-            //up = new Cmplx(sr, si);
-
-
-            ////we need to isolate the range (-0.5 to 0.5)
-            //double x = 0.0;
-
-            //x = x.Frac();
-            //if (x > 0.5) x = x - 1.0;
-
-
-            //grab the fractional cordinate values
-            double sr = up.CofR.Frac();
-            double si = up.CofI.Frac();
-
-            //center aorund the origin
-            if (sr > 0.5) sr = sr - 1.0;
-            if (si > 0.5) si = si - 1.0;
-
-            //scale to the domain of SN(u, 1/2)
-            sr = sr * 4.0 * KH;
-            si = si * 2.0 * KH;
-
-            up = new Cmplx(sr, si);
-           
-
-            //NEXT: Try using the pade aproximate for SN(u, 1/2)
-
-
             //up = u;
 
-            //computes the [11/12] Pade Axpoximate for SN(u, 1/2)
-            Cmplx p = -1.1662025348979380E-07;
-            Cmplx q = 1.2305284491651105E-08;
+            Cmplx qm = Nome(km, kp);
 
-            p = (up * p) + 0.0;
-            p = (up * p) - 7.0728792484709221E-06;
-            p = (up * p) + 0.0;
-            p = (up * p) - 6.2031120811464283E-05;
-            p = (up * p) + 0.0;
-            p = (up * p) - 3.9520756905764912E-03;
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.5888158184827195E-02;
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.0;
-            p = (up * p) + 0.0;
+            Cmplx ts = ThetaS(up, m, km, qm, NC);
+            Cmplx tn = ThetaN(up, m, km, qm, NC);
 
-            q = (up * q) + 0.0;
-            q = (up * q) + 5.6919553612084142E-07;
-            q = (up * q) + 0.0;
-            q = (up * q) + 3.3455477445225117E-05;
-            q = (up * q) + 0.0;
-            q = (up * q) + 4.1314896788924044E-04;
-            q = (up * q) + 0.0;
-            q = (up * q) - 6.2300361443697050E-03;
-            q = (up * q) + 0.0;
-            q = (up * q) + 2.6588815818482719E-01;
-            q = (up * q) + 0.0;
-            q = (up * q) + 1.0;
+            return ts / tn;
 
-            return p / q;
 
             //return Cmplx.NaN;
         }
 
-
-        //Uses the [19/20] Pade Axpoximate for SN(u, 1/2)
-        public static Cmplx SN2(Cmplx u, Cmplx m)
+        public static Cmplx CN(Cmplx u, Cmplx m)
         {
-            //computes the quarter periods
-            Cmplx kp = K(1.0 - m).MultI();
-            Cmplx k = K(m);
-
-            //creates a change of basis for the tilable parallelagram
-            Vector p1 = k * 4.0;
-            Vector p2 = kp * 2.0;
-            Matrix t = new Matrix(2, 2,
-                p1[0], p2[0],
-                p1[1], p2[1]);
-
-            //converts the tialable parallelagram to the unit square
-            Cmplx up = (Cmplx)t.InvAx(u);
-
-            //grab the fractional cordinate values
-            double sr = up.CofR.Frac();
-            double si = up.CofI.Frac();
-
-            //center aorund the origin
-            if (sr > 0.5) sr = sr - 1.0;
-            if (si > 0.5) si = si - 1.0;
-
-            //scale to the domain of SN(u, 1/2)
-            sr = sr * 4.0 * KH;
-            si = si * 2.0 * KH;
-            up = new Cmplx(sr, si);
-
-
-            //NEXT: Try using the pade aproximate for SN(u, 1/2)
-
-
-            //up = u;
-
-            //computes the [19/20] Pade Axpoximate for SN(u, 1/2)
-            Cmplx p = 1.953967432892824600E-013;
-            Cmplx q = -4.210105787648752800E-014;
-
-            //p = (up * p) +
-            p = (up * p) + 0.0;
-            p = (up * p) - 8.920747691067194400E-012;
-            p = (up * p) + 0.0;
-            p = (up * p) - 5.143546368273501900E-010;
-            p = (up * p) + 0.0;
-            p = (up * p) + 5.606262937604865600E-008;
-            p = (up * p) + 0.0;
-            p = (up * p) - 1.104889919071368800E-006;
-            p = (up * p) + 0.0;
-            p = (up * p) + 2.890730639366435900E-005;
-            p = (up * p) + 0.0;
-            p = (up * p) - 3.215880735386371300E-004;
-            p = (up * p) + 0.0;
-            p = (up * p) - 1.269841195140552500E-002;
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.035285868715790900E-001;
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.0;
-            p = (up * p) + 0.0;
-
-
-            q = (up * q) + 0.0;
-            q = (up * q) + 2.234415094469537600E-012;
-            q = (up * q) + 0.0;
-            q = (up * q) - 5.614316818462869000E-011;
-            q = (up * q) + 0.0;
-            q = (up * q) + 2.206391833841200100E-009;
-            q = (up * q) + 0.0;
-            q = (up * q) - 1.528560602969263500E-007;
-            q = (up * q) + 0.0;
-            q = (up * q) - 2.897371464331276500E-006;
-            q = (up * q) + 0.0;
-            q = (up * q) + 1.961491963587991800E-004;
-            q = (up * q) + 0.0;
-            q = (up * q) - 2.580744729337389400E-003;
-            q = (up * q) + 0.0;
-            q = (up * q) + 6.933734766489230200E-003;
-            q = (up * q) + 0.0;
-            q = (up * q) + 3.535285868715791800E-001;
-            q = (up * q) + 0.0;
-            q = (up * q) + 1.0;
-
-
-
-            return p / q;
-
-            //return Cmplx.NaN;
+            throw new NotImplementedException();
         }
 
-        //Uses the [15/16] Pade Axpoximate for SN(u, 1/2)
-        public static Cmplx SN3(Cmplx u, Cmplx m)
+        public static Cmplx DN(Cmplx u, Cmplx m)
         {
-            //computes the quarter periods
-            Cmplx kp = K(1.0 - m).MultI();
-            Cmplx k = K(m);
-
-            //creates a change of basis for the tilable parallelagram
-            Vector p1 = k * 4.0;
-            Vector p2 = kp * 2.0;
-            Matrix t = new Matrix(2, 2,
-                p1[0], p2[0],
-                p1[1], p2[1]);
-
-            //converts the tialable parallelagram to the unit square
-            Cmplx up = (Cmplx)t.InvAx(u);
-
-            //grab the fractional cordinate values
-            double sr = up.CofR.Frac();
-            double si = up.CofI.Frac();
-
-            //center aorund the origin
-            if (sr > 0.5) sr = sr - 1.0;
-            if (si > 0.5) si = si - 1.0;
-
-            //scale to the domain of SN(u, 1/2)
-            sr = sr * 4.0 * KH;
-            si = si * 2.0 * KH;
-            up = new Cmplx(sr, si);
-
-
-            //NEXT: Try using the pade aproximate for SN(u, 1/2)
-
-
-            //up = u;
-
-            //computes the [15/16] Pade Axpoximate for SN(u, 1/2)
-            Cmplx p = -2.308261101796228600E-011;
-            Cmplx q = 5.652045497424510300E-012;
-
-            //p = (up * p) +
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.159689553289719700E-009;
-            p = (up * p) + 0.0;
-            p = (up * p) + 9.191940149532765200E-008;
-            p = (up * p) + 0.0;
-            p = (up * p) - 6.339331952112939400E-006;
-            p = (up * p) + 0.0;
-            p = (up * p) + 6.270724516678946600E-005;
-            p = (up * p) + 0.0;
-            p = (up * p) - 4.131831955912198200E-003;
-            p = (up * p) + 0.0;
-            p = (up * p) - 1.498622082364003600E-002;
-            p = (up * p) + 0.0;
-            p = (up * p) + 1.0;
-            p = (up * p) + 0.0;
-
-            q = (up * q) + 0.0;
-            q = (up * q) - 2.512157501281880000E-010;
-            q = (up * q) + 0.0;
-            q = (up * q) + 3.492286257032539200E-009;
-            q = (up * q) + 0.0;
-            q = (up * q) - 3.003670084253313300E-007;
-            q = (up * q) + 0.0;
-            q = (up * q) + 1.825587569376501300E-005;
-            q = (up * q) + 0.0;
-            q = (up * q) + 6.859131363364863900E-004;
-            q = (up * q) + 0.0;
-            q = (up * q) - 1.412838716182221100E-002;
-            q = (up * q) + 0.0;
-            q = (up * q) + 2.350137791763599600E-001;
-            q = (up * q) + 0.0;
-            q = (up * q) + 1.0;
-
-
-            return p / q;
-
-            //return Cmplx.NaN;
+            throw new NotImplementedException();
         }
+
+
+        //Things To Do:
+        //1) Implement CN and DN for the Complx Case
+        //2) Considering adding SC, CD, and/or SD
+        //3) Write test cases that cover all four Theta Functions (S, C, D, N)
+        //4) Add Lemniscate Functions and their Inverses
+        //5) Add Eleptic Intergrals of the Second (and Third) Kind
+        //5) Write Test Cases for ALL functional relations
+
+
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+        #region Neville Theta Functions...
+
+
+        private static double Theta(double x, double m)
+        {
+            //used in the itterative method
+            double b = Math.Sqrt(1.0 - m);
+            double c = Math.Sqrt(m);          
+            double a = 1.0;
+
+            double ap = 0.0;
+            double bp = 0.0;
+
+            //stores values in an array for backwards loop
+            double[] ca = new double[11];
+            ca[0] = c / a;
+
+            //computes the AGM in the forward loop
+            for (int i = 1; i <= 10; i++)
+            {                 
+                ap = (a + b) * 0.5;
+                bp = Math.Sqrt(a * b);
+                c  = (a - b) * 0.5;
+
+                a = ap;
+                b = bp;
+
+                ca[i] = c / a;
+            }
+
+            double t = 1024.0 * a * x;
+            double s = 0.0;
+
+            //computes the theta values in the backwards loop
+            for (int i = 10; i > 0; i--)
+            {
+                s = ca[i] * Math.Sin(t);
+                s = t + Math.Asin(s);
+
+                t = 0.5 * s;
+            }
+
+            return t;
+        }
+
+
+        /// <summary>
+        /// Computes the Neville Theta Function N(z, m) with aditional paramaters for
+        /// k(m) and q(m) which should be computed before invoking this funciton. It is
+        /// used in the computaiton of the Jacobi Eleptic Functions.
+        /// </summary>
+        /// <param name="z">Paramater (z) to the Nevile Theta Funciton</param>
+        /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
+        /// <param name="km">Precomputed value k(m)</param>
+        /// <param name="qm">Precomputed value q(m)</param>
+        /// <param name="c">Number of itterations for the inner loop</param>
+        /// <returns>The Nevel Theta Function evaluated at N(z, m)</returns>
+        private static Cmplx ThetaN(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        {
+            //computes the scaling value based purly on (m)
+            Cmplx v = 1.0 - m;
+            v = Cmplx.Pow(v, 0.25);
+            v = 2.0 * v * Cmplx.Sqrt(km);
+            v = VMath.RTP / v;
+
+            Cmplx s = 0.0;
+
+            //computes the infinate series turncated at (k=c)
+            for (int k = 1; k <= c; k++)
+            {
+                Cmplx qx = Cmplx.Pow(qm, k * k);
+                if (k % 2 != 0) qx = -qx;
+
+                Cmplx cos = z * Math.PI * k;
+                cos = Cmplx.Cos(cos / km);
+
+                s += qx * cos;
+            }
+
+            //returns the full expression
+            return v * (1.0 + (2.0 * s));
+        }
+
+        /// <summary>
+        /// Computes the Neville Theta Function S(z, m) with aditional paramaters for
+        /// k(m) and q(m) which should be computed before invoking this funciton. It is
+        /// used in the computaiton of the Jacobi Eleptic Functions.
+        /// </summary>
+        /// <param name="z">Paramater (z) to the Nevile Theta Funciton</param>
+        /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
+        /// <param name="km">Precomputed value k(m)</param>
+        /// <param name="qm">Precomputed value q(m)</param>
+        /// <param name="c">Number of itterations for the inner loop</param>
+        /// <returns>The Nevel Theta Function evaluated at S(z, m)</returns>
+        private static Cmplx ThetaS(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        {
+            //takes the quartic roots of the required terms
+            Cmplx qm4 = Cmplx.Pow(qm, 0.25);
+            Cmplx mp4 = Cmplx.Pow(1.0 - m, 0.25);
+            Cmplx m4 = Cmplx.Pow(m, 0.25);
+
+            //computes the scaling value based purly on (m)
+            Cmplx v = m4 * mp4 * Cmplx.Sqrt(km);
+            v = VMath.RTP * qm4 / v;
+
+            Cmplx s = 0.0;
+
+            //computes the infinate series turncated at (k=c)
+            for (int k = 0; k < c; k++)
+            {
+                Cmplx qx = Cmplx.Pow(qm, k * (k + 1));
+                if (k % 2 != 0) qx = -qx;
+
+                Cmplx sin = z * Math.PI * (k + k + 1);
+                sin = Cmplx.Sin(sin / (2.0 * km));
+
+                s += qx * sin;
+            }
+
+            //returns the full expression
+            return v * s;
+        }
+
+        /// <summary>
+        /// Computes the value q(m), given the precomputed values k(m) and k(1 - m).
+        /// This is called the Nome, and is essential to computing the Nevil Theta
+        /// Functions.
+        /// </summary>
+        /// <param name="km">Precomputed value k(m)</param>
+        /// <param name="kp">Precomputed value k(1 - m) </param>
+        /// <returns></returns>
+        private static Cmplx Nome(Cmplx km, Cmplx kp)
+        {
+            Cmplx exp = Math.PI * kp / km;
+            return Cmplx.Exp(-exp);
+        }
+
+        
+
+
 
 
 

@@ -27,7 +27,10 @@ namespace QuickTests
 
             //PadeAprox.TryPade();
 
-            JacobiTests.TestInversion1();
+
+            //JacobiTests.ListSamples();
+            JacobiTests.TestInversion1();           //3
+            //JacobiTests.TestCompatablity1();      //2
 
             Console.ReadKey();
         }

@@ -67,7 +67,7 @@
     <Compile Include="AddOns\ErrorConstrant.cs" />
     <Compile Include="AddOns\Ist.cs" />
     <Compile Include="AddOns\ZeroConstraint.cs" />
-    <Compile Include="JacobiTests.cs" />
+    <Compile Include="Unit\JacobiTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AddOns\Generators.cs" />
