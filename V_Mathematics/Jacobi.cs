@@ -38,7 +38,7 @@ namespace Vulpine.Core.Calc
     {
         //used to limit infinite sumations
         private const int TC = 10;
-        private const int NC = 8;
+        private const int NC = 6;
 
 
         #region Elliptic Intergrals...
@@ -136,57 +136,110 @@ namespace Vulpine.Core.Calc
             return Integrator.Kronrod(intgnd, 0.0, x);
         }
 
-        //defining this function dose not seem to be as usefull, as the only
-        //valid values for "x" are (-1 < x < 1) which achieves the same result
-        //as if we computed F(arcsin(x), m) as (phi = sin(x)).
+        public static double E(double m)
+        {
+            //the function is undefined for m > 1
+            if (m > 1.0) return Double.NaN;
 
-        //public static double FP(double x, double m)
-        //{
-        //    //the eleptic intergral is undefined for (m > 1)
-        //    if (m > 1.0) return Double.NaN;
+            double a = 1.0;
+            double b = Math.Sqrt(1.0 - m);
 
-        //    //checkes when the radical is negative
-        //    if (m > 0) //0 < m < 1
-        //    {
-        //        double c = 1.0 / Math.Sqrt(m);
+            double ap = 0.0;
+            double bp = 0.0;
+            //double cp = 0.0;
 
-        //        if (x > +c) return Double.NaN;
-        //        if (x < -c) return Double.NaN; 
-        //    }
+            //stores values in an array for backwards loop
+            double[] cn = new double[11];
+            cn[0] = Math.Abs(1.0 - m);
 
-        //    //uses the Legerande normal form
-        //    VFunc intgnd = delegate(double t)
-        //    {
-        //        double t2 = t * t;
-        //        double r = (1.0 - t2) * (1.0 - (m * t2));
-        //        return 1.0 / Math.Sqrt(r);
-        //    };
+            //computes the AGM in the forward loop
+            for (int i = 1; i <= 10; i++)
+            {
+                ap = (a + b) * 0.5;
+                bp = Math.Sqrt(a * b);
+                //cp = cn[i - 1] / (4.0 * ap);
 
-        //    //double x = Math.Sin(phi);
-        //    return Integrator.Kronrod(intgnd, 0.0, x);
-        //}
+                a = ap;
+                b = bp;
 
+                cn[i] = Math.Abs((a * a) - (b * b));
+                //cn[i] = cp * cp;
+            }
 
-        //public static Cmplx FP(Cmplx x, Cmplx m)
-        //{
-        //    //Cmplx x = Cmplx.Sin(phi);
+            double s = 0.0;
+            double t = 0.0;
 
-        //    //uses the Legerande normal form
-        //    VFunc<Cmplx> intgnd = delegate(Cmplx t)
-        //    {
-        //        Cmplx t2 = t * t;
-        //        Cmplx a = 1.0 - t2;
-        //        Cmplx b = 1.0 - (m * t2);
+            //computes the theta values in the backwards loop
+            for (int i = 10; i > 0; i--)
+            {
+                t = Math.Pow(2.0, i - 1);
+                s = s + (t * cn[i]);
+            }
 
-        //        //splits the radical to avoid branch cuts
-        //        a = Cmplx.Sqrt(a);
-        //        b = Cmplx.Sqrt(b);
+            t = (1.0 - s) * Math.PI;
+            return t / (2.0 * a);
+        }
 
-        //        return 1.0 / (a * b);
-        //    };
+        public static Cmplx E(Cmplx m)
+        {
+            Cmplx a = 1.0;
+            Cmplx b = Cmplx.Sqrt(1.0 - m);
 
-        //    return Integrator.Kronrod(intgnd, 0.0, x);
-        //}
+            Cmplx ap = 0.0;
+            Cmplx bp = 0.0;
+            Cmplx cp = 0.0;
+
+            //stores values in an array for backwards loop
+            Cmplx[] cn = new Cmplx[11];
+            cn[0] = (1.0 - (b * b)).Abs;
+            //cn[0] = (1.0 - m).Abs;
+
+            double t1, t2;
+
+            //computes the AGM in the forward loop
+            for (int i = 1; i <= 10; i++)
+            {
+                ap = (a + b) * 0.5;
+                bp = Cmplx.Sqrt(a * b);
+                cp = (ap * ap) - (bp * bp);
+                //cp = ap.Dist(bp);
+
+                //makes shure we choose the right branch of sqrt
+                t1 = (ap - bp).Abs;
+                t2 = (ap + bp).Abs;
+                if (t1 > t2) bp = -bp;
+
+                a = ap;
+                b = bp;
+
+                cn[i] = cp.Abs;
+                //cn[i] = a.Dist(b);
+            }
+
+            Cmplx s = 0.0;
+            Cmplx t = 0.0;
+
+            //computes the theta values in the backwards loop
+            for (int i = 10; i > 0; i--)
+            {
+                t = Math.Pow(2.0, i - 1);
+                s = s + (t * cn[i]);
+            }
+
+            t = (1.0 - s) * Math.PI;
+            return t / (2.0 * a);
+        }
+
+        public static double E(double phi, double m)
+        {
+            return Double.NaN;
+        }
+
+        public static Cmplx E(Cmplx phi, Cmplx m)
+        {
+            return Cmplx.NaN;
+        }
+
 
         #endregion ////////////////////////////////////////////////////////////////////////
 
@@ -196,15 +249,15 @@ namespace Vulpine.Core.Calc
 
         public static double SN(double u, double m)
         {
-            //Uses the theta function to compute SN
-            double t = Theta(u, m);
+            //Uses the Landen Transformation to compute SN
+            double t = AM(u, m);
             return Math.Sin(t);
         }
 
         public static double CN(double u, double m)
         {
-            //Uses the theta function to compute CN
-            double t = Theta(u, m);
+            //Uses the Landen Transformation to compute CN
+            double t = AM(u, m);
             return Math.Cos(t);
         }
 
@@ -216,120 +269,98 @@ namespace Vulpine.Core.Calc
             return Math.Sqrt(1.0 - t);
         }
 
-        //Dose Not Work!!
+        public static double SC(double u, double m)
+        {
+            //Uses the Landen Transformation to compute CN
+            double t = AM(u, m);
+            return Math.Tan(t); 
+        }
 
-        //public static Cmplx SN(Cmplx u, double m)
-        //{
-        //    double mp = 1.0 - m;
-
-        //    ////uses the hyperboloc definition to compute the sine
-        //    //double outR = Math.Sin(arg.real) * Math.Cosh(arg.imag);
-        //    //double outI = Math.Cos(arg.real) * Math.Sinh(arg.imag);
-        //    //return new Cmplx(outR, outI);
-
-        //    double outR = SN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
-        //    double outI = CN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
-
-
-        //NOTE: I feel like this probably would work, but trying to find the
-        //exact form of sin, cos, sinh, and cosh to use would be a headache!
-
-
-        //    return new Cmplx(outR, outI);
-        //}
-
-
-        //public static Cmplx CN(Cmplx u, double m)
-        //{
-        //    double mp = 1.0 - m;
-
-        //    ////uses the hyperboloc definition to compute the cosine
-        //    //double outR = Math.Cos(arg.real) * Math.Cosh(arg.imag);
-        //    //double outI = Math.Sin(arg.real) * Math.Sinh(arg.imag);
-        //    //return new Cmplx(outR, -outI);
-
-        //    double outR = CN(u.CofR, m) * (1.0 / CN(u.CofI, mp));
-        //    double outI = SN(u.CofR, m) * (SN(u.CofI, mp) / CN(u.CofI, mp));
-
-
-        //    return new Cmplx(outR, -outI);
-
-        //    ////inverts the formula used for complex cosine
-        //    //double outR = Math.Cosh(arg.real) * Math.Cos(arg.imag);
-        //    //double outI = Math.Sinh(arg.real) * Math.Sin(arg.imag);
-        //    //return new Cmplx(outR, outI);
-        //}
-
-        //represents the constant value K(1/2)
-        private const double KH = 1.85407467730137191843;
+        ////represents the constant value K(1/2)
+        //private const double KH = 1.85407467730137191843;
 
 
         public static Cmplx SN(Cmplx u, Cmplx m)
         {  
             //computes the quarter periods
             Cmplx kp = K(1.0 - m);
-            Cmplx ki = kp.MultI();
             Cmplx km = K(m);
 
-            //creates a change of basis for the tilable parallelagram
-            Vector p1 = km * 4.0;
-            Vector p2 = ki * 2.0;
-            Matrix t = new Matrix(2, 2,
-                p1[0], p2[0],
-                p1[1], p2[1]);
-
-
-            //converts the tialable parallelagram to the unit square
-            Vector x = t.InvAx(u);
-
-            //grabs the fractional cordinate values
-            x[0] = x[0].Frac();
-            x[1] = x[1].Frac();
-
-            ////center aorund the origin
-            //if (x[0] > 0.5) x[0] -= 1.0;
-            //if (x[1] > 0.5) x[1] -= 1.0;
-
-            //converts back to our original cordinates
-            Cmplx up = (Cmplx)(t * x);
-
-
-            ////grab the fractional cordinate values
-            //double sr = up.CofR.Frac();
-            //double si = up.CofI.Frac();
-
-            ////center aorund the origin
-            //if (sr > 0.5) sr = sr - 1.0;
-            //if (si > 0.5) si = si - 1.0;
-
-            ////scale to the domain of SN(u, 1/2)
-            //sr = sr * 4.0 * KH;
-            //si = si * 2.0 * KH;
-
-            //up = new Cmplx(sr, si);
-
+            //restricts the domain to the tilable parallelagram
+            Cmplx up = GetTile(u, km, kp);            
+            Cmplx qm = Nome(km, kp);
 
             //up = u;
 
-            Cmplx qm = Nome(km, kp);
-
+            //computes the corisponding theta functions
             Cmplx ts = ThetaS(up, m, km, qm, NC);
             Cmplx tn = ThetaN(up, m, km, qm, NC);
 
+            //returns the ratio of the theta funcitons
             return ts / tn;
-
-
-            //return Cmplx.NaN;
         }
+
+        
+
 
         public static Cmplx CN(Cmplx u, Cmplx m)
         {
-            throw new NotImplementedException();
+            //computes the quarter periods
+            Cmplx kp = K(1.0 - m);
+            Cmplx km = K(m);
+
+            //restricts the domain to the tilable parallelagram
+            Cmplx up = GetTile(u, km, kp);
+            Cmplx qm = Nome(km, kp);
+
+            //up = u;
+
+            //computes the corisponding theta functions
+            Cmplx tc = ThetaC(up, m, km, qm, NC);
+            Cmplx tn = ThetaN(up, m, km, qm, NC);
+
+            //returns the ratio of the theta funcitons
+            return tc / tn;
         }
 
         public static Cmplx DN(Cmplx u, Cmplx m)
         {
-            throw new NotImplementedException();
+            //computes the quarter periods
+            Cmplx kp = K(1.0 - m);
+            Cmplx km = K(m);
+
+            //restricts the domain to the tilable parallelagram
+            Cmplx up = GetTile(u, km, kp);
+            Cmplx qm = Nome(km, kp);
+
+            //up = u;
+
+            //computes the corisponding theta functions
+            Cmplx td = ThetaD(up, m, km, qm, NC);
+            Cmplx tn = ThetaN(up, m, km, qm, NC);
+
+            //returns the ratio of the theta funcitons
+            return td / tn;
+        }
+
+        public static Cmplx SC(Cmplx u, Cmplx m)
+        {
+            //computes the quarter periods
+            Cmplx kp = K(1.0 - m);
+            Cmplx km = K(m);
+
+            //restricts the domain to the tilable parallelagram
+            Cmplx up = GetTile(u, km, kp);
+            Cmplx qm = Nome(km, kp);
+
+            //up = u;
+
+            //computes the corisponding theta functions
+            Cmplx ts = ThetaS(up, m, km, qm, NC);
+            Cmplx tc = ThetaC(up, m, km, qm, NC);
+
+            //returns the ratio of the theta funcitons
+            return ts / tc;
         }
 
 
@@ -340,15 +371,183 @@ namespace Vulpine.Core.Calc
         //4) Add Lemniscate Functions and their Inverses
         //5) Add Eleptic Intergrals of the Second (and Third) Kind
         //5) Write Test Cases for ALL functional relations
+        //6) Clean-up Code and Optimise
 
 
 
         #endregion ////////////////////////////////////////////////////////////////////////
 
-        #region Neville Theta Functions...
+        #region Inverse Eleptic Functions:
+
+        //public static double ArcSN(double x, double m)
+        //{
+        //    //checks the bounds of the function
+        //    if (x >= 1.0) return Double.NaN;
+        //    if (x <= -1.0) return Double.NaN;
+        //    //if (m > 1.0) return Double.NaN;
+
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Math.Asin(x), m);
+        //}
+
+        //public static double ArcCN(double x, double m)
+        //{
+        //    //checks the bounds of the function
+        //    if (x >= 1.0) return Double.NaN;
+        //    if (x <= -1.0) return Double.NaN;
+        //    //if (m > 1.0) return Double.NaN;
+
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Math.Acos(x), m);
+        //}
+
+        //public static double ArcDN(double x, double m)
+        //{
+        //    //WTF the bounds of this thing ??
+
+        //    //Computes the bounds of the intergral based on x and m
+        //    double phi = (1.0 - x * x) / m;
+        //    phi = Math.Sqrt(phi);
+        //    phi = Math.Asin(phi);
+
+        //    //avoids propagating NaNs
+        //    if (phi.IsNaN()) return Double.NaN;
+
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(phi, m);
+        //}
+
+        //public static double ArcSC(double x, double m)
+        //{
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Math.Atan(x), m);
+        //}
+
+        //public static Cmplx ArcSN(Cmplx x, Cmplx m)
+        //{
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Cmplx.Asin(x), m);
+        //}
+
+        //public static Cmplx ArcCN(Cmplx x, Cmplx m)
+        //{
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Cmplx.Acos(x), m);
+        //}
+
+        //public static Cmplx ArcDN(Cmplx x, Cmplx m)
+        //{
+        //    //Computes the bounds of the intergral based on x and m
+        //    Cmplx phi = (1.0 - x * x) / m;
+        //    phi = Cmplx.Sqrt(phi);
+        //    phi = Cmplx.Asin(phi);
+
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(phi, m);
+        //}
+
+        //public static Cmplx ArcSC(Cmplx x, Cmplx m)
+        //{
+        //    //Uses the Eleptic Intergral to invert the Eleptic Function
+        //    return F(Cmplx.Atan(x), m);
+        //}
 
 
-        private static double Theta(double x, double m)
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+        #region Lemniscate Functions...
+
+        public static double SL(double x)
+        {
+            ////calculates the inner variables
+            //double xp = x / VMath.GA;
+            //double sx = Math.Sin(x);
+            //double cx = Math.Cos(x);
+
+            ////computes the Lemniscate Sum
+            //return LS(xp, sx, cx, 10);
+
+            return SN(x, -1.0);
+        }
+
+        public static double CL(double x)
+        {
+            ////calculates the inner variables
+            //double xp = x / VMath.GA;
+            //double sx = Math.Sin(x);
+            //double cx = Math.Cos(x);
+
+            ////computes the Lemniscate Sum
+            //return LS(xp, cx, sx, 10);
+
+            return CN(x, -1.0) / DN(x, -1.0);
+        }
+
+        public static Cmplx SL(Cmplx x)
+        {
+            ////calculates the inner variables
+            //Cmplx xp = x / VMath.GA;
+            //Cmplx sx = Cmplx.Sin(x);
+            //Cmplx cx = Cmplx.Cos(x);
+
+            ////computes the Lemniscate Sum
+            //return LS(xp, sx, cx, 10);
+
+            return SN(x, -1.0);
+        }
+
+        public static Cmplx CL(Cmplx x)
+        {
+            ////calculates the inner variables
+            //Cmplx xp = x / VMath.GA;
+            //Cmplx sx = Cmplx.Sin(x);
+            //Cmplx cx = Cmplx.Cos(x);
+
+            ////computes the Lemniscate Sum
+            //return LS(xp, cx, sx, 10);
+
+            return CN(x, -1.0) / DN(x, -1.0);
+        }
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+        #region Lemniscate Inverse Functions...
+
+        public static double ArcSL(double x)
+        {
+            return Double.NaN;
+        }
+
+        public static double ArcCL(double x)
+        {
+            return Double.NaN;
+        }
+
+        public static Cmplx ArcSL(Cmplx x)
+        {
+            return Cmplx.NaN;
+        }
+
+        public static Cmplx ArcCL(Cmplx x)
+        {
+            return Cmplx.NaN;
+        }
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+        #region Helper Methods...
+
+        /// <summary>
+        /// Computes the inverse of the eleptic intergral of the first kind, also 
+        /// known as the Jacobi Amplitude, as it is used in computing the Jacobi 
+        /// Eleptic Functions. It effectivly uses a Landen Transformation to compute
+        /// this value.
+        /// </summary>
+        /// <param name="x">Value of the Function</param>
+        /// <param name="m">A Free Paramater</param>
+        /// <returns>The Jacobi Amplitude</returns>
+        private static double AM(double x, double m)
         {
             //used in the itterative method
             double b = Math.Sqrt(1.0 - m);
@@ -388,6 +587,42 @@ namespace Vulpine.Core.Calc
             }
 
             return t;
+        }
+
+        /// <summary>
+        /// This function maps all points in the plane to a single repeating
+        /// Paralelagram, based on the quarter periods of the Jacobi Eleptic
+        /// funcitons. This way, we only need to worry about computing values
+        /// in this critical region.
+        /// </summary>
+        /// <param name="u">Input to the Jacobi Eleptic Function</param>
+        /// <param name="km">The Quarter Period K(m)</param>
+        /// <param name="kp">The Quarter Period K(1 - m)</param>
+        /// <returns>The Point Maped to the Tilable Paralelagram</returns>
+        private static Cmplx GetTile(Cmplx u, Cmplx km, Cmplx kp)
+        {
+            Cmplx ki = kp.MultI();
+
+            //creates a change of basis for the tilable parallelagram
+            Vector p1 = km * 4.0;
+            Vector p2 = ki * 4.0; //2.0;
+            Matrix t = new Matrix(2, 2,
+                p1[0], p2[0],
+                p1[1], p2[1]);
+
+            //converts the tialable parallelagram to the unit square
+            Vector x = t.InvAx(u);
+
+            //grabs the fractional cordinate values
+            x[0] = x[0].Frac();
+            x[1] = x[1].Frac();
+
+            //center aorund the origin
+            if (x[0] > 0.5) x[0] -= 1.0;
+            if (x[1] > 0.5) x[1] -= 1.0;
+
+            //converts back to our original cordinates
+            return (Cmplx)(t * x);
         }
 
 
@@ -468,6 +703,52 @@ namespace Vulpine.Core.Calc
             return v * s;
         }
 
+        private static Cmplx ThetaC(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        {
+            //takes the quartic roots of the required terms
+            Cmplx qm4 = Cmplx.Pow(qm, 0.25);
+            Cmplx m4 = Cmplx.Pow(m, 0.25);
+
+            //computes the scaling value based purly on (m)
+            Cmplx v = m4 * Cmplx.Sqrt(km);
+            v = VMath.RTP * qm4 / v;
+
+            Cmplx s = 0.0;
+
+            //computes the infinate series turncated at (k=c)
+            for (int k = 0; k < c; k++)
+            {
+                Cmplx qx = Cmplx.Pow(qm, k * (k + 1));
+                Cmplx cos = z * Math.PI * (k + k + 1);
+                cos = Cmplx.Cos(cos / (2.0 * km));
+
+                s += qx * cos;
+            }
+
+            //returns the full expression
+            return v * s;
+        }
+
+        private static Cmplx ThetaD(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        {
+            //computes the scaling value based purly on (m)
+            Cmplx v = VMath.RTP / (2.0 * Cmplx.Sqrt(km));
+            Cmplx s = 0.0;
+
+            //computes the infinate series turncated at (k=c)
+            for (int k = 1; k <= c; k++)
+            {
+                Cmplx qx = Cmplx.Pow(qm, k * k);
+                Cmplx cos = z * Math.PI * k;
+                cos = Cmplx.Cos(cos / km);
+
+                s += qx * cos;
+            }
+
+            //returns the full expression
+            return v * (1.0 + (2.0 * s));
+        }
+
         /// <summary>
         /// Computes the value q(m), given the precomputed values k(m) and k(1 - m).
         /// This is called the Nome, and is essential to computing the Nevil Theta
@@ -482,8 +763,51 @@ namespace Vulpine.Core.Calc
             return Cmplx.Exp(-exp);
         }
 
-        
 
+        private static double LS(double x, double sx, double cx, int c)
+        {
+            double s = 0.0;
+
+            //computes the inner sum up to (n=c)
+            for (int n = 0; n < c; n++)
+            {
+                double ch = ((2 * n) - 1);
+                ch = Math.Cosh(ch * Math.PI);
+
+                double q = (ch * ch) - (cx * cx);
+                s += ch / q;
+            }
+
+            //scales s by 4 pi sx / lc
+            s = s * sx * 4.79256093894236882976;
+
+            //computes tan(2 arctan(x))
+            double p = 1.0 - s * s;
+            return 2.0 * s / p;
+        }
+
+
+        private static Cmplx LS(Cmplx x, Cmplx sx, Cmplx cx, int c)
+        {
+            Cmplx s = 0.0;
+
+            //computes the inner sum up to (n=c)
+            for (int n = 0; n < c; n++)
+            {
+                Cmplx ch = ((2 * n) - 1);
+                ch = Cmplx.Cosh(ch * Math.PI);
+
+                Cmplx q = (ch * ch) - (cx * cx);
+                s += ch / q;
+            }
+
+            //scales s by 4 pi sx / lc
+            s = s * sx * 4.79256093894236882976;
+
+            //computes tan(2 arctan(x))
+            Cmplx p = 1.0 - s * s;
+            return 2.0 * s / p;
+        }
 
 
 

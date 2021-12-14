@@ -204,9 +204,35 @@ namespace QuickTests
         };
 
 
+        public static readonly double[] F_Inv_Root2 =
+        {
+            0.0,
+            1.0,
+            0.0,
+            0.11785113019775792073347406035081,
+            0.0,
+            0.01392977396044841585330518792984,
+            0.0,
+            1.7127408382368192172787708937961e-4,
+            0.0,
+            -6.3871680850746374913738293770737e-4,
+            0.0,
+            -2.5258833485591575809618898592039e-4,
+            0.0,
+            -5.6058346087761963445586736385841e-5,
+            0.0,
+            -3.8095577907650706027201946199897e-6,
+            0.0,
+            3.0066109390989652141118837329252957e-6,
+            0.0,
+            1.65567408337432145330918677606735886e-6,
+            0.0,
+        };
 
-        public const int PN = 15;
-        public const int PM = 16;
+
+
+        public const int PN = 10;
+        public const int PM = 10;
 
 
         public static void TryPade()
@@ -214,7 +240,7 @@ namespace QuickTests
             Console.WriteLine("Constructing Pade Aproximate [{0}/{1}]: ", PN, PM);
             Console.WriteLine();
 
-            Vector talor = new Vector(jacobi_sn2);
+            Vector talor = new Vector(F_Inv_Root2);
             Vector pade = GenPade(PN, PM, talor);
 
             for (int i = 0; i < pade.Length; i++)

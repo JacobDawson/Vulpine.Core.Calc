@@ -46,6 +46,7 @@
     <Compile Include="AGM_Tests.cs" />
     <Compile Include="BayerMatrixTest.cs" />
     <Compile Include="Binomial.cs" />
+    <Compile Include="DataFormater.cs" />
     <Compile Include="Distrobution.cs" />
     <Compile Include="DivByZero.cs" />
     <Compile Include="GeneratePoints.cs" />

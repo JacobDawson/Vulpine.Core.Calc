@@ -9,6 +9,7 @@ using Vulpine_Core_Calc_Tests.AddOns;
 
 using Vulpine.Core.Calc;
 using Vulpine.Core.Calc.Numbers;
+using Vulpine.Core.Calc.RandGen;
 
 
 namespace Vulpine_Core_Calc_Tests.Unit
@@ -24,6 +25,15 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
         //stores a rerenece to the tolarance for this instance
         private double tol;
+
+        /// <summary>
+        /// Represents the number of tests to run for auto-generated data.
+        /// </summary>
+        private const int NumTests = 20;
+
+
+        private const double MaxM = 1.0;
+        private const double MinM = 0.0;
 
         public JacobiTests() { tol = VTOL; }
         public JacobiTests(double tol) { this.tol = tol; }
@@ -244,6 +254,120 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
         #endregion
 
+        #region JacobiCD_Values
+
+        private static readonly double[][] CD_Values =
+        {
+            new double[] { 3.9547, 3.8106, 1.6169, -0.2695,       -0.9902199958282163, -0.8442860026135152},
+            new double[] { 2.1473, 3.7373, -3.5996, -2.3096,       0.0220706571136785, -0.3181241322343809},
+            new double[] { 1.2892, 0.3784, -5.3111, -4.866,       -0.0947265483397675, -0.4207723558190300},
+            new double[] { 1.0025, 0.77548, -0.063411, 3.49,       0.0861255537493131, -0.3567788188167866},
+            new double[] { 4.283, -3.1536, 1.5969, -2.212,         1.2363403162433346, +0.6116797163619901},
+            new double[] { -1.0041, 2.9571, 3.3466, 0.86136,      -0.5648719768041186, -0.5007307130148763},
+            new double[] { 0.90887, -0.85111, 1.0152, 0.051322,    1.0332432063914670, -0.0309046162974794},
+            new double[] { -1.5227, 0.93085, 0.52977, 1.8318,     -1.0794356823707509, +0.4313480572706540},
+            new double[] { -1.5754, -2.0615, -0.52344, 4.4589,     0.5275445874954586, +0.1810805501709501},
+            new double[] { 0.50708, -3.7664, 0.60687, 5.4705,      0.5204702531633918, +0.4339830805848432},
+            new double[] { -2.1559, -0.50691, -1.3445, 0.61289,   -1.0318985119456956, -0.2724105631435924},
+            new double[] { 3.379, 3.2379, -0.78485, -4.1004,      -0.3025305728560815, -0.0735537038448368},
+            new double[] { 2.2306, -1.6261, -2.1762, -1.9499,      0.5997366344617684, -0.7398890573246665},
+            new double[] { 2.3489, -2.3764, -0.54678, 2.8681,      0.6967462205734298, -0.3392245264878919},
+            new double[] { 1.5855, -0.45295, -1.7494, 1.0869,     -0.3339727412301711, +0.5548775697017649},
+            new double[] { 3.0152, 2.3331, -1.2053, 2.9682,       -0.6270846627363877, +0.1214830763388133},
+            new double[] { -1.5722, 1.9975, 2.7142, 0.27569,      -0.8040950832151537, +0.3624074848024428},
+            new double[] { -0.83912, -0.43666, 0.26808, 4.3285,    0.1479276834042779, -0.0032854746798876},
+            new double[] { 2.3994, -2.3038, -0.9512, -1.6643,      0.3647508758552404, -0.3535459260569660},
+            new double[] { -0.91362, 0.54864, -4.7519, -4.269,     0.0212555968422078, +0.3416964384390107},
+            new double[] { -0.6151, 3.2335, 0.38899, -2.0581,      1.6040180590295394, +1.0344056525405554},
+            new double[] { -0.33976, -1.6855, -0.43796, -0.66765, -1.7990053239806458, +2.7447775474846057},
+            new double[] { -0.040177, -0.036133, -2.7579, 1.3136,  0.9975002712410043, -0.0052338804043784},
+            new double[] { 2.1969, -0.65666, -0.69133, 0.11702,   -0.9288837521970291, +0.6520241707014946},
+             
+            new double[] { 1.5407, -1.1755, -2.0406, 0.73753,      0.0254154678403671, +0.6209996939731318},
+            new double[] { -0.12129, 0.031855, -3.1046, 3.7377,    0.9851344104454549, +0.0407034099545538},
+            new double[] { 1.054, 3.0337, 0.57714, 1.1152,         0.9630770452348291, +0.0035242132610554},
+            new double[] { -3.9329, 1.5858, -2.9685, 1.5573,      -0.3709623149041780, +0.3960893453234779},
+            new double[] { 5.4073, 4.0472, -2.7884, -3.5126,       0.0425071574523683, -0.5893295188899218},
+            new double[] { 0.71206, -1.0853, -1.1093, 0.38319,     0.1047920786250447, +1.5907234982063230},
+            new double[] { 0.34164, -2.2014, 0.78635, -1.4128,     0.7607440787326188, +0.0918574136060697},
+            new double[] { -1.2821, -4.8067, 3.1126, 2.8222,       0.5184184357509517, -0.0260692992835491},
+            new double[] { -1.422, -0.64394, -2.3535, -2.1722,    -0.1947643802839902, -0.5251353515719144},
+            new double[] { -1.5578, 3.9822, 0.41531, -0.26738,     0.6082693110251333, +0.0821569635866525},
+            new double[] { -3.6258, -3.2041, 2.3504, 3.8156,       0.3869338801457598, -0.5995842699777497},
+            new double[] { 2.8402, 0.52952, 1.9184, -0.93088,     -0.9562588365397019, +0.2171507763767001},
+            new double[] { 2.6164, -1.2932, -0.90857, -2.2923,    -0.6511199556594587, -0.5211352008581883},
+            new double[] { -2.1396, 4.7524, -3.1101, 1.8281,       0.0126510332510220, -0.3064212955808049},
+            new double[] { 0.6591, 0.86222, -3.4867, -1.9089,     -0.5331186334139454, -0.7635200681569170},
+            new double[] { 2.4014, 0.93243, -0.42979, 0.57579,    -1.3730143680906723, -0.4114717687178585},
+            new double[] { 3.6847, -2.8989, -1.0953, -2.5486,     -0.9737644328106114, -0.0545477796108698},
+            new double[] { 3.5448, -0.17112, -2.3609, -3.2742,     0.2895916400183943, +0.4831257044561854},
+            new double[] { -0.048577, -3.0665, -0.9389, 0.4736,   -0.8196771623473402, +0.4059968102353002},
+            new double[] { 0.33084, 2.1395, -1.9739, 2.3854,      -0.1130721602674444, +0.3327489072221806},
+            new double[] { -0.49206, 0.77041, -0.34825, 2.0122,    4.9005130848855955, -0.2516075215388142},
+            new double[] { -2.5411, 1.2665, -3.0794, -1.1859,      0.2269360362988345, -0.7268919777803592},
+            new double[] { -2.1374, 0.7616, 2.1861, 0.66083,      -0.9327498832426070, -0.0355021992141928},
+            new double[] { 5.5684, -4.0424, -2.391, 0.24134,       0.2039043611922956, +0.4595440261437762},
+            new double[] { 2.1058, -1.1629, -1.7886, -0.70003,     0.4861675903680669, +6.7405739719054187},
+
+            new double[] { 5.1125, 0.2733, -4.9717, 1.4454,       -0.4016571369797038, +0.0974311565272092},
+            new double[] { -1.166, 3.4609, -4.384, 0.80499,       -0.0365088559201354, +0.4860177782186465},
+            new double[] { -2.6983, 5.9878, -4.0567, 0.94424,     -1.2468653642231604, -0.1514987677904168},
+            new double[] { 3.5307, 2.597, 1.9136, -4.2487,        -1.0047969176150093, +0.0102397175707716},
+            new double[] { 4.6675, -0.31708, -0.58209, -0.88806,   0.6125762013107310, +0.2364347442581325},
+            new double[] { 1.6369, -4.5094, 1.7806, -0.45961,      0.0253393980031986, +1.0334612358319980},
+            new double[] { 0.62261, -2.7455, 4.8205, 0.5319,       0.0486870450521506, -0.4021065648252659},
+            new double[] { -1.0232, 0.71544, -0.1777, 0.31522,     0.6070266092827431, +0.8838482580381934},
+            new double[] { -0.95267, 0.53459, -2.8681, 0.56109,    0.0610082916500727, +0.5334775025547916},
+            new double[] { -2.1033, 0.87339, 2.949, -0.066709,    -0.6213359445378686, +0.0164780270224632},
+            new double[] { 0.67442, 2.5307, 1.5123, -2.7521,      -0.6845320226149671, -0.5259933460423611},
+            new double[] { 0.065093, 1.0293, 5.03, -4.0668,        0.2891778043810439, +0.0997697984000451},
+            new double[] { -3.6329, 2.0067, 0.84466, 1.3642,       0.6392276441702547, -0.8625479609474467},
+            new double[] { -5.5839, -0.25682, 0.14473, 2.404,     -0.9433507850334093, -0.2738722218362792},
+            new double[] { -0.48273, -4.1595, 0.82943, 2.4458,    -0.0516687601818523, -0.0231502069200104},
+            new double[] { -2.6353, -0.090116, -5.4443, -5.9687,   0.1933957155257660, +0.2887786087084287},
+            new double[] { 3.9142, -2.3328, -3.3917, 1.1934,       0.2497498044430599, +0.5989290918229202},
+            new double[] { -0.028689, -0.20052, 1.3197, -0.89392,  0.9984815097958878, +0.0191411614508630},
+            new double[] { 0.94497, 0.12129, -0.59072, 1.8781,     0.2824263474648280, +0.1769294381656560},
+            new double[] { -2.488, 0.82663, -2.1931, 1.8842,       1.7324312401588266, +0.3802851243316301},
+
+            new double[] { -2.5811, 0.78399, -1.0806, 2.9994,      0.7827468367853972, +0.2875903752107105},
+            new double[] { -2.2101, -3.3653, 0.92416, -1.0681,    -0.7241661951216276, -0.3121877875431717},
+            new double[] { 1.2286, 0.80431, -1.261, 5.6636,       -0.4024155702976099, -0.6607514969412160},
+            new double[] { 2.1923, -2.7866, -0.3279, -0.49041,     1.2698799705891116, -0.2571269192192633},
+            new double[] { 1.2043, 0.030657, -0.58763, -7.7159,   -0.2452084542662628, -0.2639767161478842},
+            new double[] { 0.50744, -1.091, 3.0244, 1.448,         0.2576091420898680, -0.2506930650917964},
+            new double[] { -1.6073, -0.32837, -0.36997, -1.5424,  -0.3492021428785164, -0.5346108273421930},
+            new double[] { -2.9963, 5.2393, -2.0822, -1.3324,     -1.0185861727479749, -0.9275897311115892},
+            new double[] { -0.15575, 1.9281, -2.9325, -1.2509,    -0.6422506977034612, -0.2849315052906446},
+            new double[] { 0.16504, -4.339, 0.34121, 4.2954,      -0.0254478765470488, +0.2510682795128357},
+            new double[] { -1.6482, 5.5593, -2.5943, -1.4288,      0.4831188958353860, +0.2470149195946047},
+            new double[] { 1.9644, -0.61938, 6.1692, -1.3649,     -0.0391637693870092, +0.0887812129902637},
+            new double[] { -2.621, -2.0985, 1.4711, 1.6153,       -0.7987540525630231, +0.2382074786638817},
+            new double[] { 3.2093, 0.98789, -2.3673, -2.0277,      0.5336771786208845, +0.1449802884459502},
+            new double[] { -4.0203, -1.9169, 1.9577, 0.13202,      0.0257576429946565, +1.1828350151174205},
+            new double[] { -0.90009, -0.16965, 4.5503, 2.921,     -0.3049030795826029, +0.7445148826130818},
+            new double[] { 1.7118, 0.38614, -0.10697, -3.6959,    -0.3223643306431645, -0.3388846872030990},
+            new double[] { 1.8491, 2.1714, -3.6159, -1.8802,      -0.0350159582342155, +0.6083052846267469},
+            new double[] { -1.0902, -2.7663, -1.7455, -2.3688,     1.5345749724535197, -0.4468432019594323},
+            new double[] { -1.643, -3.7521, -0.57005, 2.5854,      0.2973407679143666, -0.3305438091869695},
+            new double[] { -2.2337, -0.72495, 0.9298, -1.1227,    -0.9270430970241778, -0.3400154715679183},
+            new double[] { -1.9911, -1.341, 2.218, -0.71833,      -0.6783720936058978, -0.0255300979019382},
+            new double[] { 0.81587, 3.388, 3.3964, 0.66717,        0.2717056489395699, -0.1056765498340171},
+            new double[] { 0.25805, -3.1399, -4.0634, -0.36437,    0.7142549969329763, +0.2410918583435533},
+            new double[] { 3.0646, -0.12721, -1.397, -0.89317,    -0.6382700429742053, +0.2184225523571290},
+            new double[] { -5.7843, 1.455, -1.5515, -1.8487,      -0.0393568028015753, +0.4249029725459207},
+            new double[] { -0.40796, 3.4286, 0.78125, -2.8847,    -0.2552433353962046, +0.7045891283884268},
+            new double[] { -4.8022, -5.5393, 0.41506, 2.0006,     -1.3466633332602412, -0.0633033952456908},
+            new double[] { -0.84191, -1.5475, 0.80247, 2.081,      0.7137405939654924, -0.5115466038935862},
+            new double[] { -1.0154, -3.0139, 1.9527, -0.21322,     1.2733209454198937, +1.5103883555343768},
+
+        };
+
+        #endregion
+
+
+
+        #region Testing Precomputed Values
 
         [Test]
         public void KTest_WideValues([Range(0, 79)] int index)
@@ -269,5 +393,1088 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Assert.That(res, Ist.WithinTolOf(c, tol));
         }
+
+        [Test]
+        public void CD_Test_PreValues([Range(0, 98)] int index)
+        {
+            double[] vals = CD_Values[index];
+            Cmplx a = new Cmplx(vals[0], vals[1]);
+            Cmplx b = new Cmplx(vals[2], vals[3]);
+            Cmplx c = new Cmplx(vals[4], vals[5]);
+
+            Cmplx cn = Jacobi.CN(a, b);
+            Cmplx dn = Jacobi.DN(a, b);
+            Cmplx res = cn / dn;
+
+            Assert.That(res, Ist.WithinTolOf(c, tol));
+        }
+
+        #endregion
+
+        #region KE Legendre Tests
+
+        //[Test]
+        //public void K_WeirdInversion_Cmplx([Range(1, NumTests)] int index)
+        //{
+        //    VRandom rng = Help.GetRNG(index, 0x0cb68252);
+
+        //    Cmplx m = rng.RandCmplx(2.5);
+        //    Cmplx k = Jacobi.K(m);
+
+        //    Cmplx p1 = 1.0 - k;
+        //    Cmplx p2 = Cmplx.Sqrt(1.0 - m);
+        //    p2 = Jacobi.K(p2);
+
+        //    Console.WriteLine("Jacobi.K({0:G5}) = {1:G5}", m, k);
+
+        //    Assert.That(p2, Ist.WithinTolOf(p1, VTOL)); 
+        //}
+
+        [Test]
+        public void KE_LegendreTest1_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x1c234ffe);
+
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx p = 1.0 - m; // Cmplx.Sqrt(1.0 - m);
+
+            Cmplx km = Jacobi.K(m);
+            Cmplx kp = Jacobi.K(p);
+            Cmplx em = Jacobi.E(m);
+            Cmplx ep = Jacobi.E(p);
+
+            Cmplx x1 = (km * ep) + (em * kp);
+            Cmplx x2 = (km * kp) + 1.57079632679489661923;
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void KE_LegendreTest2_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x5b4a0a9d);
+
+            Cmplx m = rng.RandCmplx(2.5);
+            //Cmplx p = Cmplx.Sqrt(1.0 - m);
+
+            Cmplx km = Jacobi.K(m);
+            Cmplx kp = 1.0 - km;
+            Cmplx em = Jacobi.E(m);
+            Cmplx ep = 1.0 - em;
+
+            Cmplx x1 = (km * ep) + (em * kp);
+            Cmplx x2 = (km * kp) + 1.57079632679489661923;
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void KE_LegendreTest1_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xf684b756);
+
+            double m = rng.RandDouble(MinM, MaxM);
+            double p = 1.0 - m; // Cmplx.Sqrt(1.0 - m);
+
+            double km = Jacobi.K(m);
+            double kp = Jacobi.K(p);
+            double em = Jacobi.E(m);
+            double ep = Jacobi.E(p);
+
+            double x1 = (km * ep) + (em * kp);
+            double x2 = (km * kp) + 1.57079632679489661923;
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void KE_LegendreTest2_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xec06230f);
+
+            double m = rng.RandDouble(MinM, MaxM);
+            //Cmplx p = Cmplx.Sqrt(1.0 - m);
+
+            double km = Jacobi.K(m);
+            double kp = 1.0 - km;
+            double em = Jacobi.E(m);
+            double ep = 1.0 - em;
+
+            double x1 = (km * ep) + (em * kp);
+            double x2 = (km * kp) + 1.57079632679489661923;
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region Eleptic Compatablity..
+
+        [Test]
+        public void F_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x76c47052);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.F(a, m);
+            Cmplx b2 = Jacobi.F((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void E2_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xa4f59d4f);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.E(a, m);
+            Cmplx b2 = Jacobi.E((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.E({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void K_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xf28b7d60);
+
+            //double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.K(m);
+            Cmplx b2 = Jacobi.K((Cmplx)m);
+
+            Console.WriteLine("Jacobi.K({0:G5}) = {1:G5}", m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void E1_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x588335cd);
+
+            //double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.E(m);
+            Cmplx b2 = Jacobi.E((Cmplx)m);
+
+            Console.WriteLine("Jacobi.E({0:G5}) = {1:G5}", m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        #endregion
+
+        #region Jacobi Inversion
+
+        [Test]
+        public void JacobiSN_Inversion_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x0cb68252);
+
+            Cmplx p = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx x1 = Cmplx.Sin(p);
+
+            Cmplx u = Jacobi.F(p, m);
+            Cmplx x2 = Jacobi.SN(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));          
+        }
+
+        [Test]
+        public void JacobiCN_Inversion_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x528387d0);
+
+            Cmplx p = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx x1 = Cmplx.Cos(p);
+
+            Cmplx u = Jacobi.F(p, m);
+            Cmplx x2 = Jacobi.CN(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiSC_Inversion_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x9e4561fb);
+
+            Cmplx p = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx x1 = Cmplx.Tan(p);
+
+            Cmplx u = Jacobi.F(p, m);
+            Cmplx x2 = Jacobi.SC(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_Inversion_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xfdb3d393);
+
+            Cmplx p = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx u = Jacobi.F(p, m);
+            Cmplx x2 = Jacobi.DN(u, m);
+
+            Cmplx x1 = Cmplx.Sin(p);
+            x1 = m * x1 * x1;
+            x1 = Cmplx.Sqrt(1.0 - x1);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiSN_Inversion_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xda0d2d4a);
+
+            double p = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+            double x1 = Math.Sin(p);
+
+            double u = Jacobi.F(p, m);
+            double x2 = Jacobi.SN(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiCN_Inversion_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xfb4d697b);
+
+            double p = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+            double x1 = Math.Cos(p);
+
+            double u = Jacobi.F(p, m);
+            double x2 = Jacobi.CN(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiSC_Inversion_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xe5d991f2);
+
+            double p = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+            double x1 = Math.Tan(p);
+
+            double u = Jacobi.F(p, m);
+            double x2 = Jacobi.SC(u, m);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_Inversion_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xfed14f61);
+
+            double p = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            double u = Jacobi.F(p, m);
+            double x2 = Jacobi.DN(u, m);
+
+            double x1 = Math.Sin(p);
+            x1 = m * x1 * x1;
+            x1 = Math.Sqrt(1.0 - x1);
+
+            Console.WriteLine("Jacobi.F({0:G5}, {1:G5}) = {2:G5}", p, m, u);
+
+            Assert.That(x2, Ist.WithinTolOf(x1, VTOL));
+        }
+
+        #endregion
+
+        #region Jacobi Compatablity      
+
+        [Test]
+        public void JacobiSN_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x6674312b);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.SN(a, m);
+            Cmplx b2 = Jacobi.SN((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.SN({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void JacobiCN_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xcf0e4834);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.CN(a, m);
+            Cmplx b2 = Jacobi.CN((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x83bd2573);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.DN(a, m);
+            Cmplx b2 = Jacobi.DN((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.DN({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void JacobiSC_Compatablity_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x7939ec4f);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MaxM, MinM);
+
+            Cmplx b1 = Jacobi.SC(a, m);
+            Cmplx b2 = Jacobi.SC((Cmplx)a, (Cmplx)m);
+
+            Console.WriteLine("Jacobi.SC({0:G5}, {1:G5}) = {2:G5}", a, m, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        #endregion
+
+        #region Imaginary Transform
+
+        [Test]
+        public void JacobiCN_ImaginaryTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xa8fbfc11);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.CN(u, m);
+            Cmplx x2 = 1.0 / Jacobi.CN(u.MultI(), 1.0 - m);
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiSN_ImaginaryTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43ae1e75);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.SN(u, m);
+            Cmplx x2 = -Jacobi.SC(u.MultI(), 1.0 - m).MultI();
+
+            Console.WriteLine("Jacobi.SN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_ImaginaryTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x8deb7f10);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.DN(u, m);
+            Cmplx x2 = Jacobi.DN(u.MultI(), 1.0 - m) / Jacobi.CN(u.MultI(), 1.0 - m);
+
+            Console.WriteLine("Jacobi.DN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiSC_ImaginaryTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x7a7a8d2f);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.SC(u, m);
+            Cmplx x2 = -Jacobi.SN(u.MultI(), 1.0 - m).MultI();
+
+            Console.WriteLine("Jacobi.SC({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region Real Transform
+
+        [Test]
+        public void JacobiCN_RealTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x64e14724);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.CN(u, m);
+            Cmplx x2 = Jacobi.DN(k * u, 1.0 / m);
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiSN_RealTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x78c231b0);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.SN(u, m);
+            Cmplx x2 = Jacobi.SN(k * u, 1.0 / m) / k;
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_RealTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x4f6a4d30);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.DN(u, m);
+            Cmplx x2 = Jacobi.CN(k * u, 1.0 / m);
+
+            Console.WriteLine("Jacobi.DN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiSC_RealTransform([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x994e1824);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.SC(u, m);
+            Cmplx x2 = Jacobi.SN(k * u, 1.0 / m) / Jacobi.DN(k * u, 1.0 / m) / k;
+
+            Console.WriteLine("Jacobi.SC({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region Square Relations
+
+        [Test]
+        public void JacobiCN_SquareRelation_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xd1147600);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.CN(u, m);
+            x1 = x1 * x1;
+
+            Cmplx x2 = Jacobi.SN(u, m);
+            x2 = 1.0 - (x2 * x2);
+
+            Console.WriteLine("Jacobi.CN^2({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_SquareRelation_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x33b6ab08);
+
+            Cmplx u = rng.RandCmplx(2.5);
+            Cmplx m = rng.RandCmplx(2.5);
+
+            Cmplx x1 = Jacobi.DN(u, m);
+            x1 = x1 * x1;
+
+            Cmplx cn = Jacobi.CN(u, m);
+            Cmplx sn = Jacobi.SN(u, m);
+            Cmplx x2 = (cn * cn) + ((1.0 - m) * sn * sn);
+
+            Console.WriteLine("Jacobi.DN^2({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiCN_SquareRelation_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x026d13f6);
+
+            double u = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MinM, MaxM);
+
+            double x1 = Jacobi.CN(u, m);
+            x1 = x1 * x1;
+
+            double x2 = Jacobi.SN(u, m);
+            x2 = 1.0 - (x2 * x2);
+
+            Console.WriteLine("Jacobi.CN^2({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_SquareRelation_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xfcba0b2c);
+
+            double u = rng.RandGauss(0.0, 2.5);
+            double m = rng.RandDouble(MinM, MaxM);
+
+            double x1 = Jacobi.DN(u, m);
+            x1 = x1 * x1;
+
+            double cn = Jacobi.CN(u, m);
+            double sn = Jacobi.SN(u, m);
+            double x2 = (cn * cn) + ((1.0 - m) * sn * sn);
+
+            Console.WriteLine("Jacobi.DN^2({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region HalfK Values
+
+        [Test]
+        public void JacobiSN_HalfK_Complex([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xcfe64e80);
+
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(k);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.SN(u, m);
+            Cmplx x2 = Cmplx.Sqrt(1.0 - m);
+            x2 = 1.0 / Cmplx.Sqrt(1.0 + x2);
+
+            Console.WriteLine("Jacobi.SN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiCN_HalfK_Complex([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x5174b7eb);
+
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(k);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.CN(u, m);
+            Cmplx x2 = Cmplx.Sqrt(1.0 - m);
+            x2 = Cmplx.Sqrt(1.0 + x2);
+            x2 = Cmplx.Pow(1.0 - m, 0.25) / x2;
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_HalfK_Complex([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x79a51ea1);
+
+            Cmplx k = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(k);
+            Cmplx m = k * k;
+
+            Cmplx x1 = Jacobi.DN(u, m);
+            Cmplx x2 = Cmplx.Pow(1 - m, 0.25);
+
+            Console.WriteLine("Jacobi.DN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+
+
+        [Test]
+        public void JacobiSN_HalfK_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x63193185);
+
+            double k = rng.RandDouble(0.0, 1.0);
+            double u = 0.5 * Jacobi.K(k);
+            double m = k * k;
+
+            double x1 = Jacobi.SN(u, m);
+            double x2 = Math.Sqrt(1.0 - m);
+            x2 = 1.0 / Math.Sqrt(1.0 + x2);
+
+            Console.WriteLine("Jacobi.SN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiCN_HalfK_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xdb44f27b);
+
+            double k = rng.RandDouble(0.0, 1.0);
+            double u = 0.5 * Jacobi.K(k);
+            double m = k * k;
+
+            double x1 = Jacobi.CN(u, m);
+            double x2 = Math.Sqrt(1.0 - m);
+            x2 = Math.Sqrt(1.0 + x2);
+            x2 = Math.Pow(1.0 - m, 0.25) / x2;
+
+            Console.WriteLine("Jacobi.CN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void JacobiDN_HalfK_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x187dcf47);
+
+            double k = rng.RandDouble(0.0, 1.0);
+            double u = 0.5 * Jacobi.K(k);
+            double m = k * k;
+
+            double x1 = Jacobi.DN(u, m);
+            double x2 = Math.Pow(1 - m, 0.25);
+
+            Console.WriteLine("Jacobi.DN({0:G5}, {1:G5}) = {2:G5}", u, m, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region Lemniscate By Jacobi
+
+        [Test]
+        public void LemniscateSL_ByJacobi_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x83cc321c);
+
+            Cmplx a = rng.RandCmplx(2.5);
+
+            Cmplx b1 = Jacobi.SL(a);
+            Cmplx b2 = Jacobi.SN(a, -1.0);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", a, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_ByJacobi_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x9115ca61);
+
+            Cmplx a = rng.RandCmplx(2.5);
+
+            Cmplx b1 = Jacobi.CL(a);
+            Cmplx b2 = Jacobi.CN(a, -1.0) / Jacobi.DN(a, -1.0);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", a, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_ByJacobi_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x6f51c33c);
+
+            double a = rng.RandGauss(0.0, 2.5);
+
+            double b1 = Jacobi.SL(a);
+            double b2 = Jacobi.SN(a, -1.0);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", a, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_ByJacobi_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x330ec169);
+
+            double a = rng.RandGauss(0.0, 2.5);
+
+            double b1 = Jacobi.CL(a);
+            double b2 = Jacobi.CN(a, -1.0) / Jacobi.DN(a, -1.0);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", a, b1);
+
+            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+        }
+
+        #endregion
+
+        #region Lemniscate Inverses
+
+        [Test]
+        public void LemniscateSL_Inverse_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xa9309710);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = Jacobi.ArcSL(a);
+            double a2 = Jacobi.SL(b);
+
+            Console.WriteLine("Jacobi.ArcSL({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_Inverse_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x13d1af19);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = Jacobi.ArcCL(a);
+            double a2 = Jacobi.CL(b);
+
+            Console.WriteLine("Jacobi.ArcCL({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_Inverse_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x51473154);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = Jacobi.ArcSL(a);
+            Cmplx a2 = Jacobi.SL(b);
+
+            Console.WriteLine("Jacobi.ArcSL({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_Inverse_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x9d6459e5);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = Jacobi.ArcCL(a);
+            Cmplx a2 = Jacobi.CL(b);
+
+            Console.WriteLine("Jacobi.ArcCL({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
+        #endregion
+
+        #region Lemniscate Symatries
+
+        [Test]
+        public void LemniscateCL_PlusHalfW_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x112406f6);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = a + (0.5 * VMath.LC);
+
+            double x1 = Jacobi.CL(b);
+            double x2 = -Jacobi.SL(a);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_MinusHalfW_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xf93ddfb5);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = a - (0.5 * VMath.LC);
+
+            double x1 = Jacobi.CL(b);
+            double x2 = Jacobi.SL(a);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_PlusHalfW_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xa74123fe);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = a + (0.5 * VMath.LC);
+
+            double x1 = Jacobi.SL(b);
+            double x2 = Jacobi.CL(a);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_MinusHalfW_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x49181257);
+
+            double a = rng.RandGauss(0.0, 2.5);
+            double b = a - (0.5 * VMath.LC);
+
+            double x1 = Jacobi.SL(b);
+            double x2 = -Jacobi.CL(a);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_PlusHalfW_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x7841029e);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = a + (0.5 * VMath.LC * Cmplx.I);
+
+            Cmplx x1 = Jacobi.CL(b);
+            Cmplx x2 = -Cmplx.I / Jacobi.SL(a);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateCL_MinusHalfW_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x59a29992);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = a - (0.5 * VMath.LC * Cmplx.I);
+
+            Cmplx x1 = Jacobi.CL(b);
+            Cmplx x2 = Cmplx.I / Jacobi.SL(a);
+
+            Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_PlusHalfW_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x6c6b29e3);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = a + (0.5 * VMath.LC * Cmplx.I);
+
+            Cmplx x1 = Jacobi.SL(b);
+            Cmplx x2 = Cmplx.I / Jacobi.CL(a);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_MinusHalfW_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xe9d395a0);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = a - (0.5 * VMath.LC * Cmplx.I);
+
+            Cmplx x1 = Jacobi.SL(b);
+            Cmplx x2 = -Cmplx.I / Jacobi.CL(a);
+
+            Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
+
+            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        }
+
+        #endregion
+
+        #region Lemniscate Square Identites
+
+        [Test]
+        public void LemniscatecL_Squared_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0xfcb317b0);
+
+            Cmplx a = rng.RandCmplx(2.5);
+
+            Cmplx cl = Jacobi.CL(a);
+            Cmplx sl = Jacobi.SL(a);
+
+            cl = cl * cl;
+            sl = sl * sl;
+
+            Cmplx x = (1.0 - sl) / (1.0 + sl);
+
+            Console.WriteLine("Jacobi.CL^2({0:G5}) = {1:G5}", a, cl);
+
+            Assert.That(x, Ist.WithinTolOf(cl, VTOL));             
+        }
+
+        [Test]
+        public void LemniscateSL_Squared_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x4994618b);
+
+            Cmplx a = rng.RandCmplx(2.5);
+
+            Cmplx cl = Jacobi.CL(a);
+            Cmplx sl = Jacobi.SL(a);
+
+            cl = cl * cl;
+            sl = sl * sl;
+
+            Cmplx x = (1.0 - cl) / (1.0 + cl);
+
+            Console.WriteLine("Jacobi.SL^2({0:G5}) = {1:G5}", a, sl);
+
+            Assert.That(x, Ist.WithinTolOf(sl, VTOL));
+        }
+
+        [Test]
+        public void LemniscatecL_Squared_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x0248b3cb);
+
+            double a = rng.RandGauss(0.0, 2.5);
+
+            double cl = Jacobi.CL(a);
+            double sl = Jacobi.SL(a);
+
+            cl = cl * cl;
+            sl = sl * sl;
+
+            double x = (1.0 - sl) / (1.0 + sl);
+
+            Console.WriteLine("Jacobi.CL^2({0:G5}) = {1:G5}", a, cl);
+
+            Assert.That(x, Ist.WithinTolOf(cl, VTOL));
+        }
+
+        [Test]
+        public void LemniscateSL_Squared_Real([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+
+            double a = rng.RandGauss(0.0, 2.5);
+
+            double cl = Jacobi.CL(a);
+            double sl = Jacobi.SL(a);
+
+            cl = cl * cl;
+            sl = sl * sl;
+
+            double x = (1.0 - cl) / (1.0 + cl);
+
+            Console.WriteLine("Jacobi.SL^2({0:G5}) = {1:G5}", a, sl);
+
+            Assert.That(x, Ist.WithinTolOf(sl, VTOL));
+        }
+
+        #endregion
+
+
+
+        //Note:
+        //Add more tests for the Lemniscate Functions
+        //Add tests comparing K and E
+        //Consider adding pre-computed values for both E funcitons
+        //Add dixon eleptic funcitons as well. (maybe)
+
+        //The Dixon Eleptic Functions arn't in Wolfram Alpha
+
     }
 }

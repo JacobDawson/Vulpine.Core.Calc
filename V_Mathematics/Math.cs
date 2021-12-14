@@ -94,6 +94,14 @@ namespace Vulpine.Core.Calc
         public const double RTP = 2.5066282746310005024;
 
         /// <summary>
+        /// Represents the imaginary constant i raised to the i-th power (i^i).
+        /// Dispite originating in the complex plane, this value is real for all
+        /// branches of the complex lograthim. The principle branch is represented
+        /// here. It is aproximatly (0.2078796).
+        /// </summary>
+        public const double II = 0.20787957635076190855;
+
+        /// <summary>
         /// Gauss's Constant, which has relationships with the Arethmetic-Geometric
         /// mean, the gamma function, the beta function, the lemniscate constants,
         /// and the eleptic intergrals. It is aproximatly (0.8346268).
@@ -101,12 +109,11 @@ namespace Vulpine.Core.Calc
         public const double GA = 0.83462684167407318628; 
 
         /// <summary>
-        /// Represents the imaginary constant i raised to the i-th power (i^i).
-        /// Dispite originating in the complex plane, this value is real for all
-        /// branches of the complex lograthim. The principle branch is represented
-        /// here. It is aproximatly (0.2078796).
+        /// Represents the Leminscate Constant which relates to the geometry of a
+        /// Leminscate in much the same way that PI relates to the geometry of a
+        /// circle. It is aproximatly (2.6220576).
         /// </summary>
-        public const double II = 0.20787957635076190855;
+        public const double LC = 2.6220575542921198105;
 
         /// <summary>
         /// The default error tollarence used within the mathamatics library.

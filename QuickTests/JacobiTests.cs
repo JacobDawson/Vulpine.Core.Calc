@@ -15,6 +15,7 @@ namespace QuickTests
     {
         public const int COUNT = 100000; //000;
         public const double TOL = 1.0e-8;
+        public const bool LOG = true;
 
         public static Cmplx RandCmplx(VRandom rng)
         {
@@ -40,6 +41,12 @@ namespace QuickTests
             //return Jacobi.FP(x, m);
         }
 
+        public static Cmplx arcSC(Cmplx x, Cmplx m)
+        {
+            Cmplx phi = Cmplx.Atan(x);
+            return Jacobi.F(phi, m);
+        }
+
         public static void ListSamples()
         {
             VRandom rng = new RandXOR();
@@ -49,7 +56,12 @@ namespace QuickTests
                 Cmplx a = RandCmplx(rng);
                 Cmplx b = RandCmplx(rng);
 
-                Console.WriteLine("a = {0:G5}  b = {1:G5}", a, b);
+                //Console.WriteLine("a = {0:G5}  b = {1:G5}", a, b);
+
+                Console.WriteLine();
+                Console.WriteLine("JacobiCD({0:G5}, {1:G5})", a, b);
+                Console.WriteLine("new double[] {{ {0:G5}, {1:G5}, {2:G5}, {3:G5}, x, y }},", a.CofR, a.CofI, b.CofR, b.CofI);
+                
             }
 
             Console.WriteLine();
@@ -67,6 +79,8 @@ namespace QuickTests
             StatRunner stats = new StatRunner();
             int failed = 0;
 
+            DateTime start = DateTime.Now;
+
             for (int i = 0; i < COUNT; i++)
             {
                 Cmplx a = RandCmplx(rng);
@@ -83,14 +97,19 @@ namespace QuickTests
 
                 if (error > TOL)
                 {
-                    Console.WriteLine("{0:0.00}, {1:0.00} = {2:G5}", a, m, error);
+                    if (LOG) Console.WriteLine("{0:0.00}, {1:0.00} = {2:G5}", a, m, error);
                     failed = failed + 1;
                 }
 
             }
 
+            TimeSpan runtime = DateTime.Now - start;         
+
+
             Console.WriteLine();
             Console.WriteLine();
+
+            Console.WriteLine("Runtime: " + runtime);
             Console.WriteLine();
 
             Console.WriteLine("Max:   {0:E5}", stats.Max[0]);
@@ -189,6 +208,185 @@ namespace QuickTests
 
             Console.WriteLine();
             Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("Max:   {0:E5}", stats.Max[0]);
+            Console.WriteLine("Mean:  {0:E5}", stats.Mean[0]);
+            Console.WriteLine("SD:    {0:E5}", stats.SD);
+            Console.WriteLine();
+
+            double percent = (double)failed / (double)COUNT;
+
+            Console.WriteLine("Failed:  " + failed);
+            Console.WriteLine("Percent: " + (percent * 100.0));
+        }
+
+
+        public static void TestInversion4()
+        {
+            Console.WriteLine("Testing Inversion of the Complex-Complex Jacobi CN");
+            Console.WriteLine("Running {0} Itterations: ", COUNT);
+            Console.WriteLine();
+
+            VRandom rng = new RandXOR();
+            StatRunner stats = new StatRunner();
+            int failed = 0;
+
+            DateTime start = DateTime.Now;
+
+            for (int i = 0; i < COUNT; i++)
+            {
+                Cmplx p = RandCmplx(rng);
+                Cmplx m = RandCmplx(rng);
+                Cmplx x1 = Cmplx.Cos(p);
+
+                //m = 0.5;
+
+                //Cmplx b = Jacobi.ArcCN(a, m);
+                //Cmplx ap = Jacobi.CN(b, m);
+
+                Cmplx u = Jacobi.F(p, m);
+                Cmplx x2 = Jacobi.CN(u, m);
+                Cmplx p2 = Cmplx.Acos(x2);
+                
+
+                double error = (x1 - x2).Abs;
+                error = error / x1.Abs;
+                stats.Add(error);
+
+                if (error > TOL)
+                {
+                    if (LOG) Console.WriteLine("{0:0.00}, {1:0.00} = {2:G5}", x1, x2, error);
+                    failed = failed + 1;
+                }
+
+            }
+
+            TimeSpan runtime = DateTime.Now - start;
+
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("Runtime: " + runtime);
+            Console.WriteLine();
+
+            Console.WriteLine("Max:   {0:E5}", stats.Max[0]);
+            Console.WriteLine("Mean:  {0:E5}", stats.Mean[0]);
+            Console.WriteLine("SD:    {0:E5}", stats.SD);
+            Console.WriteLine();
+
+            double percent = (double)failed / (double)COUNT;
+
+            Console.WriteLine("Failed:  " + failed);
+            Console.WriteLine("Percent: " + (percent * 100.0));
+        }
+
+        public static void TestInversion5()
+        {
+            Console.WriteLine("Testing Inversion of the Complex-Complex Jacobi DN");
+            Console.WriteLine("Running {0} Itterations: ", COUNT);
+            Console.WriteLine();
+
+            VRandom rng = new RandXOR();
+            StatRunner stats = new StatRunner();
+            int failed = 0;
+
+            DateTime start = DateTime.Now;
+
+            for (int i = 0; i < COUNT; i++)
+            {
+                //Cmplx a = RandCmplx(rng);
+                //Cmplx m = RandCmplx(rng);
+
+                ////m = 0.5;
+
+                //Cmplx b = Jacobi.ArcDN(a, m);
+                //Cmplx ap = Jacobi.DN(b, m);
+
+                Cmplx p = RandCmplx(rng);
+                Cmplx m = RandCmplx(rng);
+
+                Cmplx u = Jacobi.F(p, m);
+                Cmplx x1 = Jacobi.DN(u, m);
+
+                Cmplx x2 = Cmplx.Sin(p);
+                x2 = m * x2 * x2;
+                x2 = Cmplx.Sqrt(1.0 - x2);
+
+                double error = (x1 - x2).Abs;
+                error = error / x2.Abs;
+                stats.Add(error);
+
+                if (error > TOL)
+                {
+                    if (LOG) Console.WriteLine("{0:0.00}, {1:0.00} = {2:G5}", x1, x2, error);
+                    failed = failed + 1;
+                }
+
+            }
+
+            TimeSpan runtime = DateTime.Now - start;
+
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("Runtime: " + runtime);
+            Console.WriteLine();
+
+            Console.WriteLine("Max:   {0:E5}", stats.Max[0]);
+            Console.WriteLine("Mean:  {0:E5}", stats.Mean[0]);
+            Console.WriteLine("SD:    {0:E5}", stats.SD);
+            Console.WriteLine();
+
+            double percent = (double)failed / (double)COUNT;
+
+            Console.WriteLine("Failed:  " + failed);
+            Console.WriteLine("Percent: " + (percent * 100.0));
+        }
+
+        public static void TestInversion6()
+        {
+            Console.WriteLine("Testing Inversion of the Complex-Complex Jacobi SC");
+            Console.WriteLine("Running {0} Itterations: ", COUNT);
+            Console.WriteLine();
+
+            VRandom rng = new RandXOR();
+            StatRunner stats = new StatRunner();
+            int failed = 0;
+
+            DateTime start = DateTime.Now;
+
+            for (int i = 0; i < COUNT; i++)
+            {
+                Cmplx a = RandCmplx(rng);
+                Cmplx m = RandCmplx(rng);
+
+                //m = 0.5;
+
+                Cmplx b = arcSC(a, m);
+                Cmplx ap = Jacobi.SC(b, m);
+
+                double error = (a - ap).Abs;
+                error = error / a.Abs;
+                stats.Add(error);
+
+                if (error > TOL)
+                {
+                    if (LOG) Console.WriteLine("{0:0.00}, {1:0.00} = {2:G5}", a, ap, error);
+                    failed = failed + 1;
+                }
+
+            }
+
+            TimeSpan runtime = DateTime.Now - start;
+
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            Console.WriteLine("Runtime: " + runtime);
             Console.WriteLine();
 
             Console.WriteLine("Max:   {0:E5}", stats.Max[0]);

@@ -77,7 +77,7 @@ namespace Vulpine.Core.Calc.Numbers
         public override string ToString()
         {
             //uses the default format
-            return ToString("g10", null);
+            return ToString("g5", null);
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Vulpine.Core.Calc.Numbers
             sb.Append(imag < 0.0 ? " - " : " + ");
             sb.Append(i.ToString(format, provider));
 
-            sb.Append("i");
+            sb.Append(" i");
             return sb.ToString();
         }
 
@@ -781,7 +781,18 @@ namespace Vulpine.Core.Calc.Numbers
             if (Double.IsNaN(real)) return true;
             else if (Double.IsNaN(imag)) return true;
             else return false;
-        }     
+        }
+
+        /// <summary>
+        /// Determins if a complx number represents a real number, in other words,
+        /// it dtermins if the imaginary part is zero.
+        /// </summary>
+        /// <returns>True if the number is real, and flase otherwise</returns>
+        public bool IsReal()
+        {
+            //checks if the imaginary part is zero
+            return Math.Abs(imag) < VMath.TOL;
+        }
 
         #endregion //////////////////////////////////////////////////////////////
 
