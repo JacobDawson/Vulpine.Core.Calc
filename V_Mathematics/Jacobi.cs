@@ -88,6 +88,30 @@ namespace Vulpine.Core.Calc
         /// <param name="phi">The Amplitude of the Eleptic Intergral</param>
         /// <param name="m">The Eleptic Paramater (m = k^2)</param>
         /// <returns>The Eleptic Intergral evaluated at (phi, m)</returns>
+        public static double F2(double phi, double m)
+        {
+            //the eleptic intergral is undefined for (m > 1)
+            if (m > 1.0) return Double.NaN;
+
+            int rx = (int)Math.Round(phi / Math.PI);
+            double k2 = 2.0 * K(m);
+
+            //uses the Legerande normal form
+            VFunc intgnd = delegate(double t)
+            {
+                double t2 = t * t;
+                double r = (1.0 - t2) * (1.0 - (m * t2));
+                return 1.0 / Math.Sqrt(r);
+            };
+
+            double x = Math.Sin(phi);
+            double intg = Integrator.Kronrod(intgnd, 0.0, x);
+
+            if (rx % 2 != 0) intg = -intg;
+            return intg + (k2 * rx);
+        }
+
+
         public static double F(double phi, double m)
         {
             //the eleptic intergral is undefined for (m > 1)
@@ -115,7 +139,7 @@ namespace Vulpine.Core.Calc
         /// <param name="phi">The Amplitude of the Eleptic Intergral</param>
         /// <param name="m">The Eleptic Paramater (m = k^2)</param>
         /// <returns>The Eleptic Intergral evaluated at (phi, m)</returns>
-        public static Cmplx F(Cmplx phi, Cmplx m)
+        public static Cmplx F3(Cmplx phi, Cmplx m)
         {
             Cmplx x = Cmplx.Sin(phi);
 
@@ -133,7 +157,113 @@ namespace Vulpine.Core.Calc
                 return 1.0 / (a * b);
             };
 
-            return Integrator.Kronrod(intgnd, 0.0, x);
+            Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
+
+
+            return intg;
+        }
+
+        //Wolfram
+        public static Cmplx F2(Cmplx phi, Cmplx m)
+        {
+
+            int rx = (int)Math.Round(phi.CofR / Math.PI);
+            Cmplx k2 = 2.0 * K(m);
+
+            Cmplx x = Cmplx.Sin(phi);
+
+
+
+
+            //uses the Legerande normal form
+            VFunc<Cmplx> intgnd = delegate(Cmplx t)
+            {
+                Cmplx t2 = t * t;
+                Cmplx a = 1.0 - t2;
+                Cmplx b = 1.0 - (m * t2);
+
+                //splits the radical to avoid branch cuts
+                a = Cmplx.Sqrt(a);
+                b = Cmplx.Sqrt(b);
+
+                return 1.0 / (a * b);
+            };
+
+            Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
+
+            ////atempts to fix the branch cuts
+            //if (phi.CofR < Math.PI) return intg;
+            //else return intg.Conj();
+
+            ////atempts to fix the branch cuts
+            //if (Math.Abs(phi.CofR) < Math.PI / 2.0) return intg;
+            //else return intg.Conj();
+
+            //return intg;
+
+            if (rx % 2 != 0) intg = -intg;
+            return intg + (k2 * rx);
+        }
+
+
+        public static Cmplx F(Cmplx phi, Cmplx m)
+        {
+            //takes care of the periodic nature of the real axis
+            if (Math.Abs(phi.CofR) > Math.PI)
+            {
+                //double r = phi.CofR.Mod(VMath.TAU);
+                //if (r > Math.PI) r = r - Math.PI;
+
+                double r = Math.Round(phi.CofR / VMath.TAU);
+                r = phi.CofR - (VMath.TAU * r);
+
+
+                phi = new Cmplx(r, phi.CofI);
+            }
+
+            //I Want: -pi < tau.R < pi
+
+            //double rabs = Math.Abs(phi.CofR);
+
+            //if (rabs > Math.PI)
+            //{
+            //    double r = r + (Math.PI / 2.0);
+            //    r = Math.Floor(r / VMath.TAU);
+            //    r = phi.CofR - (r * VMath.TAU);
+            //    r = r - (Math.PI / 2.0); 
+            //}
+
+
+            Cmplx x = Cmplx.Sin(phi);
+
+
+
+
+            //uses the Legerande normal form
+            VFunc<Cmplx> intgnd = delegate(Cmplx t)
+            {
+                Cmplx t2 = t * t;
+                Cmplx a = 1.0 - t2;
+                Cmplx b = 1.0 - (m * t2);
+
+                //splits the radical to avoid branch cuts
+                a = Cmplx.Sqrt(a);
+                b = Cmplx.Sqrt(b);
+
+                return 1.0 / (a * b);
+            };
+
+            Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
+
+            ////atempts to fix the branch cuts
+            //if (phi.CofR < Math.PI) return intg;
+            //else return intg.Conj();
+
+            //atempts to fix the branch cuts
+            if (Math.Abs(phi.CofR) < Math.PI / 2.0) return intg;
+            else return -intg; // intg.Conj();
+
+            //return intg;
         }
 
         public static double E(double m)
@@ -375,86 +505,7 @@ namespace Vulpine.Core.Calc
 
 
 
-        #endregion ////////////////////////////////////////////////////////////////////////
-
-        #region Inverse Eleptic Functions:
-
-        //public static double ArcSN(double x, double m)
-        //{
-        //    //checks the bounds of the function
-        //    if (x >= 1.0) return Double.NaN;
-        //    if (x <= -1.0) return Double.NaN;
-        //    //if (m > 1.0) return Double.NaN;
-
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Math.Asin(x), m);
-        //}
-
-        //public static double ArcCN(double x, double m)
-        //{
-        //    //checks the bounds of the function
-        //    if (x >= 1.0) return Double.NaN;
-        //    if (x <= -1.0) return Double.NaN;
-        //    //if (m > 1.0) return Double.NaN;
-
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Math.Acos(x), m);
-        //}
-
-        //public static double ArcDN(double x, double m)
-        //{
-        //    //WTF the bounds of this thing ??
-
-        //    //Computes the bounds of the intergral based on x and m
-        //    double phi = (1.0 - x * x) / m;
-        //    phi = Math.Sqrt(phi);
-        //    phi = Math.Asin(phi);
-
-        //    //avoids propagating NaNs
-        //    if (phi.IsNaN()) return Double.NaN;
-
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(phi, m);
-        //}
-
-        //public static double ArcSC(double x, double m)
-        //{
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Math.Atan(x), m);
-        //}
-
-        //public static Cmplx ArcSN(Cmplx x, Cmplx m)
-        //{
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Cmplx.Asin(x), m);
-        //}
-
-        //public static Cmplx ArcCN(Cmplx x, Cmplx m)
-        //{
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Cmplx.Acos(x), m);
-        //}
-
-        //public static Cmplx ArcDN(Cmplx x, Cmplx m)
-        //{
-        //    //Computes the bounds of the intergral based on x and m
-        //    Cmplx phi = (1.0 - x * x) / m;
-        //    phi = Cmplx.Sqrt(phi);
-        //    phi = Cmplx.Asin(phi);
-
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(phi, m);
-        //}
-
-        //public static Cmplx ArcSC(Cmplx x, Cmplx m)
-        //{
-        //    //Uses the Eleptic Intergral to invert the Eleptic Function
-        //    return F(Cmplx.Atan(x), m);
-        //}
-
-
-
-        #endregion ////////////////////////////////////////////////////////////////////////
+        #endregion ////////////////////////////////////////////////////////////////////////      
 
         #region Lemniscate Functions...
 
