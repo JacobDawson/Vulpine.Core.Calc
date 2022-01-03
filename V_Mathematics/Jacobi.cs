@@ -148,43 +148,14 @@ namespace Vulpine.Core.Calc
             return intg + (k2 * rx);
         }
 
-
+        /// <summary>
+        /// Computes the Complete Elliptic Intergral of the Second Kind, using the
+        /// eleptic paramater (m = k^2). In order to use the eleptic modulous, one
+        /// should compute E(k^2). The real valued function is undefined for (m > 1).
+        /// </summary>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Intergral evaluated at (m)</returns>
         public static double E(double m)
-        {
-            double a = 1.0;
-            double b = Math.Sqrt(1.0 - m);
-
-            double ap = 0.0;
-            double bp = 0.0;
-            //double cp = 0.0;
-
-            double c = 1.0 - (b * b);
-            double s = 0.5 * c; // c.Abs;
-
-            //double t1, t2;
-
-            //computes the AGM in the forward loop
-            for (int i = 1; i <= 8; i++)
-            {
-                ap = (a + b) * 0.5;
-                bp = Math.Sqrt(a * b);
-
-                ////makes shure we choose the right branch of sqrt
-                //t1 = (ap - bp).Abs;
-                //t2 = (ap + bp).Abs;
-                //if (t1 > t2) bp = -bp;
-
-                a = ap;
-                b = bp;
-
-                c = (a * a) - (b * b);
-                s += Math.Pow(2.0, i - 1.0) * c; // c.Abs;
-            }
-
-            return (Math.PI / (2.0 * a)) * (1.0 - s);
-        }
-
-        public static double E2(double m)
         {
             //the function is undefined for m > 1
             if (m > 1.0) return Double.NaN;
@@ -194,41 +165,38 @@ namespace Vulpine.Core.Calc
 
             double ap = 0.0;
             double bp = 0.0;
-            //double cp = 0.0;
 
-            //stores values in an array for backwards loop
-            double[] cn = new double[11];
-            cn[0] = Math.Abs(1.0 - m);
+            double c = 1.0 - (b * b);
+            double s = 0.5 * c;
+            double p = 1.0;
 
             //computes the AGM in the forward loop
             for (int i = 1; i <= 8; i++)
             {
+                //computes the Arethmetic-Geometric Mean
                 ap = (a + b) * 0.5;
                 bp = Math.Sqrt(a * b);
-                //cp = cn[i - 1] / (4.0 * ap);
 
                 a = ap;
                 b = bp;
 
-                //cn[i] = Math.Abs((a * a) - (b * b));
-                cn[i] = (a * a) - (b * b);
-                //cn[i] = cp * cp;
+                //updates the sum based on the diffrence squared
+                c = (a * a) - (b * b);
+                s = s + (p * c);
+                p = p + p;
             }
 
-            double s = 0.0;
-            double t = 0.0;
-
-            //computes the theta values in the backwards loop
-            for (int i = 10; i > 0; i--)
-            {
-                t = Math.Pow(2.0, i - 1);
-                s = s + (t * cn[i]);
-            }
-
-            t = (1.0 - s) * Math.PI;
-            return t / (2.0 * a);
+            return (Math.PI / (2.0 * a)) * (1.0 - s);
         }
 
+        /// <summary>
+        /// Computes the Complete Elliptic Intergral of the Second Kind, using the
+        /// eleptic paramater (m = k^2). In order to use the eleptic modulous, one
+        /// should compute E(k^2). This varient uses the principle branch of the
+        /// complex square root to compute the intergral.
+        /// </summary>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Intergral evaluated at (m)</returns>
         public static Cmplx E(Cmplx m)
         {
             Cmplx a = 1.0;
@@ -236,25 +204,18 @@ namespace Vulpine.Core.Calc
 
             Cmplx ap = 0.0;
             Cmplx bp = 0.0;
-            Cmplx cp = 0.0;
-
-            ////stores values in an array for backwards loop
-            //Cmplx[] cn = new Cmplx[11];
-            //cn[0] = (1.0 - (b * b)).Abs;
-            ////cn[0] = (1.0 - m).Abs;
 
             Cmplx c = 1.0 - (b * b);
-            Cmplx s = 0.5 * c; // c.Abs;
-
+            Cmplx s = 0.5 * c;
+ 
+            double p = 1.0;
             double t1, t2;
 
-            //computes the AGM in the forward loop
             for (int i = 1; i <= 8; i++)
             {
+                //computes the Arethmetic-Geometric Mean
                 ap = (a + b) * 0.5;
                 bp = Cmplx.Sqrt(a * b);
-                //cp = (ap * ap) - (bp * bp);
-                //cp = ap.Dist(bp);
 
                 //makes shure we choose the right branch of sqrt
                 t1 = (ap - bp).Abs;
@@ -264,37 +225,24 @@ namespace Vulpine.Core.Calc
                 a = ap;
                 b = bp;
 
+                //updates the sum based on the diffrence squared
                 c = (a * a) - (b * b);
-                s += Math.Pow(2.0, i - 1.0) * c; // c.Abs;
-                //cn[i] = cp.Abs;
-                //cn[i] = a.Dist(b);
+                s = s + (p * c);
+                p = p + p;
             }
 
             return (Math.PI / (2.0 * a)) * (1.0 - s);
-
-            //Cmplx s = 0.0;
-            //Cmplx t = 0.0;
-
-            ////computes the theta values in the backwards loop
-            //for (int i = 10; i > 1; i--)
-            //{
-            //    t = Math.Pow(2.0, i - 1);
-            //    s = s + (t * cn[i]);
-            //}
-
-            //t = (1.0 - s) * Math.PI;
-            //return t / (2.0 * a);
         }
 
 
         public static double E(double phi, double m)
         {
-            return Double.NaN;
+            throw new NotImplementedException();
         }
 
         public static Cmplx E(Cmplx phi, Cmplx m)
         {
-            return Cmplx.NaN;
+            throw new NotImplementedException();
         }
 
 
@@ -302,41 +250,92 @@ namespace Vulpine.Core.Calc
 
         #region Elliptic Functions...
 
-        //NOTE: Need to determin the bounds for (m) in the Real case.
-
+        
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function SN which generalises the Sine 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2). The real valued
+        /// funciton is undefined for (m > 1).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SN evaluated at (u, m)</returns>
         public static double SN(double u, double m)
         {
+            //the function is undefined for m > 1
+            if (m > 1.0) return Double.NaN;
+
             //Uses the Landen Transformation to compute SN
             double t = AM(u, m);
             return Math.Sin(t);
         }
 
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function CN which generalises the Cosine 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2). The real valued
+        /// funciton is undefined for (m > 1).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function CN evaluated at (u, m)</returns>
         public static double CN(double u, double m)
         {
+            //the function is undefined for m > 1
+            if (m > 1.0) return Double.NaN;
+
             //Uses the Landen Transformation to compute CN
             double t = AM(u, m);
             return Math.Cos(t);
         }
 
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function DN which lacks a trigometric
+        /// counterpart defined for the circle.  It uses the eleptic paramater (m) 
+        /// which is taken to be the square of the modulous (m = k^2). The real 
+        /// valued funciton is undefined for (m > 1).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SN evaluated at (u, m)</returns>
         public static double DN(double u, double m)
         {
+            //the function is undefined for m > 1
+            if (m > 1.0) return Double.NaN;
+
             //Uses SN to comptue DN in the real case
             double t = SN(u, m);
             t = m * t * t;
             return Math.Sqrt(1.0 - t);
         }
 
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function SC which generalises the Tangent 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2). The real valued
+        /// funciton is undefined for (m > 1).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SC evaluated at (u, m)</returns>
         public static double SC(double u, double m)
         {
-            //Uses the Landen Transformation to compute CN
+            //the function is undefined for m > 1
+            if (m > 1.0) return Double.NaN;
+
+            //Uses the Landen Transformation to compute SC
             double t = AM(u, m);
             return Math.Tan(t); 
         }
 
-        ////represents the constant value K(1/2)
-        //private const double KH = 1.85407467730137191843;
-
-
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function SN which generalises the Sine 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SN evaluated at (u, m)</returns>
         public static Cmplx SN(Cmplx u, Cmplx m)
         {  
             //computes the quarter periods
@@ -350,16 +349,21 @@ namespace Vulpine.Core.Calc
             //up = u;
 
             //computes the corisponding theta functions
-            Cmplx ts = ThetaS(up, m, km, qm, NC);
-            Cmplx tn = ThetaN(up, m, km, qm, NC);
+            Cmplx ts = ThetaS(up, m, km, qm);
+            Cmplx tn = ThetaN(up, m, km, qm);
 
             //returns the ratio of the theta funcitons
             return ts / tn;
         }
 
-        
-
-
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function CN which generalises the Cosine 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function CN evaluated at (u, m)</returns>
         public static Cmplx CN(Cmplx u, Cmplx m)
         {
             //computes the quarter periods
@@ -373,13 +377,21 @@ namespace Vulpine.Core.Calc
             //up = u;
 
             //computes the corisponding theta functions
-            Cmplx tc = ThetaC(up, m, km, qm, NC);
-            Cmplx tn = ThetaN(up, m, km, qm, NC);
+            Cmplx tc = ThetaC(up, m, km, qm);
+            Cmplx tn = ThetaN(up, m, km, qm);
 
             //returns the ratio of the theta funcitons
             return tc / tn;
         }
 
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function DN which lacks a trigometric
+        /// counterpart defined for the circle.  It uses the eleptic paramater (m) 
+        /// which is taken to be the square of the modulous (m = k^2).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SN evaluated at (u, m)</returns>
         public static Cmplx DN(Cmplx u, Cmplx m)
         {
             //computes the quarter periods
@@ -393,13 +405,21 @@ namespace Vulpine.Core.Calc
             //up = u;
 
             //computes the corisponding theta functions
-            Cmplx td = ThetaD(up, m, km, qm, NC);
-            Cmplx tn = ThetaN(up, m, km, qm, NC);
+            Cmplx td = ThetaD(up, m, km, qm);
+            Cmplx tn = ThetaN(up, m, km, qm);
 
             //returns the ratio of the theta funcitons
             return td / tn;
         }
 
+        /// <summary>
+        /// Computes the Jacobi Eleptic Function SC which generalises the Tangent 
+        /// function from trignomatry. It uses the eleptic paramater (m) which is
+        /// taken to be the square of the modulous (m = k^2).
+        /// </summary>
+        /// <param name="u">Argument of the Eleptic Function</param>
+        /// <param name="m">The Eleptic Paramater (m = k^2)</param>
+        /// <returns>The Eleptic Function SC evaluated at (u, m)</returns>
         public static Cmplx SC(Cmplx u, Cmplx m)
         {
             //computes the quarter periods
@@ -413,8 +433,8 @@ namespace Vulpine.Core.Calc
             //up = u;
 
             //computes the corisponding theta functions
-            Cmplx ts = ThetaS(up, m, km, qm, NC);
-            Cmplx tc = ThetaC(up, m, km, qm, NC);
+            Cmplx ts = ThetaS(up, m, km, qm);
+            Cmplx tc = ThetaC(up, m, km, qm);
 
             //returns the ratio of the theta funcitons
             return ts / tc;
@@ -616,7 +636,7 @@ namespace Vulpine.Core.Calc
         {
             //used in the itterative method
             double b = Math.Sqrt(1.0 - m);
-            double c = Math.Sqrt(m);          
+            double c = 0.0; // Math.Sqrt(m);          
             double a = 1.0;
 
             double ap = 0.0;
@@ -624,7 +644,7 @@ namespace Vulpine.Core.Calc
 
             //stores values in an array for backwards loop
             double[] ca = new double[11];
-            ca[0] = c / a;
+            ca[0] = 0.0; // c / a;
 
             //computes the AGM in the forward loop
             for (int i = 1; i <= 10; i++)
@@ -690,7 +710,6 @@ namespace Vulpine.Core.Calc
             return (Cmplx)(t * x);
         }
 
-
         /// <summary>
         /// Computes the Neville Theta Function N(z, m) with aditional paramaters for
         /// k(m) and q(m) which should be computed before invoking this funciton. It is
@@ -700,9 +719,8 @@ namespace Vulpine.Core.Calc
         /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
         /// <param name="km">Precomputed value k(m)</param>
         /// <param name="qm">Precomputed value q(m)</param>
-        /// <param name="c">Number of itterations for the inner loop</param>
         /// <returns>The Nevel Theta Function evaluated at N(z, m)</returns>
-        private static Cmplx ThetaN(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        private static Cmplx ThetaN(Cmplx z, Cmplx m, Cmplx km, Cmplx qm)
         {
             //computes the scaling value based purly on (m)
             Cmplx v = 1.0 - m;
@@ -712,8 +730,8 @@ namespace Vulpine.Core.Calc
 
             Cmplx s = 0.0;
 
-            //computes the infinate series turncated at (k=c)
-            for (int k = 1; k <= c; k++)
+            //computes the infinate series turncated at (k=NC)
+            for (int k = 1; k <= NC; k++)
             {
                 Cmplx qx = Cmplx.Pow(qm, k * k);
                 if (k % 2 != 0) qx = -qx;
@@ -737,9 +755,8 @@ namespace Vulpine.Core.Calc
         /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
         /// <param name="km">Precomputed value k(m)</param>
         /// <param name="qm">Precomputed value q(m)</param>
-        /// <param name="c">Number of itterations for the inner loop</param>
         /// <returns>The Nevel Theta Function evaluated at S(z, m)</returns>
-        private static Cmplx ThetaS(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        private static Cmplx ThetaS(Cmplx z, Cmplx m, Cmplx km, Cmplx qm)
         {
             //takes the quartic roots of the required terms
             Cmplx qm4 = Cmplx.Pow(qm, 0.25);
@@ -752,8 +769,8 @@ namespace Vulpine.Core.Calc
 
             Cmplx s = 0.0;
 
-            //computes the infinate series turncated at (k=c)
-            for (int k = 0; k < c; k++)
+            //computes the infinate series turncated at (k=NC)
+            for (int k = 0; k < NC; k++)
             {
                 Cmplx qx = Cmplx.Pow(qm, k * (k + 1));
                 if (k % 2 != 0) qx = -qx;
@@ -768,7 +785,17 @@ namespace Vulpine.Core.Calc
             return v * s;
         }
 
-        private static Cmplx ThetaC(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        /// <summary>
+        /// Computes the Neville Theta Function C(z, m) with aditional paramaters for
+        /// k(m) and q(m) which should be computed before invoking this funciton. It is
+        /// used in the computaiton of the Jacobi Eleptic Functions.
+        /// </summary>
+        /// <param name="z">Paramater (z) to the Nevile Theta Funciton</param>
+        /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
+        /// <param name="km">Precomputed value k(m)</param>
+        /// <param name="qm">Precomputed value q(m)</param>
+        /// <returns>The Nevel Theta Function evaluated at C(z, m)</returns>
+        private static Cmplx ThetaC(Cmplx z, Cmplx m, Cmplx km, Cmplx qm)
         {
             //takes the quartic roots of the required terms
             Cmplx qm4 = Cmplx.Pow(qm, 0.25);
@@ -780,8 +807,8 @@ namespace Vulpine.Core.Calc
 
             Cmplx s = 0.0;
 
-            //computes the infinate series turncated at (k=c)
-            for (int k = 0; k < c; k++)
+            //computes the infinate series turncated at (k=NC)
+            for (int k = 0; k < NC; k++)
             {
                 Cmplx qx = Cmplx.Pow(qm, k * (k + 1));
                 Cmplx cos = z * Math.PI * (k + k + 1);
@@ -794,14 +821,24 @@ namespace Vulpine.Core.Calc
             return v * s;
         }
 
-        private static Cmplx ThetaD(Cmplx z, Cmplx m, Cmplx km, Cmplx qm, int c)
+        /// <summary>
+        /// Computes the Neville Theta Function D(z, m) with aditional paramaters for
+        /// k(m) and q(m) which should be computed before invoking this funciton. It is
+        /// used in the computaiton of the Jacobi Eleptic Functions.
+        /// </summary>
+        /// <param name="z">Paramater (z) to the Nevile Theta Funciton</param>
+        /// <param name="m">Paramater (m) to the Nevile Theta Funciton</param>
+        /// <param name="km">Precomputed value k(m)</param>
+        /// <param name="qm">Precomputed value q(m)</param>
+        /// <returns>The Nevel Theta Function evaluated at D(z, m)</returns>
+        private static Cmplx ThetaD(Cmplx z, Cmplx m, Cmplx km, Cmplx qm)
         {
             //computes the scaling value based purly on (m)
             Cmplx v = VMath.RTP / (2.0 * Cmplx.Sqrt(km));
             Cmplx s = 0.0;
 
-            //computes the infinate series turncated at (k=c)
-            for (int k = 1; k <= c; k++)
+            //computes the infinate series turncated at (k=NC)
+            for (int k = 1; k <= NC; k++)
             {
                 Cmplx qx = Cmplx.Pow(qm, k * k);
                 Cmplx cos = z * Math.PI * k;

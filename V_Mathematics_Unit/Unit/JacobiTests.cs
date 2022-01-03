@@ -33,7 +33,8 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
 
         private const double MaxM = 1.0;
-        private const double MinM = 0.0;
+        private const double MinM = -1.0;
+        private const double ZeroM = 0.0;
 
         public JacobiTests() { tol = VTOL; }
         public JacobiTests(double tol) { this.tol = tol; }
@@ -584,7 +585,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0xf684b756);
 
-            double m = rng.RandDouble(MinM, MaxM);
+            double m = rng.RandDouble(0.0, 1.0);
             double p = 1.0 - m; // Cmplx.Sqrt(1.0 - m);
 
             double km = Jacobi.K(m);
@@ -766,7 +767,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0xda0d2d4a);
 
             double p = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(MinM, MaxM);
             double x1 = Math.Sin(p);
 
             double u = Jacobi.F(p, m);
@@ -783,7 +784,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0xfb4d697b);
 
             double p = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(MinM, MaxM);
             double x1 = Math.Cos(p);
 
             double u = Jacobi.F(p, m);
@@ -800,7 +801,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0xab32017c);
 
             double p = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(MinM, MaxM);
             double x1 = Math.Tan(p);
 
             double u = Jacobi.F(p, m);
@@ -817,7 +818,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0xfed14f61);
 
             double p = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(MinM, MaxM);
 
             double u = Jacobi.F(p, m);
             double x2 = Jacobi.DN(u, m);
@@ -841,7 +842,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0x6674312b);
 
             double a = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(ZeroM, MaxM);
 
             Cmplx b1 = Jacobi.SN(a, m);
             Cmplx b2 = Jacobi.SN((Cmplx)a, (Cmplx)m);
@@ -857,7 +858,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0xcf0e4834);
 
             double a = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(ZeroM, MaxM);
 
             Cmplx b1 = Jacobi.CN(a, m);
             Cmplx b2 = Jacobi.CN((Cmplx)a, (Cmplx)m);
@@ -873,7 +874,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0x83bd2573);
 
             double a = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(ZeroM, MaxM);
 
             Cmplx b1 = Jacobi.DN(a, m);
             Cmplx b2 = Jacobi.DN((Cmplx)a, (Cmplx)m);
@@ -889,7 +890,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             VRandom rng = Help.GetRNG(index, 0x7939ec4f);
 
             double a = rng.RandGauss(0.0, 2.5);
-            double m = rng.RandDouble(MaxM, MinM);
+            double m = rng.RandDouble(ZeroM, MaxM);
 
             Cmplx b1 = Jacobi.SC(a, m);
             Cmplx b2 = Jacobi.SC((Cmplx)a, (Cmplx)m);
