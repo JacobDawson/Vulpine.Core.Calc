@@ -88,7 +88,7 @@ namespace Vulpine.Core.Calc
         /// <param name="phi">The Amplitude of the Eleptic Intergral</param>
         /// <param name="m">The Eleptic Paramater (m = k^2)</param>
         /// <returns>The Eleptic Intergral evaluated at (phi, m)</returns>
-        public static double F2(double phi, double m)
+        public static double F(double phi, double m)
         {
             //the eleptic intergral is undefined for (m > 1)
             if (m > 1.0) return Double.NaN;
@@ -111,24 +111,6 @@ namespace Vulpine.Core.Calc
             return intg + (k2 * rx);
         }
 
-
-        public static double F(double phi, double m)
-        {
-            //the eleptic intergral is undefined for (m > 1)
-            if (m > 1.0) return Double.NaN;
-
-            //uses the Legerande normal form
-            VFunc intgnd = delegate(double t)
-            {
-                double t2 = t * t;
-                double r = (1.0 - t2) * (1.0 - (m * t2));
-                return 1.0 / Math.Sqrt(r);
-            };
-
-            double x = Math.Sin(phi);
-            return Integrator.Kronrod(intgnd, 0.0, x);
-        }
-
         /// <summary>
         /// Warning! This method may run slowly for certain inputs! It atempts to
         /// evaluate the Incomplete Elliptic Intergral of the Frist Kind for complex
@@ -139,41 +121,12 @@ namespace Vulpine.Core.Calc
         /// <param name="phi">The Amplitude of the Eleptic Intergral</param>
         /// <param name="m">The Eleptic Paramater (m = k^2)</param>
         /// <returns>The Eleptic Intergral evaluated at (phi, m)</returns>
-        public static Cmplx F3(Cmplx phi, Cmplx m)
+        public static Cmplx F(Cmplx phi, Cmplx m)
         {
-            Cmplx x = Cmplx.Sin(phi);
-
-            //uses the Legerande normal form
-            VFunc<Cmplx> intgnd = delegate(Cmplx t)
-            {
-                Cmplx t2 = t * t;
-                Cmplx a = 1.0 - t2;
-                Cmplx b = 1.0 - (m * t2);
-
-                //splits the radical to avoid branch cuts
-                a = Cmplx.Sqrt(a);
-                b = Cmplx.Sqrt(b);
-
-                return 1.0 / (a * b);
-            };
-
-            Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
-
-
-            return intg;
-        }
-
-        //Wolfram
-        public static Cmplx F2(Cmplx phi, Cmplx m)
-        {
-
+            //used in translating the intergrand
             int rx = (int)Math.Round(phi.CofR / Math.PI);
             Cmplx k2 = 2.0 * K(m);
-
             Cmplx x = Cmplx.Sin(phi);
-
-
-
 
             //uses the Legerande normal form
             VFunc<Cmplx> intgnd = delegate(Cmplx t)
@@ -190,83 +143,48 @@ namespace Vulpine.Core.Calc
             };
 
             Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
-
-            ////atempts to fix the branch cuts
-            //if (phi.CofR < Math.PI) return intg;
-            //else return intg.Conj();
-
-            ////atempts to fix the branch cuts
-            //if (Math.Abs(phi.CofR) < Math.PI / 2.0) return intg;
-            //else return intg.Conj();
-
-            //return intg;
 
             if (rx % 2 != 0) intg = -intg;
             return intg + (k2 * rx);
         }
 
 
-        public static Cmplx F(Cmplx phi, Cmplx m)
+        public static double E(double m)
         {
-            //takes care of the periodic nature of the real axis
-            if (Math.Abs(phi.CofR) > Math.PI)
+            double a = 1.0;
+            double b = Math.Sqrt(1.0 - m);
+
+            double ap = 0.0;
+            double bp = 0.0;
+            //double cp = 0.0;
+
+            double c = 1.0 - (b * b);
+            double s = 0.5 * c; // c.Abs;
+
+            //double t1, t2;
+
+            //computes the AGM in the forward loop
+            for (int i = 1; i <= 8; i++)
             {
-                //double r = phi.CofR.Mod(VMath.TAU);
-                //if (r > Math.PI) r = r - Math.PI;
+                ap = (a + b) * 0.5;
+                bp = Math.Sqrt(a * b);
 
-                double r = Math.Round(phi.CofR / VMath.TAU);
-                r = phi.CofR - (VMath.TAU * r);
+                ////makes shure we choose the right branch of sqrt
+                //t1 = (ap - bp).Abs;
+                //t2 = (ap + bp).Abs;
+                //if (t1 > t2) bp = -bp;
 
+                a = ap;
+                b = bp;
 
-                phi = new Cmplx(r, phi.CofI);
+                c = (a * a) - (b * b);
+                s += Math.Pow(2.0, i - 1.0) * c; // c.Abs;
             }
 
-            //I Want: -pi < tau.R < pi
-
-            //double rabs = Math.Abs(phi.CofR);
-
-            //if (rabs > Math.PI)
-            //{
-            //    double r = r + (Math.PI / 2.0);
-            //    r = Math.Floor(r / VMath.TAU);
-            //    r = phi.CofR - (r * VMath.TAU);
-            //    r = r - (Math.PI / 2.0); 
-            //}
-
-
-            Cmplx x = Cmplx.Sin(phi);
-
-
-
-
-            //uses the Legerande normal form
-            VFunc<Cmplx> intgnd = delegate(Cmplx t)
-            {
-                Cmplx t2 = t * t;
-                Cmplx a = 1.0 - t2;
-                Cmplx b = 1.0 - (m * t2);
-
-                //splits the radical to avoid branch cuts
-                a = Cmplx.Sqrt(a);
-                b = Cmplx.Sqrt(b);
-
-                return 1.0 / (a * b);
-            };
-
-            Cmplx intg = Integrator.Kronrod(intgnd, 0.0, x);
-
-            ////atempts to fix the branch cuts
-            //if (phi.CofR < Math.PI) return intg;
-            //else return intg.Conj();
-
-            //atempts to fix the branch cuts
-            if (Math.Abs(phi.CofR) < Math.PI / 2.0) return intg;
-            else return -intg; // intg.Conj();
-
-            //return intg;
+            return (Math.PI / (2.0 * a)) * (1.0 - s);
         }
 
-        public static double E(double m)
+        public static double E2(double m)
         {
             //the function is undefined for m > 1
             if (m > 1.0) return Double.NaN;
@@ -283,7 +201,7 @@ namespace Vulpine.Core.Calc
             cn[0] = Math.Abs(1.0 - m);
 
             //computes the AGM in the forward loop
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 8; i++)
             {
                 ap = (a + b) * 0.5;
                 bp = Math.Sqrt(a * b);
@@ -292,7 +210,8 @@ namespace Vulpine.Core.Calc
                 a = ap;
                 b = bp;
 
-                cn[i] = Math.Abs((a * a) - (b * b));
+                //cn[i] = Math.Abs((a * a) - (b * b));
+                cn[i] = (a * a) - (b * b);
                 //cn[i] = cp * cp;
             }
 
@@ -319,19 +238,22 @@ namespace Vulpine.Core.Calc
             Cmplx bp = 0.0;
             Cmplx cp = 0.0;
 
-            //stores values in an array for backwards loop
-            Cmplx[] cn = new Cmplx[11];
-            cn[0] = (1.0 - (b * b)).Abs;
-            //cn[0] = (1.0 - m).Abs;
+            ////stores values in an array for backwards loop
+            //Cmplx[] cn = new Cmplx[11];
+            //cn[0] = (1.0 - (b * b)).Abs;
+            ////cn[0] = (1.0 - m).Abs;
+
+            Cmplx c = 1.0 - (b * b);
+            Cmplx s = 0.5 * c; // c.Abs;
 
             double t1, t2;
 
             //computes the AGM in the forward loop
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 8; i++)
             {
                 ap = (a + b) * 0.5;
                 bp = Cmplx.Sqrt(a * b);
-                cp = (ap * ap) - (bp * bp);
+                //cp = (ap * ap) - (bp * bp);
                 //cp = ap.Dist(bp);
 
                 //makes shure we choose the right branch of sqrt
@@ -342,23 +264,28 @@ namespace Vulpine.Core.Calc
                 a = ap;
                 b = bp;
 
-                cn[i] = cp.Abs;
+                c = (a * a) - (b * b);
+                s += Math.Pow(2.0, i - 1.0) * c; // c.Abs;
+                //cn[i] = cp.Abs;
                 //cn[i] = a.Dist(b);
             }
 
-            Cmplx s = 0.0;
-            Cmplx t = 0.0;
+            return (Math.PI / (2.0 * a)) * (1.0 - s);
 
-            //computes the theta values in the backwards loop
-            for (int i = 10; i > 0; i--)
-            {
-                t = Math.Pow(2.0, i - 1);
-                s = s + (t * cn[i]);
-            }
+            //Cmplx s = 0.0;
+            //Cmplx t = 0.0;
 
-            t = (1.0 - s) * Math.PI;
-            return t / (2.0 * a);
+            ////computes the theta values in the backwards loop
+            //for (int i = 10; i > 1; i--)
+            //{
+            //    t = Math.Pow(2.0, i - 1);
+            //    s = s + (t * cn[i]);
+            //}
+
+            //t = (1.0 - s) * Math.PI;
+            //return t / (2.0 * a);
         }
+
 
         public static double E(double phi, double m)
         {
@@ -575,14 +502,101 @@ namespace Vulpine.Core.Calc
             return Double.NaN;
         }
 
-        public static Cmplx ArcSL(Cmplx x)
+        public static Cmplx ArcSL(Cmplx sl)
         {
-            return Cmplx.NaN;
+            VFunc<Cmplx> intgnd = delegate(Cmplx t)
+            {
+                t = t * t;
+                t = t * t;
+                t = Cmplx.Sqrt(1.0 - t);
+                return 1.0 / t;
+            };
+
+            return Integrator.Kronrod(intgnd, 0.0, sl);
+
+            //return Cmplx.NaN;
         }
 
-        public static Cmplx ArcCL(Cmplx x)
+        public static Cmplx ArcCL(Cmplx cl)
         {
-            return Cmplx.NaN;
+            return (0.5 * VMath.LC) - ArcSL(cl);
+
+            //return Cmplx.NaN;
+        }
+
+        #endregion ////////////////////////////////////////////////////////////////////////
+
+        #region Dixon Functions...
+
+        private const double MR = +0.5;
+        private const double MI = -0.86602540378443864676;
+
+        private const double TR = +0.34062501931660664019;
+        private const double TI = +1.27122987841870623914;
+
+        public static Cmplx SM(Cmplx z)
+        {
+            Cmplx m = new Cmplx(MR, MI);
+            Cmplx t = new Cmplx(TR, TI);
+
+            Cmplx u = z + 0.88331937514272497866;
+            u = u / (t * 1.25992104989487316477);
+
+            Cmplx s = SN(u, m);
+            Cmplx c = CN(u, m);
+            Cmplx d = DN(u, m);
+
+            Cmplx tscd = t * s * c * d;
+            return (tscd - 1.0) / (tscd + 1);
+
+        }
+
+        public static Cmplx CM(Cmplx z)
+        {
+            return SM(1.76663875028545 - z);
+
+            //Cmplx m = new Cmplx(MR, MI);
+            //Cmplx t = new Cmplx(TR, TI);
+
+            //Cmplx u = z + 0.88331937514272497866;
+            //u = u / (t * 1.25992104989487316477);
+
+            //Cmplx s = SN(u, m);
+            //Cmplx c = CN(u, m);
+            //Cmplx d = DN(u, m);
+
+            //Cmplx res = 1.0 + (t * t * s * s);
+            //res = res * res * 1.25992104989487316477;
+            //res = res / (1.0 + (t * s * c * d));
+
+            //return res;
+        }
+
+
+        public static Cmplx ArcSM(Cmplx sm)
+        {
+            VFunc<Cmplx> intgnd = delegate(Cmplx w)
+            {
+                w = w * w * w;
+                w = Cmplx.Pow(1.0 - w, 2.0 / 3.0);
+                return 1.0 / w;
+            };
+
+            return Integrator.Kronrod(intgnd, 0.0, sm);
+        }
+
+        public static Cmplx ArcCM(Cmplx cm)
+        {
+            VFunc<Cmplx> intgnd = delegate(Cmplx w)
+            {
+                w = w * w * w;
+                w = Cmplx.Pow(1.0 - w, 2.0 / 3.0);
+                return 1.0 / w;
+            };
+
+            return Integrator.Kronrod(intgnd, cm, 1.0);
+
+            //throw new NotImplementedException();
         }
 
         #endregion ////////////////////////////////////////////////////////////////////////

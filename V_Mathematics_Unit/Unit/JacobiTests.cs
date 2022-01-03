@@ -138,6 +138,105 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
         #endregion
 
+        #region E_WideValues...
+
+        private static readonly double[][] E_WideValues =
+        {
+            new double[] {-4.0, -4.0, +2.7592300932315563, +0.7703665438412894},
+            new double[] {-4.0, -3.0, +2.7089880779519609, +0.5902148402606944},
+            new double[] {-4.0, -2.0, +2.6695039413758290, +0.4002869713632538},
+            new double[] {-4.0, -1.0, +2.6440229722928948, +0.2024144366513133},
+            new double[] {-4.0, +0.0, +2.6351835815956300, +0.0},
+            new double[] {-4.0, +1.0, +2.6440229722928948, -0.2024144366513133},
+            new double[] {-4.0, +2.0, +2.6695039413758290, -0.4002869713632538},
+            new double[] {-4.0, +3.0, +2.7089880779519609, -0.5902148402606944},
+            new double[] {-4.0, +4.0, +2.7592300932315563, -0.7703665438412894},
+
+            new double[] {-3.0, -4.0, +2.5804237855343377, +0.8306096791000413},
+            new double[] {-3.0, -3.0, +2.5182432481519188, +0.6411748226469675},
+            new double[] {-3.0, -2.0, +2.4676840097206460, +0.4379503420256452},
+            new double[] {-3.0, -1.0, +2.4340201249640832, +0.2226429579112416},
+            new double[] {-3.0, +0.0, +2.4221120551369190, +0.0},
+            new double[] {-3.0, +1.0, +2.4340201249640832, -0.2226429579112416},
+            new double[] {-3.0, +2.0, +2.4676840097206460, -0.4379503420256452},
+            new double[] {-3.0, +3.0, +2.5182432481519188, -0.6411748226469675},
+            new double[] {-3.0, +4.0, +2.5804237855343377, -0.8306096791000413},
+
+            new double[] {-2.0, -4.0, +2.3944996611140685, +0.9044817989396594},
+            new double[] {-2.0, -3.0, +2.3160766927950868, +0.7062530828742627},
+            new double[] {-2.0, -2.0, +2.2489412537310457, +0.4882460107150485},
+            new double[] {-2.0, -1.0, +2.2017654714376550, +0.2507200059242914},
+            new double[] {-2.0, +0.0, +2.1844381427462011, +0.0},
+            new double[] {-2.0, +1.0, +2.2017654714376550, -0.2507200059242914},
+            new double[] {-2.0, +2.0, +2.2489412537310457, -0.4882460107150485},
+            new double[] {-2.0, +3.0, +2.3160766927950868, -0.7062530828742627},
+            new double[] {-2.0, +4.0, +2.3944996611140685, -0.9044817989396594},
+
+            new double[] {-1.0, -4.0, +2.2033310007226731, +0.9958997684570763},
+            new double[] {-1.0, -3.0, +2.1031825291802033, +0.7914682380748731},
+            new double[] {-1.0, -2.0, +2.0106193486878255, +0.5591118186050903},
+            new double[] {-1.0, -1.0, +1.9388139207507618, +0.2934621483557033},
+            new double[] {-1.0, +0.0, +1.9100988945138560, +0.0},
+            new double[] {-1.0, +1.0, +1.9388139207507618, -0.2934621483557033},
+            new double[] {-1.0, +2.0, +2.0106193486878255, -0.5591118186050903},
+            new double[] {-1.0, +3.0, +2.1031825291802033, -0.7914682380748731},
+            new double[] {-1.0, +4.0, +2.2033310007226731, -0.9958997684570763},
+
+            new double[] {+0.0, -4.0, +2.0110830891830336, +1.1087868101716319},
+            new double[] {+0.0, -3.0, +1.8838500585355470, +0.9045371224447711},
+            new double[] {+0.0, -2.0, +1.7535922606158783, +0.6646684505199279},
+            new double[] {+0.0, -1.0, +1.6324117814404261, +0.3692194923754990},
+            new double[] {+0.0, +0.0, +1.5707963267948966, +0.0},
+            new double[] {+0.0, +1.0, +1.6324117814404261, -0.3692194923754990},
+            new double[] {+0.0, +2.0, +1.7535922606158783, -0.6646684505199279},
+            new double[] {+0.0, +3.0, +1.8838500585355470, -0.9045371224447711},
+            new double[] {+0.0, +4.0, +2.0110830891830336, -1.1087868101716319},
+
+            new double[] {+1.0, -4.0, +1.8246204667608361, +1.2452957949664852},
+            new double[] {+1.0, -3.0, +1.6686493646874265, +1.0517887129414584},
+            new double[] {+1.0, -2.0, +1.4924861306380377, +0.8236285270148035},
+            new double[] {+1.0, -1.0, +1.2838409578982445, +0.5317843366915186},
+            //new double[] {+1.0, +0.0, +1.0,                +0.0},
+            new double[] {+1.0, +1.0, +1.2838409578982445, -0.5317843366915186},
+            new double[] {+1.0, +2.0, +1.4924861306380377, -0.8236285270148035},
+            new double[] {+1.0, +3.0, +1.6686493646874265, -1.0517887129414584},
+            new double[] {+1.0, +4.0, +1.8246204667608361, -1.2452957949664852},
+
+            new double[] {+2.0, -4.0, +1.6520572177300490, +1.4036439716681998},
+            new double[] {+2.0, -3.0, +1.4727971449586283, +1.2316047839359874},
+            new double[] {+2.0, -2.0, +1.2612047205054806, +1.0382722694723662},
+            new double[] {+2.0, -1.0, +0.9910526013280690, +0.8187942139560900},
+            new double[] {+2.0, +0.0, +0.5990701173677961, +0.5990701173677961},
+            new double[] {+2.0, +1.0, +0.9910526013280690, -0.8187942139560900},
+            new double[] {+2.0, +2.0, +1.2612047205054806, -1.0382722694723662},
+            new double[] {+2.0, +3.0, +1.4727971449586283, -1.2316047839359874},
+            new double[] {+2.0, +4.0, +1.6520572177300490, -1.4036439716681998},
+
+            new double[] {+3.0, -4.0, +1.4995535209333469, +1.5778790079127582},
+            new double[] {+3.0, -3.0, +1.3072929826036153, +1.4324570559878374},
+            new double[] {+3.0, -2.0, +1.0824066008629950, +1.2807302210060074},
+            new double[] {+3.0, -1.0, +0.8097172917744630, +1.1316009530417886},
+            new double[] {+3.0, +0.0, +0.4752239353510171, +1.0130180585994313},
+            new double[] {+3.0, +1.0, +0.8097172917744630, -1.1316009530417886},
+            new double[] {+3.0, +2.0, +1.0824066008629950, -1.2807302210060074},
+            new double[] {+3.0, +3.0, +1.3072929826036153, -1.4324570559878374},
+            new double[] {+3.0, +4.0, +1.4995535209333469, -1.5778790079127582},
+
+            new double[] {+4.0, -4.0, +1.3691844319648812, +1.7604172084429570},
+            new double[] {+4.0, -3.0, +1.1734254509660072, +1.6405682174682772},
+            new double[] {+4.0, -2.0, +0.9507248613878454, +1.5236890478275993},
+            new double[] {+4.0, -1.0, +0.6952137749095146, +1.4193247961033914},
+            new double[] {+4.0, +0.0, +0.4062988864599602, +1.3438542313870974},
+            new double[] {+4.0, +1.0, +0.6952137749095146, -1.4193247961033914},
+            new double[] {+4.0, +2.0, +0.9507248613878454, -1.5236890478275993},
+            new double[] {+4.0, +3.0, +1.1734254509660072, -1.6405682174682772},
+            new double[] {+4.0, +4.0, +1.3691844319648812, -1.7604172084429570},
+
+            
+        };
+
+        #endregion
+
         #region JacobiSN_Values
 
         private static readonly double[][] SN_Values =
@@ -382,6 +481,18 @@ namespace Vulpine_Core_Calc_Tests.Unit
         }
 
         [Test]
+        public void ETest_WideValues([Range(0, 79)] int index)
+        {
+            double[] vals = E_WideValues[index];
+            Cmplx a = new Cmplx(vals[0], vals[1]);
+            Cmplx b = new Cmplx(vals[2], vals[3]);
+
+            Cmplx res = Jacobi.E(a);
+
+            Assert.That(res, Ist.WithinTolOf(b, tol));
+        }
+
+        [Test]
         public void SN_Test_PreValues([Range(0, 98)] int index)
         {
             double[] vals = SN_Values[index];
@@ -449,24 +560,24 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
         }
 
-        [Test]
-        public void KE_LegendreTest2_Cmplx([Range(1, NumTests)] int index)
-        {
-            VRandom rng = Help.GetRNG(index, 0x5b4a0a9d);
+        //[Test]
+        //public void KE_LegendreTest2_Cmplx([Range(1, NumTests)] int index)
+        //{
+        //    VRandom rng = Help.GetRNG(index, 0x5b4a0a9d);
 
-            Cmplx m = rng.RandCmplx(2.5);
-            //Cmplx p = Cmplx.Sqrt(1.0 - m);
+        //    Cmplx m = rng.RandCmplx(2.5);
+        //    //Cmplx p = Cmplx.Sqrt(1.0 - m);
 
-            Cmplx km = Jacobi.K(m);
-            Cmplx kp = 1.0 - km;
-            Cmplx em = Jacobi.E(m);
-            Cmplx ep = 1.0 - em;
+        //    Cmplx km = Jacobi.K(m);
+        //    Cmplx kp = 1.0 - km;
+        //    Cmplx em = Jacobi.E(m);
+        //    Cmplx ep = 1.0 - em;
 
-            Cmplx x1 = (km * ep) + (em * kp);
-            Cmplx x2 = (km * kp) + 1.57079632679489661923;
+        //    Cmplx x1 = (km * ep) + (em * kp);
+        //    Cmplx x2 = (km * kp) + 1.57079632679489661923;
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
-        }
+        //    Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        //}
 
         [Test]
         public void KE_LegendreTest1_Real([Range(1, NumTests)] int index)
@@ -487,24 +598,24 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
         }
 
-        [Test]
-        public void KE_LegendreTest2_Real([Range(1, NumTests)] int index)
-        {
-            VRandom rng = Help.GetRNG(index, 0xec06230f);
+        //[Test]
+        //public void KE_LegendreTest2_Real([Range(1, NumTests)] int index)
+        //{
+        //    VRandom rng = Help.GetRNG(index, 0xec06230f);
 
-            double m = rng.RandDouble(MinM, MaxM);
-            //Cmplx p = Cmplx.Sqrt(1.0 - m);
+        //    double m = rng.RandDouble(MinM, MaxM);
+        //    //Cmplx p = Cmplx.Sqrt(1.0 - m);
 
-            double km = Jacobi.K(m);
-            double kp = 1.0 - km;
-            double em = Jacobi.E(m);
-            double ep = 1.0 - em;
+        //    double km = Jacobi.K(m);
+        //    double kp = 1.0 - km;
+        //    double em = Jacobi.E(m);
+        //    double ep = 1.0 - em;
 
-            double x1 = (km * ep) + (em * kp);
-            double x2 = (km * kp) + 1.57079632679489661923;
+        //    double x1 = (km * ep) + (em * kp);
+        //    double x2 = (km * kp) + 1.57079632679489661923;
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
-        }
+        //    Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+        //}
 
         #endregion
 
@@ -686,7 +797,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [Test]
         public void JacobiSC_Inversion_Real([Range(1, NumTests)] int index)
         {
-            VRandom rng = Help.GetRNG(index, 0xe5d991f2);
+            VRandom rng = Help.GetRNG(index, 0xab32017c);
 
             double p = rng.RandGauss(0.0, 2.5);
             double m = rng.RandDouble(MaxM, MinM);
@@ -1019,9 +1130,10 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0xcfe64e80);
 
-            Cmplx k = rng.RandCmplx(2.5);
-            Cmplx u = 0.5 * Jacobi.K(k);
-            Cmplx m = k * k;
+            //Cmplx k = rng.RandCmplx(2.5);
+            //Cmplx m = k * k;
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(m);
 
             Cmplx x1 = Jacobi.SN(u, m);
             Cmplx x2 = Cmplx.Sqrt(1.0 - m);
@@ -1037,9 +1149,10 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0x5174b7eb);
 
-            Cmplx k = rng.RandCmplx(2.5);
-            Cmplx u = 0.5 * Jacobi.K(k);
-            Cmplx m = k * k;
+            //Cmplx k = rng.RandCmplx(2.5);
+            //Cmplx m = k * k;
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(m);
 
             Cmplx x1 = Jacobi.CN(u, m);
             Cmplx x2 = Cmplx.Sqrt(1.0 - m);
@@ -1056,9 +1169,10 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0x79a51ea1);
 
-            Cmplx k = rng.RandCmplx(2.5);
-            Cmplx u = 0.5 * Jacobi.K(k);
-            Cmplx m = k * k;
+            //Cmplx k = rng.RandCmplx(2.5);
+            //Cmplx m = k * k;
+            Cmplx m = rng.RandCmplx(2.5);
+            Cmplx u = 0.5 * Jacobi.K(m);
 
             Cmplx x1 = Jacobi.DN(u, m);
             Cmplx x2 = Cmplx.Pow(1 - m, 0.25);
@@ -1075,9 +1189,11 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0x63193185);
 
-            double k = rng.RandDouble(0.0, 1.0);
-            double u = 0.5 * Jacobi.K(k);
-            double m = k * k;
+            //double k = rng.RandDouble(0.0, 1.0);
+            //double m = k * k;
+            double m = rng.RandDouble(MinM, MaxM);
+            double u = 0.5 * Jacobi.K(m);
+            
 
             double x1 = Jacobi.SN(u, m);
             double x2 = Math.Sqrt(1.0 - m);
@@ -1093,9 +1209,10 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0xdb44f27b);
 
-            double k = rng.RandDouble(0.0, 1.0);
-            double u = 0.5 * Jacobi.K(k);
-            double m = k * k;
+            //double k = rng.RandDouble(0.0, 1.0);
+            //double m = k * k;
+            double m = rng.RandDouble(MinM, MaxM);
+            double u = 0.5 * Jacobi.K(m);
 
             double x1 = Jacobi.CN(u, m);
             double x2 = Math.Sqrt(1.0 - m);
@@ -1112,9 +1229,10 @@ namespace Vulpine_Core_Calc_Tests.Unit
         {
             VRandom rng = Help.GetRNG(index, 0x187dcf47);
 
-            double k = rng.RandDouble(0.0, 1.0);
-            double u = 0.5 * Jacobi.K(k);
-            double m = k * k;
+            //double k = rng.RandDouble(0.0, 1.0);
+            //double m = k * k;
+            double m = rng.RandDouble(MinM, MaxM);
+            double u = 0.5 * Jacobi.K(m);
 
             double x1 = Jacobi.DN(u, m);
             double x2 = Math.Pow(1 - m, 0.25);
@@ -1463,6 +1581,95 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Assert.That(x, Ist.WithinTolOf(sl, VTOL));
         }
+
+        #endregion
+
+        #region Dixion Identites...
+
+        [Test]
+        public void DixonCM_Conjugation_Distributes([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+
+            Cmplx z = rng.RandCmplx(2.5);
+
+            Cmplx a = Jacobi.CM(z.Conj());
+            Cmplx b = Jacobi.CM(z).Conj();
+
+            Assert.That(b, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void DixonSM_Conjugation_Distributes([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+
+            Cmplx z = rng.RandCmplx(2.5);
+
+            Cmplx a = Jacobi.SM(z.Conj());
+            Cmplx b = Jacobi.SM(z).Conj();
+
+            Assert.That(b, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void DixonCM_ReflectInversion_CMplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+
+            Cmplx z = rng.RandCmplx(2.5);
+
+            Cmplx a = Jacobi.CM(-z);
+            Cmplx b = 1.0 / Jacobi.CM(z);
+
+            Assert.That(b, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void DixonSM_InversionShift_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+
+            Cmplx z = rng.RandCmplx(2.5);
+
+            Cmplx a = Jacobi.SM(-z);
+            Cmplx b = 1.0 / Jacobi.SM(z - 1.7666387502854499573);
+
+            Assert.That(b, Ist.WithinTolOf(a, VTOL));
+        }
+
+        #endregion
+
+        #region Dixon Inversion...
+
+        [Test]
+        public void DixonSM_Inverse_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x51473154);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = Jacobi.ArcSM(a);
+            Cmplx a2 = Jacobi.SM(b);
+
+            Console.WriteLine("Jacobi.ArcSM({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
+        [Test]
+        public void DixonCM_Inverse_Cmplx([Range(1, NumTests)] int index)
+        {
+            VRandom rng = Help.GetRNG(index, 0x9d6459e5);
+
+            Cmplx a = rng.RandCmplx(2.5);
+            Cmplx b = Jacobi.ArcCM(a);
+            Cmplx a2 = Jacobi.CM(b);
+
+            Console.WriteLine("Jacobi.ArcCM({0:G5}) = {1:G5}", a, b);
+
+            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+        }
+
 
         #endregion
 
