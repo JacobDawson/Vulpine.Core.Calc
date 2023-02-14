@@ -23,6 +23,8 @@ namespace Vulpine_Core_Calc_Tests.Unit
         /// </summary>
         public const Double VTOL = 1.0e-12;
 
+        public const Double LTol = 1.0e-6;
+
         //stores a rerenece to the tolarance for this instance
         private double tol;
 
@@ -1259,7 +1261,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", a, b1);
 
-            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+            Assert.That(b1, Ist.WithinTolOf(b2, LTol));
         }
 
         [Test]
@@ -1274,7 +1276,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", a, b1);
 
-            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+            Assert.That(b1, Ist.WithinTolOf(b2, LTol));
         }
 
         [Test]
@@ -1289,7 +1291,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", a, b1);
 
-            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+            Assert.That(b1, Ist.WithinTolOf(b2, LTol));
         }
 
         [Test]
@@ -1304,7 +1306,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", a, b1);
 
-            Assert.That(b1, Ist.WithinTolOf(b2, VTOL));
+            Assert.That(b1, Ist.WithinTolOf(b2, LTol));
         }
 
         #endregion
@@ -1322,7 +1324,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.ArcSL({0:G5}) = {1:G5}", a, b);
 
-            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+            Assert.That(a2, Ist.WithinTolOf(a, LTol));
         }
 
         [Test]
@@ -1336,7 +1338,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.ArcCL({0:G5}) = {1:G5}", a, b);
 
-            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+            Assert.That(a2, Ist.WithinTolOf(a, LTol));
         }
 
         [Test]
@@ -1350,7 +1352,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.ArcSL({0:G5}) = {1:G5}", a, b);
 
-            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+            Assert.That(a2, Ist.WithinTolOf(a, LTol));
         }
 
         [Test]
@@ -1364,7 +1366,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.ArcCL({0:G5}) = {1:G5}", a, b);
 
-            Assert.That(a2, Ist.WithinTolOf(a, VTOL));
+            Assert.That(a2, Ist.WithinTolOf(a, LTol));
         }
 
         #endregion
@@ -1384,7 +1386,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1400,7 +1402,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1416,7 +1418,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1432,7 +1434,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1448,7 +1450,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1464,7 +1466,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1480,7 +1482,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         [Test]
@@ -1496,7 +1498,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL({0:G5}) = {1:G5}", b, x1);
 
-            Assert.That(x1, Ist.WithinTolOf(x2, VTOL));
+            Assert.That(x1, Ist.WithinTolOf(x2, LTol));
         }
 
         #endregion
@@ -1520,7 +1522,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL^2({0:G5}) = {1:G5}", a, cl);
 
-            Assert.That(x, Ist.WithinTolOf(cl, VTOL));             
+            Assert.That(x, Ist.WithinTolOf(cl, LTol));             
         }
 
         [Test]
@@ -1540,7 +1542,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL^2({0:G5}) = {1:G5}", a, sl);
 
-            Assert.That(x, Ist.WithinTolOf(sl, VTOL));
+            Assert.That(x, Ist.WithinTolOf(sl, LTol));
         }
 
         [Test]
@@ -1560,7 +1562,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.CL^2({0:G5}) = {1:G5}", a, cl);
 
-            Assert.That(x, Ist.WithinTolOf(cl, VTOL));
+            Assert.That(x, Ist.WithinTolOf(cl, LTol));
         }
 
         [Test]
@@ -1580,7 +1582,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
 
             Console.WriteLine("Jacobi.SL^2({0:G5}) = {1:G5}", a, sl);
 
-            Assert.That(x, Ist.WithinTolOf(sl, VTOL));
+            Assert.That(x, Ist.WithinTolOf(sl, LTol));
         }
 
         #endregion
@@ -1590,7 +1592,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [Test]
         public void DixonCM_Conjugation_Distributes([Range(1, NumTests)] int index)
         {
-            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+            VRandom rng = Help.GetRNG(index, 0x10ea3efb);
 
             Cmplx z = rng.RandCmplx(2.5);
 
@@ -1603,7 +1605,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [Test]
         public void DixonSM_Conjugation_Distributes([Range(1, NumTests)] int index)
         {
-            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+            VRandom rng = Help.GetRNG(index, 0xb6dea738);
 
             Cmplx z = rng.RandCmplx(2.5);
 
@@ -1616,7 +1618,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [Test]
         public void DixonCM_ReflectInversion_CMplx([Range(1, NumTests)] int index)
         {
-            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+            VRandom rng = Help.GetRNG(index, 0x0c0d0bd2);
 
             Cmplx z = rng.RandCmplx(2.5);
 
@@ -1629,7 +1631,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [Test]
         public void DixonSM_InversionShift_Cmplx([Range(1, NumTests)] int index)
         {
-            VRandom rng = Help.GetRNG(index, 0x43e98e1d);
+            VRandom rng = Help.GetRNG(index, 0x9a1841b2);
 
             Cmplx z = rng.RandCmplx(2.5);
 

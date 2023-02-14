@@ -34,6 +34,16 @@ using Vulpine.Core.Data.Extentions;
 
 namespace Vulpine.Core.Calc
 {
+    /// <summary>
+    /// This class contains several methods for computing the various Jacobi Eleptic Functions
+    /// as well as the related Eleptic Intergrals. Eleptic Fuctions generalise the notion of
+    /// trigometric fucntions: as trigometric funcitons are defined for circles, eleptie
+    /// funcitons are defined for general elepisis. Because of this, Eleptic Functions generaly
+    /// come with an extra paramater that is tied to the excentricity of the elepise. Such
+    /// funcitons are tipicaly defined in terms of the Eleptic Intergral which can be seen as
+    /// a sort of sudo-inverse to the original function. These functions can also be extended
+    /// to the complex plane, where they form double-periodic, repeating patterns.
+    /// </summary>
     public static class Jacobi
     {
         //used to limit infinite sumations
@@ -456,6 +466,8 @@ namespace Vulpine.Core.Calc
 
         #region Lemniscate Functions...
 
+        private static readonly Cmplx R4 = new Cmplx(0.7071067811865475244, 0.7071067811865475244);
+
         public static double SL(double x)
         {
             ////calculates the inner variables
@@ -484,6 +496,46 @@ namespace Vulpine.Core.Calc
 
         public static Cmplx SL(Cmplx x)
         {
+            //rotates the input by 45 degrees
+            Cmplx x2 = x * R4;
+            x2 = x2 / 3.7081493546027438369;
+
+            //grabs the fractional cordinates
+            double fr = x2.CofR.Frac();
+            double fi = x2.CofI.Frac();
+
+            //center aorund the origin
+            if (fr > 0.5) fr -= 1.0;
+            if (fi > 0.5) fi -= 1.0;
+
+            //converts back
+            x2 = new Cmplx(fr, fi);
+            x2 = x2 * 3.7081493546027438369;
+            x2 = x2 / R4;
+
+            Cmplx z4 = x2 * x2;
+            z4 = z4 * z4;
+
+            //uses the Pade Aporximate
+
+            Cmplx p = 7.022446200760670200E-008;
+            Cmplx q = 8.374069444330472500E-010;
+
+            p = (p * z4) - 1.017454238272508000E-004;
+            p = (p * z4) - 1.650347664174517700E-002;
+            p = (p * z4) + 1.0;
+            p = (p * x2) + 0.0;       
+
+            q = (q * z4) + 8.514261379124347500E-007;
+            q = (q * z4) - 8.542642133510098200E-005;
+            q = (q * z4) + 8.349652335825483200E-002;
+            q = (q * z4) + 1.0;
+
+            return p / q;
+        }
+
+        public static Cmplx SL2(Cmplx x)
+        {
             ////calculates the inner variables
             //Cmplx xp = x / VMath.GA;
             //Cmplx sx = Cmplx.Sin(x);
@@ -496,6 +548,55 @@ namespace Vulpine.Core.Calc
         }
 
         public static Cmplx CL(Cmplx x)
+        {
+            //rotates the input by 45 degrees
+            Cmplx x2 = x * R4;
+            x2 = x2 / 3.7081493546027438369;
+
+            //grabs the fractional cordinates
+            double fr = x2.CofR.Frac();
+            double fi = x2.CofI.Frac();
+
+            //center aorund the origin
+            if (fr > 0.5) fr -= 1.0;
+            if (fi > 0.5) fi -= 1.0;
+
+            //converts back
+            x2 = new Cmplx(fr, fi);
+            x2 = x2 * 3.7081493546027438369;
+            x2 = x2 / R4;
+            x2 = x2 * x2;
+
+            //uses the Pade Aproximate
+            Cmplx p = 1.5212946484104586e-08;
+            Cmplx q = 1.6977395184014471e-09;
+
+            //computes the numerator polynomial
+            p = (p * x2) + 4.4815894287798553e-07;
+            p = (p * x2) - 1.4728072632415499e-05;
+            p = (p * x2) + 5.1625058270260166e-04;
+            p = (p * x2) - 3.2928634375625457e-03;
+            p = (p * x2) - 2.8453980897197272e-02;
+            p = (p * x2) - 5.2566785364572466e-01;
+            p = (p * x2) + 1.0;
+
+            //computes the denominator polynomial
+            q = (q * x2) - 3.5733366358697414e-08;
+            q = (q * x2) + 3.0790206812956039e-07;
+            q = (q * x2) - 6.3111992054324681e-06;
+            q = (q * x2) + 2.9604060282399007e-04;
+            q = (q * x2) + 5.4192288423778063e-03;
+            q = (q * x2) - 5.4121834542921930e-02;
+            q = (q * x2) + 4.7433214635427529e-01;
+            q = (q * x2) + 1.0;
+
+            return p / q;
+            
+
+            //return Cmplx.NaN;
+        }
+
+        public static Cmplx CL2(Cmplx x)
         {
             ////calculates the inner variables
             //Cmplx xp = x / VMath.GA;

@@ -25,13 +25,13 @@ namespace QuickTests
             //AGM_Tests.TestComp4();
             //AGM_Tests.TestError();
 
-            //PadeAprox.TryPade();
+            PadeAprox.TryPade();
 
             //DataFormater.GenFile();
 
 
             //JacobiTests.ListSamples();
-            JacobiTests.TestInversion6();         //6
+            //JacobiTests.TestInversion6();         //6
             //JacobiTests.TestCompatablity2();      //2
 
             Console.ReadKey();
