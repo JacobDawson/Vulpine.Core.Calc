@@ -68,6 +68,7 @@
     <Compile Include="Matrices\Vector.cs" />
     <Compile Include="Matrices\VectorCmplx.cs" />
     <Compile Include="Numbers\Cmplx.cs" />
+    <Compile Include="Numbers\Dual.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
     <Compile Include="Geometry\Planer\Rectangle.cs" />
     <Compile Include="Algorithms\Optimizer.cs" />
