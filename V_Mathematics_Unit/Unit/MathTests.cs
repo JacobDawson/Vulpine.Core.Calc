@@ -280,7 +280,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
         [TestCase(5.0, 0.999999713348428)]
         public void Cdf_VariousInput_ExpectedOutput(double x, double exp)
         {
-            double y = VMath.Cdf(x);
+            double y = VMath.CDF(x);
             Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
@@ -296,7 +296,32 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Cmplx z = new Cmplx(z1, z2);
             Cmplx exp = new Cmplx(e1, e2);
 
-            Cmplx y = VMath.Cdf(z);
+            Cmplx y = VMath.CDF(z);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
+        [TestCase(-13.0, 2.0, -26.849923841567868225, -37.198406148445332353)] 
+        [TestCase(-9.5, 0.0, -12.795895333554363459, -31.415926535897932385)] 
+        [TestCase(-3.0, 1.0, -2.9535082922959020229, -9.7264182812369129133)]
+        [TestCase(4.0, 2.0, 1.2508356193568071782, 2.6101958010488946753)] 
+        [TestCase(7.0, 4.0, 5.4180869718730471170, 7.7181013652048386845)] 
+        [TestCase(9.0, 16.0, -0.27799290829569333609, 39.553165314423256031)]
+        [TestCase(10.0, 0.0, 12.801827480081469611, 0.0)]
+        [TestCase(15.0, 5.0, 24.345777015693776834, 13.467369243717367191)] 
+        [TestCase(-13.0, -2.0, -26.849923841567868225, 37.198406148445332353)] 
+        [TestCase(-3.0, -1.0, -2.9535082922959020229, 9.7264182812369129133)]
+        [TestCase(0.0, -8.0, -12.687152851994418176, -7.8397120535167111332)]
+        [TestCase(3.0, 0.0, 0.69314718055994530942, 0.0)]
+        [TestCase(4.0, -2.0, 1.2508356193568071782, -2.6101958010488946753)] 
+        [TestCase(7.0, -4.0, 5.4180869718730471170, -7.7181013652048386845)] 
+        [TestCase(9.0, -16.0, -0.27799290829569333609,  -39.553165314423256031)] 
+        [TestCase(15.0, -5.0, 24.345777015693776834, -13.467369243717367191)] 
+        public void GammaLog_CmplxInput_ExpectedOutput(double z1, double z2, double e1, double e2)
+        {
+            Cmplx z = new Cmplx(z1, z2);
+            Cmplx exp = new Cmplx(e1, e2);
+
+            Cmplx y = VMath.GammaLog(z);
             Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 

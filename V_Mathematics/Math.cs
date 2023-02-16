@@ -1,6 +1,6 @@
 ﻿/**
  *  This file is an integral part of the Vulpine Core Library
- *  Copyright (c) 2016-2019 Benjamin Jacob Dawson
+ *  Copyright (c) 2016-2023 Benjamin Jacob Dawson
  *
  *      http://www.jakesden.com/corelibrary.html
  *
@@ -48,6 +48,13 @@ namespace Vulpine.Core.Calc
 
         #region Mathmatical Constants...
 
+        /// <summary>
+        /// The default error tollarence used within the mathamatics library.
+        /// It is desined to be greater that the precision of a single floating
+        /// point value, but less than the presision of a double. 
+        /// </summary>
+        public const double TOL = 1e-12;
+        
         /// <summary>
         /// The circile constant that is the ratio of the cercumfrence to
         /// the radius. It is also precicesly twice the value of PI, which
@@ -116,11 +123,26 @@ namespace Vulpine.Core.Calc
         public const double LC = 2.6220575542921198105;
 
         /// <summary>
-        /// The default error tollarence used within the mathamatics library.
-        /// It is desined to be greater that the precision of a single floating
-        /// point value, but less than the presision of a double. 
+        /// Stores a list of all the even indexed Bernouli numbers up to B_24.
+        /// The odd indexed Bernouli numbers are all zero, except for B_1 which
+        /// simply evaluates to -1/2.
         /// </summary>
-        public const double TOL = 1e-12;
+        private static readonly double[] B2N =
+        {
+            1.0,
+            1.0 / 6.0,
+            -1.0 / 30.0,
+            1.0 / 42.0,
+            -1.0 / 30.0,
+            5.0 / 66.0,
+            -691.0 / 2730.0,
+            7.0 / 6.0,
+            -3617.0 / 510.0,
+            43867.0 / 798.0,
+            -174611.0 / 330.0,
+            854513.0 / 138.0,
+            -236364091.0 / 2730.0,
+        };
 
         #endregion //////////////////////////////////////////////////////////////////
 
@@ -433,8 +455,8 @@ namespace Vulpine.Core.Calc
 
         /// <summary>
         /// This method extends the sign funciton to the complex domain. It returns
-        /// the point on the unit circle closest to the input. It returns zero if
-        /// the input is zero.
+        /// the point on the unit circle closest to the input, except when the input
+        /// is zero, then it returns zero.
         /// </summary>
         /// <param name="z">Input to the sign funciton</param>
         /// <returns>The normalised complex vector</returns>
@@ -443,6 +465,20 @@ namespace Vulpine.Core.Calc
             double abs = z.Abs;
             if (abs.IsZero()) return 0.0;
             return z / abs;
+        }
+
+        /// <summary>
+        /// This method extends the sign funciton to the dual domain. For simplicity,
+        /// the derivitive is treated as being zero everywhere, and the discontinuity
+        /// at zero is ignored.
+        /// </summary>
+        /// <param name="x">Input to the sign funciton</param>
+        /// <returns>The dual value of the function</returns>
+        public static Dual Sign(Dual x)
+        {
+            //the derivitive is essentialy zero for all points
+            double fx = Sign(x.Real);
+            return new Dual(fx, 0.0);
         }
 
         /// <summary>
@@ -484,6 +520,23 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Extends the cube root function, as defined on the real numbers, to the dual
+        /// reaml. It is defined for all dual numbers, except at zero where the derivitive
+        /// vanishes.
+        /// </summary>
+        /// <param name="x">Input to the cubed root</param>
+        /// <returns>The dual value of the cubed root</returns>
+        public static Dual Curt(Dual x)
+        {
+            //computes both the cube root and it's derivitive
+            double fx = Curt(x.Real);
+            double dx = 1.0 / (3.0 * fx * fx);
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
         /// Computes the standard sinc function, which is defined as sin(x) / x,
         /// except when x is zero where it is equal to one.
         /// </summary>
@@ -509,7 +562,7 @@ namespace Vulpine.Core.Calc
         /// Computes the standard sinc function, which is defined as sin(z) / z,
         /// except when z is zero where it is equal to one.
         /// </summary>
-        /// <param name="x">Input to the sinc function</param>
+        /// <param name="z">Input to the sinc function</param>
         /// <returns>Evaluation of the sinc function</returns>
         public static Cmplx Sinc(Cmplx z)
         {
@@ -525,6 +578,41 @@ namespace Vulpine.Core.Calc
                 //uses the standard formula
                 return Cmplx.Sin(z) / z;
             }
+        }
+
+        /// <summary>
+        /// Computes the standard sinc function, which is defined as sin(x) / x,
+        /// except when x is zero where it is equal to one.
+        /// </summary>
+        /// <param name="x">Input to the sinc function</param>
+        /// <returns>Evaluation of the sinc function</returns>
+        public static Dual Sinc(Dual x)
+        {
+            double r = x.Real;
+            double fx, dx;
+
+            if (Math.Abs(r) < 0.001)
+            {
+                double r2 = r * r;
+                double r4 = r2 * r2;
+
+                //uses the tailor series for the function and its derivitive
+                fx = 1.0 - (r2 / 6.0) + (r4 / 120.0);
+                dx = r * (r2 - 10.0) * (1.0 / 30.0);
+            }
+            else
+            {
+                double sin = Math.Sin(r);
+                double cos = Math.Cos(r);
+
+                //uses the standard formula and its derivitive
+                fx = sin / r;
+                dx = (r * cos) - sin;
+                dx = dx / (r * r);
+            }
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
         }
 
         /// <summary>
@@ -556,29 +644,63 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
-        /// Computes the probability density function for the standard normal
-        /// distribution. That is a distribution with a mean of zero, and a
-        /// variance of one. It is characterised by it's bell-shaped curve.
+        /// Computes the logarythim base 2 of the given value, that is, it finds
+        /// the exponent of 2 which produces the given value. This is a usefull
+        /// mesurment for base-2 binary systems.
+        /// </summary>
+        /// <param name="x">Number to evaluate</param>
+        /// <returns>Base-2 Logarythim of the imput</returns>
+        public static Dual Log2(Dual x)
+        {
+            //computes the log base 2 and its derivitive
+            double fx = Math.Log(x.Real) / VMath.LN2;
+            double dx = 1.0 / (x.Real * VMath.LN2);
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
+        /// Computes the standard gaussian curve, which has a maximum value of one
+        /// at the origin. It is sometimes called a bell-shaped curve due to it's
+        /// aperance on the real axis.
         /// </summary>
         /// <param name="x">Input to the normal distribution funciton</param>
         /// <returns>The result of the normal distribution function</returns>
         public static double Gauss(double x)
         {
-            double temp = Math.Exp(-0.5 * x * x);
-            return temp / VMath.RTP;
+            return Math.Exp(-x * x);
         }
 
         /// <summary>
-        /// Computes the probability density function for the standard normal
-        /// distribution. That is a distribution with a mean of zero, and a
-        /// variance of one. It is characterised by it's bell-shaped curve.
+        /// Computes the standard gaussian curve, which has a maximum value of one
+        /// at the origin. It is sometimes called a bell-shaped curve due to it's
+        /// aperance on the real axis.
         /// </summary>
         /// <param name="z">Input to the normal distribution funciton</param>
         /// <returns>The result of the normal distribution function</returns>
         public static Cmplx Gauss(Cmplx z)
         {
-            Cmplx temp = Cmplx.Exp(-0.5 * z * z);
-            return temp / VMath.RTP;
+            return Cmplx.Exp(-z * z);
+        }
+
+        /// <summary>
+        /// Computes the standard gaussian curve, which has a maximum value of one
+        /// at the origin. It is sometimes called a bell-shaped curve due to it's
+        /// aperance on the real axis.
+        /// </summary>
+        /// <param name="x">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static Dual Gauss(Dual x)
+        {
+            double r = x.Real;
+
+            //computes the gauss function and its derivitive
+            double fx = Math.Exp(-r * r);
+            double dx = -2.0 * fx * r;
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
         }
 
         /// <summary>
@@ -717,6 +839,37 @@ namespace Vulpine.Core.Calc
         /// <returns>The solution to the incomplete gamma function</returns>
         public static double Gamma(double a, double x)
         {
+            //returns the upper incomplete gamma
+            return Gamma(a) - GammaLow(a, x);
+        }
+
+        /// <summary>
+        /// Evaluates the upper incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="z">Lower limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static Cmplx Gamma(Cmplx a, Cmplx z)
+        {
+            //returns the upper incomplete gamma
+            return Gamma(a) - GammaLow(a, z);
+        }
+
+
+        /// <summary>
+        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="x">Upper limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static double GammaLow(double a, double x)
+        {
             //the function is undefined for negative x
             if (x < 0.0) return Double.NaN;
 
@@ -734,20 +887,19 @@ namespace Vulpine.Core.Calc
                 p = p * x;
             }
 
-            //returns the upper incomplete gamma
-            return VMath.Gamma(a) - sum;
+            return sum;
         }
 
         /// <summary>
-        /// Evaluates the upper incomplete gamma function. It is related to 
+        /// Evaluates the lower incomplete gamma function. It is related to 
         /// the gamma function in that both can be expressed as an intergral 
         /// of the same soultion. It is a special funciton which arises as
         /// the solution to various mathmatical problems.
         /// </summary>
         /// <param name="a">Value to integrate</param>
-        /// <param name="z">Lower limit of the intergral</param>
+        /// <param name="z">Upper limit of the intergral</param>
         /// <returns>The solution to the incomplete gamma function</returns>
-        public static Cmplx Gamma(Cmplx a, Cmplx z)
+        public static Cmplx GammaLow(Cmplx a, Cmplx z)
         {
             //values used in the itteration below
             Cmplx pow = Cmplx.Pow(z, a) * Cmplx.Exp(-z);
@@ -763,8 +915,106 @@ namespace Vulpine.Core.Calc
                 p = p * z;
             }
 
-            //returns the upper incomplete gamma
-            return VMath.Gamma(a) - sum;
+            return sum;
+        }
+
+        public static Cmplx GammaLog(Cmplx z)
+        {
+            //x0 = 7
+            //K = 10
+
+            double x = z.CofR;
+
+            Cmplx lg, sum, zk;
+
+            if (x >= 7.0) //x >= x0
+            {
+                lg = (z - 0.5) * Cmplx.Log(z);
+                lg = lg - z - 0.91893853320467274178; // ln(tau) / 2
+
+                zk = z;
+                sum = 0.0;
+
+                for (int k = 1; k <= 12; k++)
+                {
+                    //int dim = (2 * k - 1) * 2 * k;
+
+                    int dim = 2 * k;
+                    dim = dim * (dim - 1);
+
+                    double bk = B2N[k] / (double)dim;
+                    //Cmplx s = (Cmplx)bk / (zk * zk);
+
+                    Cmplx s = bk * Cmplx.Pow(z, -2.0 * k);
+
+                    sum += s;
+                    zk *= z;
+                }
+
+                //return lg + sum;
+                return lg + (z * sum);
+
+            }
+            else if (x >= 0.0) //0 <= x < x0
+            {
+                int n = 7 - (int)Math.Floor(x);
+                double a = 0.0;
+
+                //recursivly calls the GammaLog() function
+                lg = GammaLog(z + n);
+                sum = 1.0;
+                
+                for (int k = 0; k < n; k++)
+                {
+                    sum *= (z + k);
+                    a += Math.Atan2(z.CofI, x + k);
+                    //a += Math.Atan(z.CofI / (x + k));
+ 
+                    //NOTE: I don't know if I should use Atan(y / x) or Atan2(y, x)
+                }
+
+                double b = 0.5 * Math.Log(sum.Abs);
+                Cmplx prod = new Cmplx(b, a);
+
+                return lg - prod;
+
+            }
+            else //x < 0
+            {
+                bool y_neg = z.CofI < 0.0;
+                if (y_neg) z = z.Conj();
+
+                //recursivly calls the GammaLog() function
+                lg = GammaLog(1.0 - z);
+                lg = 1.1447298858494 - lg; // ln(pi) - lg
+
+                double xb, yb, e, sin, ey, re, im;
+
+                xb = Math.Floor(x);
+                yb = Math.Abs(z.CofI);
+                e = x - xb;
+
+                sin = Math.Sin(Math.PI * e);
+                ey = Math.Exp(-VMath.TAU * yb);
+
+                re = 1.0 - ey;
+                re = 0.25 * re * re;
+                re = (ey * sin * sin) + re;
+
+                re = 0.5 * Math.Log(re);
+                re = re + (Math.PI * yb);
+
+                im = Math.Tanh(Math.PI * yb);
+                im = im / Math.Tan(Math.PI * e);
+                im = Math.Atan(im) - (xb * Math.PI);
+
+                Cmplx lsz = new Cmplx(re, im);
+
+                lg = lg - lsz;
+                lg = y_neg ? lg.Conj() : lg;
+
+                return lg;
+            }
         }
 
         /// <summary>
@@ -907,13 +1157,32 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Evalueates the error function at the given value. Note this is not the same
+        /// as computing the amount of error in an estimated value. The error funciton
+        /// arrises from stastics and has a similar shape to the sigmoid funciton. The
+        /// error function, however, cannot be defined in terms of elementry operattors,
+        /// thus a numerical aproximation is used.
+        /// </summary>
+        /// <param name="x">Input to the error fuction</param>
+        /// <returns>The result of the error funciton</returns>
+        public static Dual Erf(Dual x)
+        {
+            //computes the error function and its derivitive
+            double fx = Erf(x.Real);
+            double dx = Gauss(x.Real) * 1.1283791670955125739;
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
         /// Computes the cumulitive distribution funciton for the standard normal
         /// distribution, with mean of 0 and variance of 1. It returns the probability 
         /// that a random number will appear below the input value.
         /// </summary>
         /// <param name="x">Input value X to test</param>
         /// <returns>Probablity that some value is less than X</returns>
-        public static double Cdf(double x)
+        public static double CDF(double x)
         {
             //computes x / sqrt(2)
             double phi = x * 0.7071067811865475244;
@@ -929,13 +1198,75 @@ namespace Vulpine.Core.Calc
         /// </summary>
         /// <param name="z">Input value Z to test</param>
         /// <returns>Probablity that some value is less than Z</returns>
-        public static Cmplx Cdf(Cmplx z)
+        public static Cmplx CDF(Cmplx z)
         {
             //computes z / sqrt(2)
             Cmplx phi = z * 0.7071067811865475244;
 
             phi = 1.0 + VMath.Erf(phi);
             return phi * 0.5;
+        }
+
+        /// <summary>
+        /// Computes the cumulitive distribution funciton for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It returns the probability 
+        /// that a random number will appear below the input value.
+        /// </summary>
+        /// <param name="x">Input value X to test</param>
+        /// <returns>Probablity that some value is less than X</returns>
+        public static Dual CDF(Dual x)
+        {
+            //computes both the CDF and the PDF
+            double fx = CDF(x.Real);
+            double dx = PDF(x.Real);
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
+        /// Computes the probability density function for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It is the derivitive
+        /// of the standard cumulitive distribution function.
+        /// </summary>
+        /// <param name="x">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static double PDF(double x)
+        {
+            double temp = Math.Exp(-0.5 * x * x);
+            return temp / VMath.RTP;
+        }
+
+        /// <summary>
+        /// Computes the probability density function for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It is the derivitive
+        /// of the standard cumulitive distribution function.
+        /// </summary>
+        /// <param name="x">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static Cmplx PDF(Cmplx z)
+        {
+            Cmplx temp = Cmplx.Exp(-0.5 * z * z);
+            return temp / VMath.RTP;
+        }
+
+        /// <summary>
+        /// Computes the probability density function for the standard normal
+        /// distribution, with mean of 0 and variance of 1. It is the derivitive
+        /// of the standard cumulitive distribution function.
+        /// </summary>
+        /// <param name="x">Input to the normal distribution funciton</param>
+        /// <returns>The result of the normal distribution function</returns>
+        public static Dual PDF(Dual x)
+        {
+            double r = x.Real;
+
+            //computes the gauss function and its derivitive
+            double fx = Math.Exp(-0.5 * r * r) / VMath.RTP;
+            double dx = -fx * r;
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
         }
 
         /// <summary>
