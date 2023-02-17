@@ -130,7 +130,7 @@ namespace Vulpine.Core.Calc
         private static readonly double[] B2N =
         {
             1.0,
-            1.0 / 6.0,
+            1.0 / 6.0, 
             -1.0 / 30.0,
             1.0 / 42.0,
             -1.0 / 30.0,
@@ -138,10 +138,10 @@ namespace Vulpine.Core.Calc
             -691.0 / 2730.0,
             7.0 / 6.0,
             -3617.0 / 510.0,
-            43867.0 / 798.0,
-            -174611.0 / 330.0,
-            854513.0 / 138.0,
-            -236364091.0 / 2730.0,
+            54.971177944862155388, 
+            -529.12424242424242424,
+            6192.1231884057971014,
+            -86580.253113553113553,
         };
 
         #endregion //////////////////////////////////////////////////////////////////
@@ -918,6 +918,72 @@ namespace Vulpine.Core.Calc
             return sum;
         }
 
+        /// <summary>
+        /// Evaluates the natural logarythim of the Gamma function. Because the
+        /// Gamma function grows quite quickly, this method can be used to avoid
+        /// numeric overflow in certain cercomstances. This function is undefined
+        /// for real values less than zero.
+        /// </summary>
+        /// <param name="x">Input to the Gamma function</param>
+        /// <returns>The logrythim of the Gamma function</returns>
+        public static double GammaLog(double x)
+        {
+            double lg, sum, xk;
+
+            if (x >= 7.0) //x >= x0
+            {
+                lg = (x - 0.5) * Math.Log(x);
+                lg = lg - x + 0.91893853320467274178; // ln(tau) / 2
+
+                xk = x;
+                sum = 0.0;
+
+                for (int k = 1; k <= 12; k++)
+                {
+                    int dim = 2 * k;
+                    dim = dim * (dim - 1);
+
+                    double bk = B2N[k] / (double)dim;
+                    double s = bk / (xk * xk);
+
+                    sum += s;
+                    xk *= x;
+                }
+
+                return lg + (x * sum);
+
+            }
+            else if (x >= 0.0) //0 <= x < x0
+            {
+                int n = 7 - (int)Math.Floor(x);
+
+                //recursivly calls the GammaLog() function
+                lg = GammaLog(x + n);
+                sum = 1.0;
+
+                for (int k = 0; k < n; k++)
+                {
+                    sum *= (x + k);
+                }
+
+                return lg - Math.Log(sum);
+
+            }
+            else //x < 0
+            {
+                //the function is undefined for negative values
+                return Double.NaN;
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the natural logarythim of the Gamma function. Because the
+        /// Gamma function grows quite quickly, this method can be used to avoid
+        /// numeric overflow in certain cercomstances. It also features a single
+        /// brach-cut along the negative real axis.
+        /// </summary>
+        /// <param name="z">Input to the Gamma function</param>
+        /// <returns>The logrythim of the Gamma function</returns>
         public static Cmplx GammaLog(Cmplx z)
         {
             //x0 = 7
@@ -930,7 +996,8 @@ namespace Vulpine.Core.Calc
             if (x >= 7.0) //x >= x0
             {
                 lg = (z - 0.5) * Cmplx.Log(z);
-                lg = lg - z - 0.91893853320467274178; // ln(tau) / 2
+                lg = lg - z + 0.91893853320467274178; // ln(tau) / 2
+                //lg = lg - z - 1.08879304515180106525; // ln(2) pi / 2
 
                 zk = z;
                 sum = 0.0;
@@ -943,13 +1010,15 @@ namespace Vulpine.Core.Calc
                     dim = dim * (dim - 1);
 
                     double bk = B2N[k] / (double)dim;
-                    //Cmplx s = (Cmplx)bk / (zk * zk);
+                    Cmplx s = (Cmplx)bk / (zk * zk);
 
-                    Cmplx s = bk * Cmplx.Pow(z, -2.0 * k);
+                    //Cmplx s = bk * Cmplx.Pow(z, -2.0 * k);
 
                     sum += s;
                     zk *= z;
                 }
+
+                //lg = lg + 1.83787706640935; //ln(2 pi)
 
                 //return lg + sum;
                 return lg + (z * sum);
@@ -973,7 +1042,7 @@ namespace Vulpine.Core.Calc
                     //NOTE: I don't know if I should use Atan(y / x) or Atan2(y, x)
                 }
 
-                double b = 0.5 * Math.Log(sum.Abs);
+                double b = 1.0 * Math.Log(sum.Abs);
                 Cmplx prod = new Cmplx(b, a);
 
                 return lg - prod;

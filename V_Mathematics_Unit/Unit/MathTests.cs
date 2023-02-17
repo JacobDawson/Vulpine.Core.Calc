@@ -322,6 +322,30 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Cmplx exp = new Cmplx(e1, e2);
 
             Cmplx y = VMath.GammaLog(z);
+
+            double diff = exp.CofR - y.CofR;
+            Console.WriteLine(diff.ToString("G22"));
+
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+            
+        }
+
+        [TestCase(Math.PI, 0.82769459232343710153)] 
+        [TestCase(Math.E, 0.44946174182006766700)] 
+        [TestCase(VMath.R2, -0.12038230351896920333)] 
+        [TestCase(42.0, 114.03421178146170323)] 
+        [TestCase(12.0, 17.502307845873885839)] 
+        [TestCase(7.5, 7.5343642367587329552)]
+        [TestCase(11.7, 16.773454337766378255)] 
+        [TestCase(5.0, 3.1780538303479456196)]
+        [TestCase(0.5, 0.57236494292470008707)] 
+        [TestCase(1.0 / 16.0, 2.7396316219462034186)] 
+        [TestCase(1.0 / 1000.0, 6.9071788853838536825)] 
+        [TestCase(1.46163, -0.12148629053362353021)] 
+        //[TestCase(2.0, 0.0)]
+        public void GammaLog_RealInput_ExpectedOutput(double x, double exp)
+        {
+            double y = VMath.GammaLog(x);
             Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
