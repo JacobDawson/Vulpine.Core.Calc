@@ -829,6 +829,23 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Computes the gamma function applied to the dual number domain.
+        /// The gamma funciton can be thought of as a continuation of the
+        /// factorial function where Fact(n) is equal to Gamma(n + 1).
+        /// </summary>
+        /// <param name="x">Input to the gamma function</param>
+        /// <returns>Output from the gamma funciton</returns>
+        public static Dual Gamma(Dual x)
+        {
+            //computes the gamma funciton and it's derivitive
+            double fx = Gamma(x.Real);
+            double dx = Digamma(x.Real) * fx;
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
         /// Evaluates the upper incomplete gamma function. It is related to 
         /// the gamma function in that both can be expressed as an intergral 
         /// of the same soultion. It is a special funciton which arises as
@@ -1087,6 +1104,134 @@ namespace Vulpine.Core.Calc
         }
 
         /// <summary>
+        /// Evaluates the natural logarythim of the Gamma function. Because the
+        /// Gamma function grows quite quickly, this method can be used to avoid
+        /// numeric overflow in certain cercomstances. This function is undefined
+        /// for real values less than zero.
+        /// </summary>
+        /// <param name="x">Input to the Gamma function</param>
+        /// <returns>The logrythim of the Gamma function</returns>
+        public static Dual GammaLog(Dual x)
+        {
+            //takes care of negative real values
+            if (x.Real <= 0.0) return Dual.NaN;
+
+            //computes the log of the gamma funciton and it's derivitive
+            double fx = GammaLog(x.Real);
+            double dx = Digamma(x.Real);
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
+        /// Computes the Digamma funciton, which is defined as the derivitive of
+        /// the LogGamma function. However, unlike the LogGamma funciton, it is
+        /// defined for all real values.
+        /// </summary>
+        /// <param name="x">Input to the Digamma funciton</param>
+        /// <returns>The result of the Digamma funciton</returns>
+        public static double Digamma(double x)
+        {
+            if (x >= 7.0) //x >= x0 > 0
+            {
+                double xk = x;
+                double sum = 0.0;
+
+                for (int k = 1; k <= 10; k++)
+                {
+                    double m = B2N[k] / (2.0 * k);
+                    double s = m / (xk * xk);
+
+                    sum += s;
+                    xk *= x;
+                }
+
+                double dig = Math.Log(x) - (1.0 / (x + x));
+                return dig - sum;
+
+            }
+            else if (x >= 0.0) //0 <= x , x0
+            {
+                int n = 7 - (int)Math.Floor(x);
+                double sum = 0.0;
+
+                for (int k = 0; k < n; k++)
+                {
+                    sum += 1.0 / (x + k);
+                }
+
+                double dig = Digamma(x + n);
+                return dig - sum;
+
+            }
+            else //x < 0
+            {
+                double dig = Digamma(1.0 - x);
+                dig = dig - Math.PI / Math.Tan(Math.PI * x);
+
+                return dig;
+            }
+        }
+
+        /// <summary>
+        /// Computes the Digamma funciton, which is defined as the derivitive of
+        /// the LogGamma function.
+        /// </summary>
+        /// <param name="x">Input to the Digamma funciton</param>
+        /// <returns>The result of the Digamma funciton</returns>
+        public static Cmplx Digamma(Cmplx z)
+        {
+            double x = z.CofR;
+
+            if (x >= 7.0) //x >= x0 > 0
+            {                
+                Cmplx zk = z;
+                Cmplx sum = 0.0;
+
+                for (int k = 1; k <= 10; k++)
+                {
+                    double m = B2N[k] / (2.0 * k);
+                    Cmplx s = (Cmplx)m / (zk * zk);
+
+                    sum += s;
+                    zk *= z;
+                }
+
+                Cmplx dig = Cmplx.Log(z) - (1.0 / (z + z));
+                return dig - sum;
+
+            }
+            else if (x >= 0.0) //0 <= x , x0
+            {
+                int n = 7 - (int)Math.Floor(x);
+                Cmplx sum = 0.0;
+
+                for (int k = 0; k < n; k++)
+                {
+                    sum += 1.0 / (z + k);
+                }
+
+                Cmplx dig = Digamma(z + n);
+                return dig - sum;
+
+            }
+            else //x < 0
+            {
+                //Cmplx dig = Digamma(-z) - (1.0 / z);
+                //dig = dig - (Math.PI / Cmplx.Tan(Math.PI * z));
+
+                Cmplx dig = Digamma(1.0 - z);
+                dig = dig - Math.PI / Cmplx.Tan(Math.PI * z);
+
+                return dig;
+            }
+
+            //return Cmplx.NaN;
+
+        }
+
+        /// <summary>
         /// Computes the binomial coffecent. When n and k are postive intergers, 
         /// this is equal to the number of ways to choose k items from n total 
         /// items. This can be expanded to the real and complex numbers by use 
@@ -1130,6 +1275,32 @@ namespace Vulpine.Core.Calc
             Cmplx c = Cmplx.Log(VMath.Gamma(n - k + 1.0));
 
             return Cmplx.Exp(a - b - c);
+        }
+
+        /// <summary>
+        /// Computes the binomial coffecent. When n and k are postive intergers, 
+        /// this is equal to the number of ways to choose k items from n total 
+        /// items. This can be expanded to the real and complex numbers by use 
+        /// of the gamma funciton.
+        /// </summary>
+        /// <param name="n">Total number of items</param>
+        /// <param name="k">Size of the subset</param>
+        /// <returns>Number of possable combinations</returns>
+        public static Dual Binomial(Dual n, Dual k)
+        {
+            double x = n.Real;
+            double y = k.Real;
+
+            //computes the Binomial and it's gradient
+            double fx = Binomial(x, y);
+            double xy = Digamma(x - y + 1.0);
+            double dx = fx * (Digamma(x + 1.0) - xy);
+            double dy = fx * (xy - Digamma(y + 1.0));
+
+            //dot product of the dual component and the gradient
+            double dot = (n.Eps * dx) + (k.Eps * dy);
+
+            return new Dual(fx, dot);
         }
 
         /// <summary>

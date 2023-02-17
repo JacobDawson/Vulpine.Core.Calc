@@ -324,7 +324,7 @@ namespace Vulpine_Core_Calc_Tests.Unit
             Cmplx y = VMath.GammaLog(z);
 
             double diff = exp.CofR - y.CofR;
-            Console.WriteLine(diff.ToString("G22"));
+            //Console.WriteLine(diff.ToString("G22"));
 
             Assert.That(y, Ist.WithinTolOf(exp, tol));
             
@@ -346,6 +346,54 @@ namespace Vulpine_Core_Calc_Tests.Unit
         public void GammaLog_RealInput_ExpectedOutput(double x, double exp)
         {
             double y = VMath.GammaLog(x);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
+
+        [TestCase(-13.0,    2.0,    2.6137588586149231278,     2.9946009556428566351)]
+        [TestCase( -9.5,    0.0,    2.3030010342976863753,     0.0                  )]
+        [TestCase( -3.0,    1.0,    1.2946503206224769773,     2.8766740474685811741)]  
+        [TestCase(  0.0,    8.0,    2.0807456749118009780,     1.6332963267948966192)]
+        [TestCase(  3.0,    0.0,    0.9227843350984671394,     0.0                  )]
+        [TestCase(  4.0,    2.0,    1.3953607461432082959,     0.5169611287960763822)] 
+        [TestCase(  7.0,    4.0,    2.0326956522302214193,     0.5510181566532114323)] 
+        [TestCase(  9.0,   16.0,    2.8968167249967415640,     1.0823571292948356773)]  
+        [TestCase( 10.0,    0.0,    2.2517525890667211076,     0.0                  )]
+        [TestCase( 15.0,    5.0,    2.7304638296862949659,     0.3319504266337825064)]
+        [TestCase(-13.0,   -2.0,    2.6137588586149231278,    -2.9946009556428566352)]
+        [TestCase( -3.0,   -1.0,    1.2946503206224769773,    -2.8766740474685811741)] 
+        [TestCase(  0.0,   -8.0,    2.0807456749118009780,    -1.6332963267948966192)]  
+        [TestCase(  4.0,   -2.0,    1.3953607461432082959,    -0.5169611287960763822)]
+        [TestCase(  7.0,   -4.0,    2.0326956522302214193,    -0.5510181566532114323)]
+        [TestCase(  9.0,  -16.0,    2.8968167249967415640,    -1.0823571292948356773)] 
+        [TestCase( 15.0,   -5.0,    2.7304638296862949659,    -0.3319504266337825064)]    
+        public void Digamma_CmplxInput_ExpectedOutput(double z1, double z2, double e1, double e2)
+        {
+            Cmplx z = new Cmplx(z1, z2);
+            Cmplx exp = new Cmplx(e1, e2);
+
+            Cmplx y = VMath.Digamma(z);
+            Assert.That(y, Ist.WithinTolOf(exp, tol));
+        }
+
+
+        [TestCase(Math.PI,      0.97721330794200673329)] 
+        [TestCase(Math.E,       0.80492627446356655137)]  
+        [TestCase(VMath.R2,    -0.04690962626940850995)]
+        [TestCase(42.0,         3.72571761793728215030)]
+        [TestCase(12.0,         2.44266167997581201674)]     
+        [TestCase(7.5,          1.94675748424608678807)]
+        [TestCase(11.7,         2.41624548094925215712)]
+        [TestCase(5.0,          1.50611766843180047273)]     
+        [TestCase(0.5,         -1.96351002602142347944)]     
+        [TestCase(1.0/16.0,   -16.47885349006010436650)]     
+        [TestCase(-4.5,         1.61109314858175112373)]  
+        [TestCase(-1.5,         0.70315664064524318722)]    
+        [TestCase(-VMath.TAU,   4.46178042920051175074)]
+        [TestCase(-Math.E,     -1.39770931071901716840)]
+        public void Digamma_RealInput_ExpectedOutput(double x, double exp)
+        {
+            double y = VMath.Digamma(x);
             Assert.That(y, Ist.WithinTolOf(exp, tol));
         }
 
