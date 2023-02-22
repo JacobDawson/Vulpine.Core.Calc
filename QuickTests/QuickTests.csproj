@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AGM_Tests.cs" />
+    <Compile Include="AutoDiffTests.cs" />
     <Compile Include="BayerMatrixTest.cs" />
     <Compile Include="Binomial.cs" />
     <Compile Include="DataFormater.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="DivByZero.cs" />
     <Compile Include="GeneratePoints.cs" />
     <Compile Include="JacobiTests.cs" />
+    <Compile Include="LambertTests.cs" />
     <Compile Include="LU-Decomp.cs" />
     <Compile Include="MatrixExponenital.cs" />
     <Compile Include="PadeAprox.cs" />

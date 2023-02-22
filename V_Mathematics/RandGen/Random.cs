@@ -153,8 +153,8 @@ namespace Vulpine.Core.Calc.RandGen
         public bool RandBool(double prob)
         {
             //takes care of the extream cases
-            if (prob < 0.0) return false;
-            if (prob > 1.0) return true;
+            if (prob <= 0.0) return false;
+            if (prob >= 1.0) return true;
 
             //generates a true result with given probabilty
             return (NextDouble() < prob);

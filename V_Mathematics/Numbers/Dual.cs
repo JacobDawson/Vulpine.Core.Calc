@@ -250,22 +250,7 @@ namespace Vulpine.Core.Calc.Numbers
             return new Dual(r, e);
         }
 
-        /// <summary>
-        /// Computes the absolute value of the given dual number. In this 
-        /// case the "absolute value" dose not refer to a Norm on the space
-        /// of dual numbers, but is an extention of the absolute value
-        /// function to their domain.
-        /// </summary>
-        /// <returns>The "absolute value" of the dual number</returns>
-        public Dual Abs()
-        {
-            //computes the absolute value and it's derivitive
-            double fx = Math.Abs(real);
-            double dx = VMath.Sign(real);
 
-            //constructs the dual number from the derivitive
-            return new Dual(fx, dual * dx);
-        }
 
         #endregion //////////////////////////////////////////////////////////////
 
@@ -457,7 +442,7 @@ namespace Vulpine.Core.Calc.Numbers
         /// <summary>
         /// Raises a dual number to an arbitary real power.
         /// </summary>
-        /// <param name="x">Base of the power funciton<</param>
+        /// <param name="x">Base of the power funciton</param>
         /// <param name="exp">Power of the exponential</param>
         /// <returns>A dual number raised to a given power</returns>
         public static Dual Pow(Dual x, double exp)
@@ -505,7 +490,50 @@ namespace Vulpine.Core.Calc.Numbers
 
         #endregion //////////////////////////////////////////////////////////////
 
-        #region Max And Min...
+        #region Piecewise Funcitons..
+
+        /// <summary>
+        /// Computes the absolute value function of the given dual number. In this 
+        /// case the "absolute value" dose not refer to a Norm on the space of dual 
+        /// numbers, but is an extention of the real-valued function to their domain.
+        /// </summary>
+        /// <param name="x">Input to the ABS function</param>
+        /// <returns>The ABS of the dual number</returns>
+        public static Dual Abs(Dual x)
+        {
+            //computes the absolute value and it's derivitive
+            double fx = Math.Abs(x.real);
+            double dx = VMath.Sign(x.real);
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.dual * dx);
+        }
+
+        /// <summary>
+        /// Extends the Floor function to the dual realm. Because the drivitive of
+        /// the floor funciton is essentily zero, this causes the dual portion
+        /// of the number to vanish.
+        /// </summary>
+        /// <param name="x">Input to the Floor funciton</param>
+        /// <returns>The Floor of the dual number</returns>
+        public static Dual Floor(Dual x)
+        {
+            double fx = Math.Floor(x.real);
+            return new Dual(fx, 0.0);
+        }
+
+        /// <summary>
+        /// Extends the Ceiling function to the dual realm. Because the drivitive of
+        /// the floor funciton is essentily zero, this causes the dual portion
+        /// of the number to vanish.
+        /// </summary>
+        /// <param name="x">Input to the Ceiling funciton</param>
+        /// <returns>The Ceiling of the dual number</returns>
+        public static Dual Ceiling(Dual x)
+        {
+            double fx = Math.Ceiling(x.real);
+            return new Dual(fx, 0.0);
+        }
 
         /// <summary>
         /// Computes the Max function of two dual numbers. This dose not produce a

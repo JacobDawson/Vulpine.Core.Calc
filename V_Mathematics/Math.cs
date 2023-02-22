@@ -123,6 +123,19 @@ namespace Vulpine.Core.Calc
         public const double LC = 2.6220575542921198105;
 
         /// <summary>
+        /// Represnets the value -1/e which is the lower bound of the Lambert W
+        /// function. It is aproximatly (-0.367879).
+        /// </summary>
+        public const double LW = -0.3678794411714423216;
+
+        /// <summary>
+        /// Represents the omega constant which is defined as the unique real number
+        /// that satisfies the equation (w e^w = 1), it is also the value of W(1)
+        /// where W(x) is the Lambert W function. It is aproximatly (0.567143). 
+        /// </summary>
+        public const double W = 0.56714329040978387300; 
+
+        /// <summary>
         /// Stores a list of all the even indexed Bernouli numbers up to B_24.
         /// The odd indexed Bernouli numbers are all zero, except for B_1 which
         /// simply evaluates to -1/2.
@@ -745,6 +758,113 @@ namespace Vulpine.Core.Calc
         #region Advanced Functions...
 
         /// <summary>
+        /// Computes the Lambert W function, defined such that [W(x) e^(W(x) = x].
+        /// it is deffined for all real values greator that [-1/e]. For input
+        /// values less than this constant, it simply returns NaN.
+        /// </summary>
+        /// <param name="x">Input to the Lambert W funciton</param>
+        /// <returns>The result of the Lambert W function</returns>
+        public static double Lambert(double x)
+        {
+            //atempts to find an aproximate value to W(z)
+            double x0 = 0.0;
+
+            if (x > 0.0) //x > 0
+            {
+                double ln = Math.Log(1.0 + x);
+
+                x0 = Math.Log(1.0 + ln);
+                x0 = x0 / (2.0 + ln);
+                x0 = ln * (1.0 - x0);
+            }
+            else if (x > VMath.LW) //LW > x > 0
+            {
+                double ex = x * Math.E;
+                double sr = Math.Sqrt(1.0 + ex);
+
+                x0 = 1.0 + ex + sr;
+                x0 = ex / x0;
+                x0 = x0 * Math.Log(1.0 + sr);
+            }
+            else //x < LW
+            {
+                //the function is undefined for this range
+                return Double.NaN;
+            }
+
+            double wn, e1, e2;
+
+            //uses newton's method to fine-tune the aproximation
+            for (int i = 0; i < 6; i++)
+            {
+                e1 = Math.Exp(x0);
+                e2 = x0 * e1;
+
+                wn = (e2 - x) / (e1 + e2);
+                wn = x0 - wn;
+
+                x0 = wn;
+            }
+
+            return x0;
+        }
+
+        /// <summary>
+        /// Computes the Lambert W function, defined such that [W(x) e^(W(x) = x].
+        /// It returns the principle branch of this complex function, with a branch
+        /// cut allong the negative real axis.
+        /// </summary>
+        /// <param name="z">Input to the Lambert W funciton</param>
+        /// <returns>The result of the Lambert W function</returns>
+        public static Cmplx Lambert(Cmplx z)
+        {
+            Cmplx z0, y, lnB, lnC;
+
+            //atempts to find an aproximate value to W(z)
+            y = 2.0 * Math.E * z + 2.0;
+            y = Cmplx.Sqrt(y);
+
+            lnB = Cmplx.Log(1.0 + 0.8842 * y) * 2.0;
+            lnC = Cmplx.Log(1.0 + 0.5106 * y) * 0.9294;
+
+            z0 = lnB - Cmplx.Log(1.0 + lnC) - 1.213;
+            z0 = z0 / (1.0 + (1.0 / (lnB + 4.688)));
+
+            Cmplx wn, e1, e2;
+
+            //uses newton's method to fine-tune the aproximation
+            for (int i = 0; i < 6; i++)
+            {
+                e1 = Cmplx.Exp(z0);
+                e2 = z0 * e1;
+
+                wn = (e2 - z) / (e1 + e2);
+                wn = z0 - wn;
+
+                z0 = wn;
+            }
+
+            return z0;
+        }
+
+        /// <summary>
+        /// Computes the Lambert W function, defined such that [W(x) e^(W(x) = x].
+        /// it is deffined for all real values greator that [-1/e]. For input
+        /// values less than this constant, it simply returns NaN.
+        /// </summary>
+        /// <param name="x">Input to the Lambert W funciton</param>
+        /// <returns>The result of the Lambert W function</returns>
+        public static Dual Lambert(Dual x)
+        {
+            //computes the Lambert W function and it's derivitive
+            double fx = Lambert(x.Real);
+            double dx = 1.0 / (x.Real + Math.Exp(fx));
+
+            //constructs the dual number from the derivitive
+            return new Dual(fx, x.Eps * dx);
+        }
+
+        /// <summary>
         /// Computes the gamma function applied to the real number line.
         /// The gamma funciton can be thought of as a continuation of the
         /// factorial function where Fact(n) is equal to Gamma(n + 1).
@@ -875,6 +995,20 @@ namespace Vulpine.Core.Calc
             return Gamma(a) - GammaLow(a, z);
         }
 
+        /// <summary>
+        /// Evaluates the upper incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="x">Lower limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static Dual Gamma(Dual a, Dual x)
+        {
+            //returns the upper incomplete gamma
+            return Gamma(a) - GammaLow(a, x);
+        }
 
         /// <summary>
         /// Evaluates the lower incomplete gamma function. It is related to 
@@ -930,6 +1064,37 @@ namespace Vulpine.Core.Calc
                 q = q * (a + k);
                 sum += (pow * p) / q;
                 p = p * z;
+            }
+
+            return sum;
+        }
+
+        /// <summary>
+        /// Evaluates the lower incomplete gamma function. It is related to 
+        /// the gamma function in that both can be expressed as an intergral 
+        /// of the same soultion. It is a special funciton which arises as
+        /// the solution to various mathmatical problems.
+        /// </summary>
+        /// <param name="a">Value to integrate</param>
+        /// <param name="x">Upper limit of the intergral</param>
+        /// <returns>The solution to the incomplete gamma function</returns>
+        public static Dual GammaLow(Dual a, Dual x)
+        {
+            //the function is undefined for negative x
+            if (x.Real < 0.0) return Dual.NaN;
+
+            //values used in the itteration below
+            Dual pow = Dual.Pow(x, a) * Dual.Exp(-x);
+
+            Dual p = 1.0;
+            Dual q = 1.0;
+            Dual sum = 0.0;
+
+            for (int k = 0; k < 32; k++)
+            {
+                q = q * (a + k);
+                sum += (pow * p) / q;
+                p = p * x;
             }
 
             return sum;
@@ -1003,41 +1168,29 @@ namespace Vulpine.Core.Calc
         /// <returns>The logrythim of the Gamma function</returns>
         public static Cmplx GammaLog(Cmplx z)
         {
-            //x0 = 7
-            //K = 10
-
             double x = z.CofR;
-
             Cmplx lg, sum, zk;
 
             if (x >= 7.0) //x >= x0
             {
                 lg = (z - 0.5) * Cmplx.Log(z);
                 lg = lg - z + 0.91893853320467274178; // ln(tau) / 2
-                //lg = lg - z - 1.08879304515180106525; // ln(2) pi / 2
 
                 zk = z;
                 sum = 0.0;
 
                 for (int k = 1; k <= 12; k++)
                 {
-                    //int dim = (2 * k - 1) * 2 * k;
-
                     int dim = 2 * k;
                     dim = dim * (dim - 1);
 
                     double bk = B2N[k] / (double)dim;
                     Cmplx s = (Cmplx)bk / (zk * zk);
 
-                    //Cmplx s = bk * Cmplx.Pow(z, -2.0 * k);
-
                     sum += s;
                     zk *= z;
                 }
 
-                //lg = lg + 1.83787706640935; //ln(2 pi)
-
-                //return lg + sum;
                 return lg + (z * sum);
 
             }
@@ -1054,9 +1207,6 @@ namespace Vulpine.Core.Calc
                 {
                     sum *= (z + k);
                     a += Math.Atan2(z.CofI, x + k);
-                    //a += Math.Atan(z.CofI / (x + k));
- 
-                    //NOTE: I don't know if I should use Atan(y / x) or Atan2(y, x)
                 }
 
                 double b = 1.0 * Math.Log(sum.Abs);
@@ -1083,6 +1233,7 @@ namespace Vulpine.Core.Calc
                 sin = Math.Sin(Math.PI * e);
                 ey = Math.Exp(-VMath.TAU * yb);
 
+                //the real part is computed to avoid overflow
                 re = 1.0 - ey;
                 re = 0.25 * re * re;
                 re = (ey * sin * sin) + re;
@@ -1090,6 +1241,7 @@ namespace Vulpine.Core.Calc
                 re = 0.5 * Math.Log(re);
                 re = re + (Math.PI * yb);
 
+                //the imaginary part enshures the correct branch-cut
                 im = Math.Tanh(Math.PI * yb);
                 im = im / Math.Tan(Math.PI * e);
                 im = Math.Atan(im) - (xb * Math.PI);
@@ -1149,9 +1301,8 @@ namespace Vulpine.Core.Calc
 
                 double dig = Math.Log(x) - (1.0 / (x + x));
                 return dig - sum;
-
             }
-            else if (x >= 0.0) //0 <= x , x0
+            else if (x >= 0.0) //0 <= x < x0
             {
                 int n = 7 - (int)Math.Floor(x);
                 double sum = 0.0;
@@ -1163,7 +1314,6 @@ namespace Vulpine.Core.Calc
 
                 double dig = Digamma(x + n);
                 return dig - sum;
-
             }
             else //x < 0
             {
@@ -1178,7 +1328,7 @@ namespace Vulpine.Core.Calc
         /// Computes the Digamma funciton, which is defined as the derivitive of
         /// the LogGamma function.
         /// </summary>
-        /// <param name="x">Input to the Digamma funciton</param>
+        /// <param name="z">Input to the Digamma funciton</param>
         /// <returns>The result of the Digamma funciton</returns>
         public static Cmplx Digamma(Cmplx z)
         {
@@ -1200,9 +1350,8 @@ namespace Vulpine.Core.Calc
 
                 Cmplx dig = Cmplx.Log(z) - (1.0 / (z + z));
                 return dig - sum;
-
             }
-            else if (x >= 0.0) //0 <= x , x0
+            else if (x >= 0.0) //0 <= x < x0
             {
                 int n = 7 - (int)Math.Floor(x);
                 Cmplx sum = 0.0;
@@ -1214,21 +1363,64 @@ namespace Vulpine.Core.Calc
 
                 Cmplx dig = Digamma(z + n);
                 return dig - sum;
-
             }
             else //x < 0
             {
-                //Cmplx dig = Digamma(-z) - (1.0 / z);
-                //dig = dig - (Math.PI / Cmplx.Tan(Math.PI * z));
-
                 Cmplx dig = Digamma(1.0 - z);
                 dig = dig - Math.PI / Cmplx.Tan(Math.PI * z);
 
                 return dig;
             }
+        }
 
-            //return Cmplx.NaN;
+        /// <summary>
+        /// Computes the Digamma funciton, which is defined as the derivitive of
+        /// the LogGamma function. However, unlike the LogGamma funciton, it is
+        /// defined for all real values.
+        /// </summary>
+        /// <param name="z">Input to the Digamma funciton</param>
+        /// <returns>The result of the Digamma funciton</returns>
+        public static Dual Digamma(Dual z)
+        {
+            double x = z.Real;
 
+            if (x >= 7.0) //x >= x0 > 0
+            {
+                Dual zk = z;
+                Dual sum = 0.0;
+
+                for (int k = 1; k <= 10; k++)
+                {
+                    double m = B2N[k] / (2.0 * k);
+                    Dual s = (Dual)m / (zk * zk);
+
+                    sum += s;
+                    zk *= z;
+                }
+
+                Dual dig = Dual.Log(z) - (1.0 / (z + z));
+                return dig - sum;
+            }
+            else if (x >= 0.0) //0 <= x < x0
+            {
+                int n = 7 - (int)Math.Floor(x);
+                Dual sum = 0.0;
+
+                for (int k = 0; k < n; k++)
+                {
+                    sum += 1.0 / (z + k);
+                }
+
+                Dual dig = Digamma(z + n);
+                return dig - sum;
+            }
+            else //x < 0
+            {
+                Dual dig = Digamma(1.0 - z);
+                dig = dig - Math.PI / Dual.Tan(Math.PI * z);
+
+                return dig;
+            }
         }
 
         /// <summary>
@@ -1245,9 +1437,9 @@ namespace Vulpine.Core.Calc
             if (n > k && k > 0.0)
             {
                 //uses the log-gamma function to avoid multiplication
-                double a = Math.Log(VMath.Gamma(n + 1.0));
-                double b = Math.Log(VMath.Gamma(k + 1.0));
-                double c = Math.Log(VMath.Gamma(n - k + 1.0));
+                double a = VMath.GammaLog(n + 1.0);
+                double b = VMath.GammaLog(k + 1.0);
+                double c = VMath.GammaLog(n - k + 1.0);
 
                 return Math.Exp(a - b - c);
             }
@@ -1270,9 +1462,9 @@ namespace Vulpine.Core.Calc
         public static Cmplx Binomial(Cmplx n, Cmplx k)
         {
             //uses the log-gamma function to avoid multiplication
-            Cmplx a = Cmplx.Log(VMath.Gamma(n + 1.0));
-            Cmplx b = Cmplx.Log(VMath.Gamma(k + 1.0));
-            Cmplx c = Cmplx.Log(VMath.Gamma(n - k + 1.0));
+            Cmplx a = VMath.GammaLog(n + 1.0);
+            Cmplx b = VMath.GammaLog(k + 1.0);
+            Cmplx c = VMath.GammaLog(n - k + 1.0);
 
             return Cmplx.Exp(a - b - c);
         }
@@ -1515,8 +1707,8 @@ namespace Vulpine.Core.Calc
         /// this limit is only defined when a and b are both positive. Inputing negative values
         /// into the Arethemetic-Geometric mean returns NaN.
         /// </summary>
-        /// <param name="a">First paramater of AGM</param>
-        /// <param name="b">Second paramater of AGM</param>
+        /// <param name="a">First paramater of the AGM</param>
+        /// <param name="b">Second paramater of the AGM</param>
         /// <returns>The AGM of the two paramaters</returns>
         public static double AGM(double a, double b)
         {
@@ -1542,8 +1734,8 @@ namespace Vulpine.Core.Calc
         /// to reach convergence. The result of this selective process is known as the 
         /// Simplest Value for the AGM.
         /// </summary>
-        /// <param name="a">First paramater of AGM</param>
-        /// <param name="b">Second paramater of AGM</param>
+        /// <param name="a">First paramater of the AGM</param>
+        /// <param name="b">Second paramater of the AGM</param>
         /// <returns>the Simplest Value of the AGM</returns>
         public static Cmplx AGM(Cmplx a, Cmplx b)
         {
@@ -1567,6 +1759,33 @@ namespace Vulpine.Core.Calc
 
             return a;
 
+        }
+
+        /// <summary>
+        /// Extends the Arithemtic-Geometric Mean into the Dual domain. As in the
+        /// Real domain, the AGM is only defined when the real parts of both inputs
+        /// are positive. Inputing negative values into the AGM returns NaN.
+        /// </summary>
+        /// <param name="a">First paramater of the AGM</param>
+        /// <param name="b">Second paramater of the AGM</param>
+        /// <returns>The AGM of the two paramaters</returns>
+        public static Dual AGM(Dual a, Dual b)
+        {
+            //checks that a and b are both positive real values
+            if (a.Real < 0.0) return Dual.NaN;
+            if (b.Real < 0.0) return Dual.NaN;
+
+            Dual m;
+
+            //itterativly computes the arehmentic and geometric means
+            for (int i = 0; i < 10; i++)
+            {
+                m = (a + b) / 2.0;
+                b = Dual.Sqrt(a * b);
+                a = m;
+            }
+
+            return a;
         }
 
         #endregion //////////////////////////////////////////////////////////////////       

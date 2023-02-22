@@ -25,7 +25,11 @@ namespace QuickTests
             //AGM_Tests.TestComp4();
             //AGM_Tests.TestError();
 
-            PadeAprox.TryPade();
+            //PadeAprox.TryPade();
+
+            //LambertTests.RunTests();
+            AutoDiffTests.RunTests();
+
 
             //DataFormater.GenFile();
 

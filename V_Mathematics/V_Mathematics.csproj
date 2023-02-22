@@ -60,6 +60,7 @@
     <Compile Include="Jacobi.cs" />
     <Compile Include="Math.cs" />
     <Compile Include="ArgumentShapeException.cs" />
+    <Compile Include="Matrices\SyntaxTest.cs" />
     <Compile Include="Matrices\Matrix.cs" />
     <Compile Include="Matrices\MatrixCmplx.cs" />
     <Compile Include="Matrices\MatrixSparse.cs" />

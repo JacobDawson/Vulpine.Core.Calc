@@ -334,11 +334,36 @@ namespace QuickTests
             0.0,
         };
 
+        public static readonly double[] W_Series =
+        {
+            1.0, 
+            -1.0, 
+            3.0 / 2.0, 
+            -8.0 / 3.0, 
+            125.0 / 24.0, 
+            -54.0 / 5.0, 
+            16807.0 / 720.0, 
+            -16384.0 / 315.0, 
+            531441.0 / 4480.0, 
+            -156250.0 /567.0,
+            649.78717234347442681,
+            -1551.1605194805194805, 
+            3741.4497029592385495,  
+            -9104.5002411580189358,  
+            22324.308512706601434,  
+            -55103.621972903835338, 
+            136808.86090394293563, 
+            -341422.05066583836332,  
+            855992.96599660755146,   
+            -2154990.2060910882893,  
+        };
 
 
 
-        public const int PN = 14;
-        public const int PM = 16;
+
+
+        public const int PN = 8;
+        public const int PM = 10;
 
 
         public static void TryPade()
@@ -346,7 +371,7 @@ namespace QuickTests
             Console.WriteLine("Constructing Pade Aproximate [{0}/{1}]: ", PN, PM);
             Console.WriteLine();
 
-            Vector talor = new Vector(SL_Series);
+            Vector talor = new Vector(W_Series);
             Vector pade = GenPade(PN, PM, talor);
 
             for (int i = 0; i < pade.Length; i++)
