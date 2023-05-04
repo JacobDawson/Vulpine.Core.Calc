@@ -67,7 +67,10 @@
     <Compile Include="Geometry\Planer\Point2D.cs" />
     <Compile Include="Geometry\Spatial\Point3D.cs" />
     <Compile Include="Matrices\Vector.cs" />
+    <Compile Include="Matrices\Vector32.cs" />
     <Compile Include="Matrices\VectorCmplx.cs" />
+    <Compile Include="Matrices\VectorShared16.cs" />
+    <Compile Include="Matrices\VectorT.cs" />
     <Compile Include="Numbers\Cmplx.cs" />
     <Compile Include="Numbers\Dual.cs" />
     <Compile Include="Numbers\Qtrin.cs" />
